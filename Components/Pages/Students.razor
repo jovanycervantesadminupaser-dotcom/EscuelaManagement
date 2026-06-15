@@ -1,0 +1,189 @@
+@page "/alumnos"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión y Directorio de Alumnos</MudText>
+
+    <!-- SECCIÓN DE FILTROS -->
+    <MudCard Elevation="2" Class="mb-6 pa-4" Style="background-color: #f9f9f9;">
+        <MudGrid Class="d-flex align-center">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..."/>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" Label="Filtrar por Curso Inscrito" @bind-Value="filterCourseId" Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var curso in listaCursos) { <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem> }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+
+    <!-- TABLA PRINCIPAL CON EXPEDIENTES DESPLEGABLES -->
+    <MudTable Items="@AlumnosFiltrados" Loading="@isLoading" @bind-SelectedItem="selectedStudent" Hover="true" Striped="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Registros Encontrados (@AlumnosFiltrados.Count())</MudText>
+            <MudSpacer />
+            <MudText Typo="Typo.caption" Class="text-muted"><i>*Haz clic en cualquier fila para ver el expediente completo.</i></MudText>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh Style="width: 50px; text-align:center;"></MudTh>
+            <MudTh>Nombre Completo</MudTh>
+            <MudTh>Tutor / Parentesco</MudTh>
+            <MudTh>Cursos Inscritos</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="alumnoRow">
+            <MudTd style="text-align: center;">
+                <MudIcon Icon="@(selectedStudent?.Id == alumnoRow?.Id ? Icons.Material.Filled.KeyboardArrowDown : Icons.Material.Filled.KeyboardArrowRight)" Color="Color.Primary" />
+            </MudTd>
+            <MudTd><b>@(alumnoRow?.Name) @(alumnoRow?.PaternalLastName) @(alumnoRow?.MaternalLastName)</b></MudTd>
+            <MudTd>@(alumnoRow?.Guardian?.Name ?? "Sin tutor registrado")</MudTd>
+            <MudTd>
+                @foreach (var curso in ObtenerCursosDeAlumno(alumnoRow?.Id ?? ""))
+                {
+                    <MudChip @key="curso" T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Filled">@curso</MudChip>
+                }
+            </MudTd>
+        </RowTemplate>
+        
+        <!-- EXPEDIENTE DETALLADO DESPLEGABLE (CON TRUCO CSS DISPLAY:NONE) -->
+        <ChildRowContent Context="alumnoRow">
+            <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
+                <td colspan="4" style="background-color: #fafafa; padding: 16px;">
+                    <MudCard Outlined="true" Elevation="0" Class="pa-4">
+                        <MudGrid>
+                            <!-- COLUMNA FOTO -->
+                            <MudItem xs="12" sm="3" Class="d-flex justify-center align-center">
+                                @if (!string.IsNullOrEmpty(alumnoRow?.PhotoBase64))
+                                {
+                                    <MudImage Src="@alumnoRow!.PhotoBase64" Width="140" Height="140" ObjectFit="ObjectFit.Cover" Elevation="3" Class="rounded-lg border-solid border-2 mud-border-primary" />
+                                }
+                                else
+                                {
+                                    <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Style="background-color: #e0e0e0;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 4.5rem;" Color="Color.Default" />
+                                    </MudPaper>
+                                }
+                            </MudItem>
+
+                            <!-- COLUMNA DATOS ESTRUCTURALES ACTUALIZADA CON TELÉFONOS -->
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mb-2"><b>Información Detallada de la Ficha</b></MudText>
+                                
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    <b>Dirección:</b> @(alumnoRow?.Address?.Street ?? "") @(alumnoRow?.Address?.ExtNumber ?? ""), Col. @(alumnoRow?.Address?.Neighborhood ?? ""), @(alumnoRow?.Address?.Municipality ?? "")
+                                </MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1"><b>Código Postal:</b> @(alumnoRow?.Address?.ZipCode ?? "N/A")</MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    <b>Fecha de Nacimiento:</b> @(alumnoRow?.DateOfBirth.HasValue == true ? alumnoRow!.DateOfBirth.Value.ToDateTime().ToString("dd/MM/yyyy") : "No registrada")
+                                </MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    <b>Teléfono Alumno:</b> @(alumnoRow?.Phone ?? "No registrado")
+                                </MudText>
+                                
+                                <MudDivider Class="my-2"/>
+                                
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    <b>Contacto de Emergencia:</b> @(alumnoRow?.Guardian?.Name ?? "") @(alumnoRow?.Guardian?.PaternalLastName ?? "") 
+                                    <span class="text-muted">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
+                                </MudText>
+                                <MudText Typo="Typo.body2">
+                                    <b>Teléfono Tutor:</b> @(alumnoRow?.Guardian?.Phone ?? "No registrado")
+                                </MudText>
+                            </MudItem>
+
+                            <!-- COLUMNA BOTONES DE ACCIÓN -->
+                            <MudItem xs="12" sm="3" Class="d-flex flex-column justify-center gap-3">
+                                <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Edit" FullWidth="true" OnClick="() => EditarExpediente(alumnoRow!)">
+                                    EDITAR EXPEDIENTE
+                                </MudButton>
+                                
+                                <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.PersonRemove" FullWidth="true" OnClick="() => ConfirmarBaja(alumnoRow!)">
+                                    DAR DE BAJA
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCard>
+                </td>
+            </MudTr>
+        </ChildRowContent>
+    </MudTable>
+
+    <!-- MODAL CONFIRMACIÓN DE BAJA -->
+    <MudMessageBox @ref="mbox" Title="Confirmar Baja del Alumno">
+        <MessageContent>
+            ¿Estás completamente seguro de que deseas dar de baja a "<b>@(alumnoABorrar?.Name) @(alumnoABorrar?.PaternalLastName)</b>"? <br />
+            <span style="color: #f44336; font-size: 0.85rem;">Esta acción eliminará su expediente de los servidores.</span>
+        </MessageContent>
+        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">ELIMINAR</MudButton></YesButton>
+        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton></CancelButton>
+    </MudMessageBox>
+</MudContainer>
+
+@code {
+    private MudMessageBox mbox = default!;
+    private Student? alumnoABorrar;
+    private Student? selectedStudent;
+    private List<Student> listaAlumnos = new();
+    private List<Course> listaCursos = new();
+    private List<Enrollment> listaInscripciones = new();
+    private bool isLoading = true;
+    private string filterName = "";
+    private string filterCourseId = "";
+
+    protected override async Task OnInitializedAsync() => await RecargarDatosDirectorio();
+
+    private async Task RecargarDatosDirectorio()
+    {
+        isLoading = true;
+        listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
+        listaCursos = await Firebase.GetCoursesAsync() ?? new();
+        listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
+        isLoading = false;
+    }
+
+    private IEnumerable<Student> AlumnosFiltrados => listaAlumnos.Where(s => 
+        (string.IsNullOrEmpty(filterName) || $"{s.Name} {s.PaternalLastName} {s.MaternalLastName}".Contains(filterName, StringComparison.OrdinalIgnoreCase)) &&
+        (string.IsNullOrEmpty(filterCourseId) || listaInscripciones.Any(i => i.StudentId == s.Id && i.CourseId == filterCourseId)));
+
+    private List<string> ObtenerCursosDeAlumno(string id) => 
+        listaCursos.Where(c => listaInscripciones.Any(i => i.StudentId == id && i.CourseId == c.Id)).Select(c => c.Name ?? "").ToList();
+
+    private async Task EditarExpediente(Student alumno)
+    {
+        if (alumno == null) return;
+        var parameters = new DialogParameters<EditStudentDialog> { { x => x.StudentToEdit, alumno } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        
+        var dialog = await DialogService.ShowAsync<EditStudentDialog>("Editar Expediente", parameters, options);
+        var result = await dialog.Result;
+        
+        if (result != null && !result.Canceled) 
+        {
+            await RecargarDatosDirectorio();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmarBaja(Student alumno)
+    {
+        if (alumno == null) return;
+        alumnoABorrar = alumno;
+        if (await mbox.ShowAsync() == true)
+        {
+            if (!string.IsNullOrEmpty(alumno.Id))
+            {
+                await Firebase.DeleteStudentAsync(alumno.Id);
+                Snackbar.Add("Alumno dado de baja exitosamente", Severity.Success);
+                selectedStudent = null;
+                await RecargarDatosDirectorio();
+                StateHasChanged();
+            }
+        }
+    }
+}

@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject NavigationManager Navigation
+@inject FirebaseService Firebase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h5" Class="ml-3">@nombreEscuela</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="CerrarSesion">
+            Cerrar Sesión
+        </MudButton>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private string nombreEscuela = "Cargando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var configuracion = await Firebase.GetConfiguracionAsync();
+            if (!string.IsNullOrEmpty(configuracion.NombreEscuela))
+            {
+                nombreEscuela = configuracion.NombreEscuela;
+            }
+            else
+            {
+                nombreEscuela = "EscuelaManager"; // Valor por defecto
+            }
+        }
+        catch
+        {
+            nombreEscuela = "EscuelaManager"; // Respaldo en caso de error de conexión
+        }
+    }
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void CerrarSesion()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

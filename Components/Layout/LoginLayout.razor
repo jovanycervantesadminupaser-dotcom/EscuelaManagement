@@ -1,0 +1,15 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudMainContent Class="d-flex align-center justify-center" Style="height: 100vh; background-color: #f4f6f8;">
+        <div style="width: 100%; max-width: 450px; padding: 24px;">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>

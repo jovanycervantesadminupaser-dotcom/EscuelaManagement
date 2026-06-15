@@ -1,0 +1,253 @@
+@page "/configuracion"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using System.IO
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Opciones Administrativas</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Configuración global del sistema, diseño de reportes y control de accesos.</MudText>
+
+    <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary">
+        
+        <MudTabPanel Text="Identidad Escolar" Icon="@Icons.Material.Filled.Business" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="7">
+                    <MudCard Elevation="0" Class="pa-4">
+                        <MudText Typo="Typo.h6" Class="mb-4">Información Institucional</MudText>
+                        
+                        <MudTextField @bind-Value="config.NombreEscuela" 
+                                      Label="Nombre de la Institución Educativa" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true" 
+                                      Class="mb-6" />
+
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   Size="Size.Large" 
+                                   StartIcon="@Icons.Material.Filled.Save" 
+                                   OnClick="GuardarAjustes">
+                            GUARDAR CONFIGURACIÓN
+                        </MudButton>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" md="5" Class="d-flex flex-column align-center justify-center border-inline-start">
+                    <MudText Typo="Typo.h6" Class="mb-3">Logotipo Oficial</MudText>
+                    
+                    @if (!string.IsNullOrEmpty(config.LogoBase64))
+                    {
+                        <MudImage Src="@config.LogoBase64" Width="180" Height="180" ObjectFit="ObjectFit.Contain" Elevation="2" Class="rounded-lg mb-4 pa-2 bg-white border-solid border" />
+                    }
+                    else
+                    {
+                        <MudPaper Width="180px" Height="180px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: #e0e0e0;">
+                            <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 4rem;" Color="Color.Default" />
+                        </MudPaper>
+                    }
+
+                    <MudButton HtmlTag="label" for="logoInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        Subir Logotipo
+                    </MudButton>
+                    <InputFile id="logoInput" OnChange="CambiarLogo" accept=".jpg,.jpeg,.png" style="display: none;" />
+                    <MudText Typo="Typo.caption" Class="mt-2 text-muted">Formatos sugeridos: PNG o JPG transparentes.</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Usuarios y Roles" Icon="@Icons.Material.Filled.SupervisorAccount" Class="pa-6">
+            <MudToolBar Class="px-0 mb-4">
+                <MudText Typo="Typo.h6">Personal con Acceso al Sistema</MudText>
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AbrirDialogoNuevo">
+                    NUEVO USUARIO
+                </MudButton>
+            </MudToolBar>
+
+            <MudTable Items="@listaUsuarios" Hover="true" Striped="true" Elevation="1" Loading="@cargandoUsuarios">
+                <HeaderContent>
+                    <MudTh>Usuario / Correo</MudTh>
+                    <MudTh>Nombre Completo</MudTh>
+                    <MudTh>Rol Asignado</MudTh>
+                    <MudTh>Estado</MudTh>
+                    <MudTh Style="text-align:right;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Correo</MudTd>
+                    <MudTd><b>@context.Nombre</b></MudTd>
+                    <MudTd>
+                        <MudChip T="string" Color="@(context.Rol == "Administrador" ? Color.Error : Color.Info)" Size="Size.Small">
+                            @context.Rol
+                        </MudChip>
+                    </MudTd>
+                    <MudTd>
+                        @if(context.Activo)
+                        {
+                            <MudBadge Dot="true" Color="Color.Success" Class="my-2">Activo</MudBadge>
+                        }
+                        else
+                        {
+                            <MudBadge Dot="true" Color="Color.Error" Class="my-2">Inactivo</MudBadge>
+                        }
+                    </MudTd>
+                    <MudTd Style="text-align:right;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => AbrirDialogoEditar(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => EliminarUsuario(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudTabPanel>
+
+    </MudTabs>
+</MudContainer>
+
+<MudDialog @bind-Visible="dialogoVisible" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2"/> @(editando ? "Editar Usuario" : "Registrar Nuevo Usuario")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="usuarioActual.Nombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="usuarioActual.Correo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" Class="mb-3" InputType="InputType.Email" />
+        <MudTextField @bind-Value="usuarioActual.Password" Label="Contraseña de Acceso" Required="true" Variant="Variant.Outlined" Class="mb-3" InputType="InputType.Text" HelperText="Guarda esta contraseña; el usuario la necesitará para entrar." />
+        
+        <MudSelect T="string" Label="Rol Asignado" @bind-Value="usuarioActual.Rol" Variant="Variant.Outlined" Class="mb-4">
+            <MudSelectItem Value="@("Administrador")">Administrador (Acceso Total)</MudSelectItem>
+            <MudSelectItem Value="@("Control Escolar")">Control Escolar (Pagos y Calificaciones)</MudSelectItem>
+            <MudSelectItem Value="@("Docente")">Docente (Solo Lectura/Captura)</MudSelectItem>
+        </MudSelect>
+
+        <MudSwitch T="bool" @bind-Value="usuarioActual.Activo" Label="@(usuarioActual.Activo ? "Usuario Activo" : "Usuario Suspendido")" Color="Color.Success" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CerrarDialogo">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUsuario">Guardar Usuario</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private ConfiguracionEscuela config = new();
+    
+    // Variables para la gestión de usuarios
+    private List<Usuario> listaUsuarios = new();
+    private bool cargandoUsuarios = true;
+    
+    // Variables para el diálogo
+    private bool dialogoVisible;
+    private bool editando;
+    private Usuario usuarioActual = new();
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        config = await Firebase.GetConfiguracionAsync();
+        await CargarUsuarios();
+    }
+
+    private async Task CargarUsuarios()
+    {
+        cargandoUsuarios = true;
+        listaUsuarios = await Firebase.GetUsuariosAsync() ?? new();
+        cargandoUsuarios = false;
+    }
+
+    // --- LÓGICA DE IDENTIDAD ESCOLAR ---
+    private async Task CambiarLogo(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        if (archivo != null)
+        {
+            using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 2);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
+            
+            config.LogoBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task GuardarAjustes()
+    {
+        if (string.IsNullOrWhiteSpace(config.NombreEscuela))
+        {
+            Snackbar.Add("El nombre de la escuela no puede estar vacío.", Severity.Error);
+            return;
+        }
+
+        await Firebase.SaveConfiguracionAsync(config);
+        Snackbar.Add("Configuración institucional guardada correctamente.", Severity.Success);
+    }
+
+    // --- LÓGICA DE USUARIOS ---
+    private void AbrirDialogoNuevo()
+    {
+        editando = false;
+        usuarioActual = new Usuario { Activo = true, Rol = "Control Escolar" };
+        dialogoVisible = true;
+    }
+
+    private void AbrirDialogoEditar(Usuario usr)
+    {
+        editando = true;
+        usuarioActual = new Usuario
+        {
+            Id = usr.Id,
+            Nombre = usr.Nombre,
+            Correo = usr.Correo,
+            Rol = usr.Rol,
+            Password = usr.Password,
+            Activo = usr.Activo
+        };
+        dialogoVisible = true;
+    }
+
+    private void CerrarDialogo()
+    {
+        dialogoVisible = false;
+    }
+
+    private async Task GuardarUsuario()
+    {
+        if (string.IsNullOrWhiteSpace(usuarioActual.Nombre) || string.IsNullOrWhiteSpace(usuarioActual.Correo) || string.IsNullOrWhiteSpace(usuarioActual.Password))
+        {
+            Snackbar.Add("Por favor completa todos los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (editando)
+        {
+            await Firebase.UpdateUsuarioAsync(usuarioActual);
+            Snackbar.Add("Usuario actualizado.", Severity.Success);
+        }
+        else
+        {
+            await Firebase.AddUsuarioAsync(usuarioActual);
+            Snackbar.Add("Nuevo usuario creado exitosamente.", Severity.Success);
+        }
+
+        CerrarDialogo();
+        await CargarUsuarios(); 
+    }
+
+    private async Task EliminarUsuario(Usuario usr)
+    {
+        // CORRECCIÓN AQUÍ: Se usa ShowMessageBoxAsync para MudBlazor v7+
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            "Eliminar Acceso", 
+            $"¿Estás absolutamente seguro de eliminar el usuario de {usr.Nombre}? Perderá el acceso al sistema inmediatamente.", 
+            yesText: "Sí, Eliminar", cancelText: "Cancelar");
+
+        if (result == true)
+        {
+            await Firebase.DeleteUsuarioAsync(usr.Id);
+            Snackbar.Add("Usuario eliminado del sistema.", Severity.Info);
+            await CargarUsuarios();
+        }
+    }
+}

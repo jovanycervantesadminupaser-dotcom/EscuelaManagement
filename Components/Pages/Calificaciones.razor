@@ -1,0 +1,159 @@
+@page "/calificaciones"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Captura de Calificaciones</MudText>
+
+    <MudCard Elevation="3" Class="pa-4 mb-6 rounded-lg">
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" Label="1. Selecciona el Curso" ValueChanged="OnCursoChanged" Value="selectedCursoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var c in listaCursos)
+                    {
+                        <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" Label="2. Selecciona la Materia" @bind-Value="selectedMateriaId" Variant="Variant.Outlined" Disabled="@(string.IsNullOrEmpty(selectedCursoId))" AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var m in materiasFiltradas)
+                    {
+                        <MudSelectItem Value="@m.Id">@m.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" Label="3. Periodo a Evaluar" @bind-Value="selectedPeriodo" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Value="@("Bloque 1")">Bloque 1</MudSelectItem>
+                    <MudSelectItem Value="@("Bloque 2")">Bloque 2</MudSelectItem>
+                    <MudSelectItem Value="@("Bloque 3")">Bloque 3</MudSelectItem>
+                    <MudSelectItem Value="@("Promedio Final")">Promedio Final</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+        
+        <MudCardActions Class="d-flex justify-end mt-4 pa-0">
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="CargarListaAlumnos" Disabled="@(!FiltrosCompletos)">
+                GENERAR LISTA DE CAPTURA
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    @if (mostrarTabla)
+    {
+        <MudTable Items="@listaCaptura" Hover="true" Striped="true" Elevation="3" Class="rounded-lg">
+            <HeaderContent>
+                <MudTh>Nombre del Alumno</MudTh>
+                <MudTh>Calificación (0 - 10)</MudTh>
+                <MudTh Style="text-align:right;">Acción</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><b>@context.NombreAlumno</b></MudTd>
+                <MudTd>
+                    <MudNumericField @bind-Value="context.Nota.Valor" Min="0" Max="10" Step="0.1" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px;" />
+                </MudTd>
+                <MudTd Style="text-align:right;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" OnClick="@(() => GuardarNota(context))">
+                        Guardar
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    // Variables de UI
+    private string selectedCursoId = "";
+    private string selectedMateriaId = "";
+    private string selectedPeriodo = "";
+    private bool mostrarTabla = false;
+    private bool FiltrosCompletos => !string.IsNullOrEmpty(selectedCursoId) && !string.IsNullOrEmpty(selectedMateriaId) && !string.IsNullOrEmpty(selectedPeriodo);
+
+    // Listas de datos base
+    private List<Course> listaCursos = new();
+    private List<Materia> listaMaterias = new();
+    private List<Materia> materiasFiltradas = new();
+    private List<Student> listaAlumnos = new();
+    private List<Enrollment> listaInscripciones = new();
+    
+    // Lista para la tabla dinámica
+    private List<RegistroCalificacion> listaCaptura = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaCursos = await Firebase.GetCoursesAsync() ?? new();
+        listaMaterias = await Firebase.GetMateriasAsync() ?? new();
+        listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
+        listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
+    }
+
+    private void OnCursoChanged(string cursoId)
+    {
+        selectedCursoId = cursoId;
+        selectedMateriaId = ""; 
+        mostrarTabla = false; 
+        
+        materiasFiltradas = listaMaterias.Where(m => m.CursoId == cursoId).ToList();
+    }
+
+    private async Task CargarListaAlumnos()
+    {
+        var inscripcionesCurso = listaInscripciones.Where(i => i.CourseId == selectedCursoId).ToList();
+        var alumnosEnCurso = listaAlumnos.Where(a => inscripcionesCurso.Any(i => i.StudentId == a.Id)).ToList();
+        var todasLasNotas = await Firebase.GetAllCalificacionesAsync() ?? new();
+
+        listaCaptura.Clear();
+        foreach (var alumno in alumnosEnCurso)
+        {
+            var notaExistente = todasLasNotas.FirstOrDefault(n => n.AlumnoId == alumno.Id && n.MateriaId == selectedMateriaId && n.Periodo == selectedPeriodo);
+
+            // Control estricto de nulos para compilar con 0 advertencias
+            listaCaptura.Add(new RegistroCalificacion
+            {
+                AlumnoId = alumno.Id ?? "",
+                NombreAlumno = alumno.Name ?? "Desconocido", 
+                Nota = notaExistente ?? new Calificacion { 
+                    AlumnoId = alumno.Id ?? "", 
+                    MateriaId = selectedMateriaId ?? "", 
+                    Periodo = selectedPeriodo ?? "", 
+                    Valor = 0 
+                }
+            });
+        }
+        
+        if (!listaCaptura.Any())
+        {
+            Snackbar.Add("No hay alumnos inscritos en este curso.", Severity.Warning);
+            mostrarTabla = false;
+        }
+        else
+        {
+            mostrarTabla = true;
+        }
+    }
+
+    private async Task GuardarNota(RegistroCalificacion registro)
+    {
+        registro.Nota.AlumnoId = registro.AlumnoId;
+        registro.Nota.MateriaId = selectedMateriaId;
+        registro.Nota.Periodo = selectedPeriodo;
+
+        await Firebase.AddCalificacionAsync(registro.Nota);
+        Snackbar.Add($"Calificación de {registro.NombreAlumno} guardada.", Severity.Success);
+    }
+
+    public class RegistroCalificacion
+    {
+        public string AlumnoId { get; set; } = string.Empty;
+        public string NombreAlumno { get; set; } = string.Empty;
+        public Calificacion Nota { get; set; } = new();
+    }
+}

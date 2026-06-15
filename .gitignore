@@ -1,0 +1,8 @@
+## Carpetas temporales y de compilación
+bin/
+obj/
+.vscode/
+
+## Archivo de seguridad (¡CRÍTICO!)
+firebase-credentials.json.json
+appsettings.Development.json

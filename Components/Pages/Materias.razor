@@ -1,0 +1,151 @@
+@page "/materias"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión de Materias y Asignaciones</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="3" Class="pa-4 rounded-lg">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Nueva Materia</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudForm @ref="form" @bind-IsValid="@success">
+                        <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="nuevaMateria.CursoId" Required="true" RequiredError="Debes elegir un curso" Variant="Variant.Outlined" Class="mb-4">
+                            @if (listaCursos.Any())
+                            {
+                                @foreach (var curso in listaCursos)
+                                {
+                                    <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem>
+                                }
+                            }
+                            else
+                            {
+                                <MudSelectItem Value="@string.Empty" Disabled="true">Cargando cursos...</MudSelectItem>
+                            }
+                        </MudSelect>
+                        
+                        <MudTextField @bind-Value="nuevaMateria.Nombre" Label="Nombre de la Materia (Ej. Matemáticas)" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Class="mb-4" />
+                        
+                        <MudTextField @bind-Value="nuevaMateria.Profesor" Label="Profesor Titular" Required="true" RequiredError="Asigna un profesor" Variant="Variant.Outlined" />
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" OnClick="GuardarMateria" Disabled="@(!success)">
+                        REGISTRAR MATERIA
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudTable Items="@MateriasFiltradas" Hover="true" Striped="true" Elevation="3" Class="rounded-lg" Loading="@isLoading" LoadingProgressColor="Color.Info">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Catálogo Activo</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Buscar por materia o profesor..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Immediate="true"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Curso</MudTh>
+                    <MudTh>Materia</MudTh>
+                    <MudTh>Profesor Asignado</MudTh>
+                    <MudTh Style="text-align:center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                            @(ObtenerNombreCurso(context.CursoId))
+                        </MudChip>
+                    </MudTd>
+                    <MudTd><b>@context.Nombre</b></MudTd>
+                    <MudTd>@context.Profesor</MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => BorrarMateria(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private MudForm form = default!;
+    private bool success;
+    private string searchString = "";
+    private bool isLoading;
+    
+    private Materia nuevaMateria = new();
+    private List<Materia> listaMaterias = new();
+    private List<Course> listaCursos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        isLoading = true;
+        try
+        {
+            listaMaterias = await Firebase.GetMateriasAsync() ?? new();
+            listaCursos = await Firebase.GetCoursesAsync() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private IEnumerable<Materia> MateriasFiltradas =>
+        listaMaterias.Where(m => string.IsNullOrWhiteSpace(searchString) 
+            || m.Nombre.Contains(searchString, StringComparison.OrdinalIgnoreCase) 
+            || m.Profesor.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+
+    private string ObtenerNombreCurso(string cursoId)
+    {
+        var curso = listaCursos.FirstOrDefault(c => c.Id == cursoId);
+        return curso?.Name ?? "Desconocido";
+    }
+
+    private async Task GuardarMateria()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            if (string.IsNullOrEmpty(nuevaMateria.Id))
+                nuevaMateria.Id = Guid.NewGuid().ToString();
+
+            await Firebase.AddMateriaAsync(nuevaMateria);
+            
+            Snackbar.Add("Materia registrada exitosamente", Severity.Success);
+            
+            nuevaMateria = new Materia();
+            await form.ResetAsync();
+            await CargarDatos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task BorrarMateria(Materia materia)
+    {
+        if (string.IsNullOrEmpty(materia.Id)) return;
+
+        await Firebase.DeleteMateriaAsync(materia.Id);
+        await CargarDatos();
+        Snackbar.Add("Materia eliminada correctamente", Severity.Warning);
+        StateHasChanged();
+    }
+}

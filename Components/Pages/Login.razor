@@ -1,0 +1,175 @@
+@page "/"
+@layout EscuelaManagement.Components.Layout.LoginLayout
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject FirebaseService Firebase
+@inject UserSessionService UserSession
+
+<MudCard Elevation="4" Class="pa-8 rounded-xl" Style="width: 100%; max-width: 450px;">
+    <MudCardHeader Class="d-flex justify-center pb-0">
+        <CardHeaderContent>
+            <div class="d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Primary" Style="font-size: 4rem;" Class="mb-2" />
+                <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
+                <MudText Typo="Typo.body2" Class="text-muted mb-4">SISTEMAS VENEGAS</MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-4">Inicia sesión en tu cuenta</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent Class="pt-0">
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField @bind-Value="email" 
+                          Label="Correo Electrónico" 
+                          Variant="Variant.Outlined" 
+                          Required="true" 
+                          RequiredError="El correo es obligatorio" 
+                          InputType="InputType.Email" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Email" 
+                          Class="mb-4" />
+
+            <MudTextField @bind-Value="password" 
+                          Label="Contraseña" 
+                          Variant="Variant.Outlined" 
+                          Required="true" 
+                          RequiredError="La contraseña es obligatoria" 
+                          InputType="@passwordInput" 
+                          Adornment="Adornment.End" 
+                          AdornmentIcon="@passwordInputIcon" 
+                          OnAdornmentClick="TogglePasswordVisibility" 
+                          AdornmentAriaLabel="Mostrar contraseña" />
+        </MudForm>
+    </MudCardContent>
+
+    <MudCardActions Class="d-flex flex-column align-center px-4 pb-4">
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   Size="Size.Large" 
+                   FullWidth="true" 
+                   Class="mt-4 py-3 rounded-lg"
+                   OnClick="Ingresar"
+                   Disabled="@cargando">
+            @if (cargando)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">VERIFICANDO...</MudText>
+            }
+            else
+            {
+                <MudText>INGRESAR AL SISTEMA</MudText>
+            }
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    private bool success;
+    private bool cargando = false;
+    private MudForm form = default!;
+    private string email = "";
+    private string password = "";
+    private string nombreEscuela = "Cargando...";
+
+    private bool isShow;
+    private InputType passwordInput = InputType.Password;
+    private string passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var configuracion = await Firebase.GetConfiguracionAsync();
+            if (!string.IsNullOrEmpty(configuracion.NombreEscuela))
+            {
+                nombreEscuela = configuracion.NombreEscuela;
+            }
+            else
+            {
+                nombreEscuela = "EscuelaManager";
+            }
+        }
+        catch
+        {
+            nombreEscuela = "EscuelaManager";
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            passwordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            passwordInputIcon = Icons.Material.Filled.Visibility;
+            passwordInput = InputType.Text;
+        }
+    }
+
+    private async Task Ingresar()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                // 1. Descargamos la lista de usuarios desde Firebase
+                var usuariosDB = await Firebase.GetUsuariosAsync();
+
+                // 2. Buscamos si existe un usuario con ese correo exacto y contraseña exacta
+                var usuarioValido = usuariosDB.FirstOrDefault(u => u.Correo == email && u.Password == password);
+
+                if (usuarioValido != null)
+                {
+                    // 3. Verificamos si la cuenta está activa
+                    if (!usuarioValido.Activo)
+                    {
+                        Snackbar.Add("Tu cuenta está suspendida. Contacta a Dirección.", Severity.Warning);
+                    }
+                    else
+                    {
+                        // Guardamos los datos en el estado global de sesión
+                        UserSession.IniciarSesion(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
+                        
+                        Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
+                        Navigation.NavigateTo("/alumnos"); 
+                    }
+                }
+                else
+                {
+                    // Llave maestra de emergencia por si te quedas fuera del sistema
+                    if (email == "admin@admin.com" && password == "123456")
+                    {
+                        UserSession.IniciarSesion("Llave Maestra", email, "Administrador");
+                        Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
+                        Navigation.NavigateTo("/alumnos");
+                    }
+                    else
+                    {
+                        Snackbar.Add("Credenciales incorrectas. Verifica tu correo y contraseña.", Severity.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error de conexión: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
+    }
+}

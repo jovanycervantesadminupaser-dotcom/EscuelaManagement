@@ -1,0 +1,355 @@
+@page "/pagos"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@using QuestPDF.Fluent
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Pagos e Ingresos</MudText>
+
+    <MudCard Elevation="2" Class="mb-4 pa-4" Style="background-color: #f9f9f9;">
+        <MudGrid Class="d-flex align-center">
+            <MudItem xs="12" md="8">
+                <MudAutocomplete T="Student" 
+                                 Label="Buscar Alumno para registrar pago (Nombre o Apellido)" 
+                                 Value="selectedStudent" 
+                                 ValueChanged="OnStudentSelected"
+                                 SearchFunc="@SearchStudents" 
+                                 ToStringFunc="@DisplayAlumno"
+                                 Variant="Variant.Outlined" 
+                                 AdornmentIcon="@Icons.Material.Filled.Search" 
+                                 AdornmentColor="Color.Primary" 
+                                 Clearable="true" 
+                                 Placeholder="Escribe el nombre del alumno..."/>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                @if (selectedStudent != null)
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Success"><b>Alumno cargado correctamente</b></MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle2" Class="text-muted"><i>Por favor, selecciona un alumno para operar.</i></MudText>
+                }
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <EditForm Model="@newPayment" OnValidSubmit="HandlePaymentSubmit">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">Registrar Nuevo Abono</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudSelect T="string" Label="Seleccionar Curso a Abonar*" Value="newPayment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" Disabled="@(selectedStudent == null || !cursosDelAlumno.Any())">
+                                    @foreach (var curso in cursosDelAlumno)
+                                    {
+                                        <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            @if (!string.IsNullOrEmpty(newPayment.CourseId) && selectedStudent != null)
+                            {
+                                <MudItem xs="12">
+                                    <MudPaper Outlined="true" Elevation="0" Class="pa-3" Style="background-color: #fafafa; border-left: 6px solid #1ec8a5;">
+                                        <div class="d-flex justify-space-between mb-1">
+                                            <MudText Typo="Typo.body2" Class="text-muted">Costo total (con desc.):</MudText>
+                                            <MudText Typo="Typo.body2"><b>@costoTotalCurso.ToString("C")</b></MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between mb-1">
+                                            <MudText Typo="Typo.body2" Class="text-muted">Total abonado a la fecha:</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Success"><b>@totalPagadoCurso.ToString("C")</b></MudText>
+                                        </div>
+                                        <MudDivider Class="my-2" />
+                                        <div class="d-flex justify-space-between">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Error"><b>Monto Pendiente:</b></MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Error"><b>@montoPendienteCurso.ToString("C")</b></MudText>
+                                        </div>
+                                    </MudPaper>
+                                </MudItem>
+                            }
+
+                            <MudItem xs="12">
+                                <MudTextField Label="Concepto del Pago*" @bind-Value="newPayment.Concept" Required="true" Variant="Variant.Outlined" Placeholder="Ej. Mensualidad 1, Pago único de contado" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudNumericField Label="Monto a Recibir ($)*" @bind-Value="newPayment.Amount" Required="true" Variant="Variant.Outlined" Min="1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                    <MudCardActions Class="pb-4 pr-4">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" StartIcon="@Icons.Material.Filled.ReceiptLong" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))">
+                            Guardar y Emitir Ticket
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            <MudTable Items="@historialPagos" Loading="@isLoading" Elevation="3" Hover="true" Striped="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Historial de Transacciones</MudText>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Curso / Concepto</MudTh>
+                    <MudTh Style="text-align: right;">Monto</MudTh>
+                    <MudTh Style="text-align: right;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Fecha">@context.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                    <MudTd DataLabel="Curso / Concepto">
+                        <MudText Typo="Typo.body2"><b>@ObtenerNombreCurso(context.CourseId)</b></MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Concept</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Monto" Style="text-align: right;">
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">
+                            <b>@context.Amount.ToString("C")</b>
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Acciones" Style="text-align: right;">
+                        <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Success" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Class="pa-4">
+                        @(selectedStudent == null ? "Selecciona un alumno para ver su historial." : "No se encontraron pagos registrados para este alumno.")
+                    </MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private Payment newPayment = new();
+    private List<Payment> historialPagos = new();
+    private List<Student> listaAlumnos = new();
+    private List<Course> todosLosCursos = new(); 
+    private List<Course> cursosDelAlumno = new(); 
+    private List<Enrollment> enrollmentsDelAlumno = new();
+    private Student? selectedStudent;
+    private bool isLoading = false;
+
+    private double costoTotalCurso = 0;
+    private double totalPagadoCurso = 0;
+    private double montoPendienteCurso = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            listaAlumnos = await Firebase.GetAllStudentsAsync();
+            todosLosCursos = await Firebase.GetCoursesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al iniciar módulo de pagos: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private string DisplayAlumno(Student? s)
+    {
+        return s == null ? "" : $"{s.Name} {s.PaternalLastName} {s.MaternalLastName}";
+    }
+
+    private string ObtenerNombreCurso(string? courseId)
+    {
+        if (string.IsNullOrEmpty(courseId)) return "General / Inscripción";
+        var curso = todosLosCursos.FirstOrDefault(c => c.Id == courseId);
+        return curso?.Name ?? "Curso no encontrado";
+    }
+
+    private Task<IEnumerable<Student>> SearchStudents(string value, CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(value))
+            return Task.FromResult<IEnumerable<Student>>(listaAlumnos.Take(10));
+
+        var filtrados = listaAlumnos.Where(s => 
+            (s.Name?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (s.PaternalLastName?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (s.MaternalLastName?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false)
+        );
+
+        return Task.FromResult(filtrados);
+    }
+
+    private async Task OnStudentSelected(Student? alumnoSelected)
+    {
+        selectedStudent = alumnoSelected;
+        historialPagos.Clear();
+        cursosDelAlumno.Clear();
+        enrollmentsDelAlumno.Clear();
+        newPayment.CourseId = null;
+        ResetearSaldos();
+
+        if (alumnoSelected != null)
+        {
+            isLoading = true;
+            try
+            {
+                historialPagos = await Firebase.GetPaymentsByStudentAsync(alumnoSelected.Id);
+                enrollmentsDelAlumno = await Firebase.GetEnrollmentsByStudentAsync(alumnoSelected.Id);
+                cursosDelAlumno = todosLosCursos.Where(c => enrollmentsDelAlumno.Any(i => i.CourseId == c.Id)).ToList();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al consultar datos del alumno: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void OnCourseSelected(string courseId)
+    {
+        newPayment.CourseId = courseId;
+        CalcularSaldosCurso(courseId);
+    }
+
+    private void CalcularSaldosCurso(string courseId)
+    {
+        var curso = todosLosCursos.FirstOrDefault(c => c.Id == courseId);
+        var enrollment = enrollmentsDelAlumno.FirstOrDefault(e => e.CourseId == courseId);
+
+        if (curso != null && enrollment != null)
+        {
+            costoTotalCurso = curso.SinglePaymentCost * (1 - (enrollment.DiscountAmount / 100.0));
+            totalPagadoCurso = historialPagos.Where(p => p.CourseId == courseId).Sum(p => p.Amount);
+            montoPendienteCurso = costoTotalCurso - totalPagadoCurso;
+
+            if (montoPendienteCurso < 0) montoPendienteCurso = 0;
+        }
+        else
+        {
+            ResetearSaldos();
+        }
+    }
+
+    private void ResetearSaldos()
+    {
+        costoTotalCurso = 0;
+        totalPagadoCurso = 0;
+        montoPendienteCurso = 0;
+    }
+
+    private async Task HandlePaymentSubmit()
+    {
+        if (selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId)) return;
+
+        try
+        {
+            newPayment.StudentId = selectedStudent.Id;
+            newPayment.PaymentDate = DateTime.UtcNow;
+
+            await Firebase.AddPaymentAsync(newPayment);
+            Snackbar.Add("Pago aplicado con éxito", Severity.Success);
+
+            var cursoActivo = todosLosCursos.First(c => c.Id == newPayment.CourseId);
+            var pdfBytes = GenerarTicketPdf(newPayment, cursoActivo);
+            await DescargarPdf(pdfBytes, $"Ticket_{selectedStudent.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+
+            string? ultimoCursoId = newPayment.CourseId;
+            newPayment = new Payment { CourseId = ultimoCursoId };
+
+            historialPagos = await Firebase.GetPaymentsByStudentAsync(selectedStudent.Id);
+            CalcularSaldosCurso(ultimoCursoId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al procesar el ingreso: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ReimprimirTicket(Payment pago)
+    {
+        if (selectedStudent == null) return;
+        
+        var curso = todosLosCursos.FirstOrDefault(c => c.Id == pago.CourseId);
+        if (curso == null)
+        {
+            Snackbar.Add("No se pudo recuperar la información estructural del curso para reemisión.", Severity.Error);
+            return;
+        }
+
+        var pdfBytes = GenerarTicketPdf(pago, curso);
+        await DescargarPdf(pdfBytes, $"Ticket_Reimpresion_{pago.Id.Substring(0, 5)}.pdf");
+        Snackbar.Add("Ticket descargado correctamente", Severity.Info);
+    }
+
+    private byte[] GenerarTicketPdf(Payment pago, Course curso)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                page.PageColor(QuestPDF.Helpers.Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(12));
+
+                page.Header().Row(row =>
+                {
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("COMPROBANTE OFICIAL DE PAGO").SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Green.Darken2);
+                        col.Item().Text($"Folio: {pago.Id.Substring(0, 8).ToUpper()}");
+                        col.Item().Text($"Fecha: {pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")}");
+                    });
+                });
+
+                page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
+                {
+                    x.Spacing(12);
+                    
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Datos del Alumno").SemiBold();
+                    x.Item().Text($"Nombre: {selectedStudent?.Name} {selectedStudent?.PaternalLastName} {selectedStudent?.MaternalLastName}");
+                    
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Especificación del Concepto").SemiBold();
+                    x.Item().Text($"Curso: {curso.Name}");
+                    x.Item().Text($"Detalle: {pago.Concept}");
+                    x.Item().Text($"Monto Recibido: {pago.Amount.ToString("C")}").FontSize(14).Bold().FontColor(QuestPDF.Helpers.Colors.Green.Darken3);
+
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Resumen Actual del Estado de Cuenta").SemiBold();
+                    
+                    var enrollment = enrollmentsDelAlumno.FirstOrDefault(e => e.CourseId == curso.Id);
+                    double costoTotal = curso.SinglePaymentCost * (1 - ((enrollment?.DiscountAmount ?? 0) / 100.0));
+                    double yaPagado = historialPagos.Where(p => p.CourseId == curso.Id).Sum(p => p.Amount);
+                    double restante = costoTotal - yaPagado;
+                    if (restante < 0) restante = 0;
+
+                    x.Item().Text($"Costo Total del Curso (con descuento): {costoTotal.ToString("C")}");
+                    x.Item().Text($"Total Cubierto a la fecha: {yaPagado.ToString("C")}");
+                    x.Item().Text($"Saldo Restante por Liquidar: {restante.ToString("C")}").Bold().FontColor(restante > 0 ? QuestPDF.Helpers.Colors.Red.Medium : QuestPDF.Helpers.Colors.Green.Medium);
+                });
+
+                page.Footer().AlignCenter().Text("¡Gracias por su puntualidad y confianza!").Italic().FontSize(10);
+            });
+        }).GeneratePdf();
+    }
+
+    private async Task DescargarPdf(byte[] bytes, string fileName)
+    {
+        var base64 = Convert.ToBase64String(bytes);
+        var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = '{fileName}'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+    }
+}

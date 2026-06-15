@@ -1,0 +1,180 @@
+@page "/credenciales"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using System.IO
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject PdfService Pdf
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Módulo de Credenciales</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+
+    <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary">
+        
+        @* --- PESTAÑA 1: EMISIÓN --- *@
+        <MudTabPanel Text="Emitir Credenciales" Icon="@Icons.Material.Filled.Badge" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="Student" Label="1. Seleccionar Alumno" Value="selectedStudent" ValueChanged="OnStudentSelected"
+                                     SearchFunc="@SearchStudents" ToStringFunc="@(s => s == null ? "" : $"{s.Name} {s.PaternalLastName} {s.MaternalLastName}")"
+                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Clearable="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="cursoInput" Label="Curso Asignado (Automático)" Variant="Variant.Outlined" ReadOnly="true"/>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="matriculaInput" Label="Matrícula" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="vigenciaInput" Label="Vigencia" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="directorInput" Label="Nombre del Director" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+            <MudDivider Class="my-6" />
+            <div class="d-flex justify-end">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Download" OnClick="GenerarPDF" Disabled="@(selectedStudent == null)">
+                    DESCARGAR PDF PVC
+                </MudButton>
+            </div>
+        </MudTabPanel>
+
+        @* --- PESTAÑA 2: DISEÑADOR (CALIBRACIÓN) --- *@
+        <MudTabPanel Text="Configurar Plantilla Anverso / Reverso" Icon="@Icons.Material.Filled.Architecture" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">Calibración (mm)</MudText>
+                    
+                    <MudExpansionPanels MultiExpansion="true">
+                        <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true">
+                            <MudNumericField @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </MudExpansionPanel>
+                        
+                        <MudExpansionPanel Text="Textos Frente">
+                            <MudNumericField @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </MudExpansionPanel>
+
+                        <MudExpansionPanel Text="Reverso (Firma)">
+                            <MudNumericField @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4 w-100 py-3" StartIcon="@Icons.Material.Filled.Save" OnClick="GuardarDiseno">
+                        GUARDAR DISEÑO
+                    </MudButton>
+                </MudItem>
+
+                <MudItem xs="12" md="9">
+                    <MudGrid>
+                        @* VISTA PREVIA ANVERSO *@
+                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
+                            <MudText Typo="Typo.button" Class="mb-2">ANVERSO (FRENTE)</MudText>
+                            <div class="credencial-preview" style="width: 322px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
+                                @if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
+                                {
+                                    <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
+                                }
+                                @* Guía de Foto *@
+                                <div style="position: absolute; left: @(diseno.FotoX * 3.76)px; top: @(diseno.FotoY * 3.76)px; width: @(diseno.FotoW * 3.76)px; height: @(diseno.FotoH * 3.76)px; border: 1px dashed red; background: rgba(255,0,0,0.1); z-index: 5;"></div>
+                                @* Guía de Nombre *@
+                                <div style="position: absolute; left: @(diseno.NombreX * 3.76)px; top: @(diseno.NombreY * 3.76)px; font-size: 10px; color: blue; font-weight: bold; z-index: 5;">NOMBRE ALUMNO</div>
+                            </div>
+                            <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR ANVERSO</MudButton>
+                            <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
+                        </MudItem>
+
+                        @* VISTA PREVIA REVERSO *@
+                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
+                            <MudText Typo="Typo.button" Class="mb-2">REVERSO (ATRÁS)</MudText>
+                            <div class="credencial-preview" style="width: 322px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
+                                @if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
+                                {
+                                    <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
+                                }
+                                @* Guía de Línea de Firma *@
+                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.76)px; top: @(diseno.FirmaLineaY * 3.76)px; width: @(diseno.FirmaLineaW * 3.76)px; height: 1px; background: black; z-index: 5;"></div>
+                                <div style="position: absolute; left: @(diseno.DirectorX * 3.76)px; top: @(diseno.DirectorY * 3.76)px; font-size: 8px; text-align:center; width: @(diseno.FirmaLineaW * 3.76)px; z-index: 5;">FIRMA DIRECTOR</div>
+                            </div>
+                            <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR REVERSO</MudButton>
+                            <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+@code {
+    private List<Student> listaAlumnos = new();
+    private List<Course> listaCursos = new();
+    private List<Enrollment> listaInscripciones = new();
+    private CredencialDiseno diseno = new();
+    private Student? selectedStudent;
+    private string matriculaInput = "000001";
+    private string cursoInput = "";
+    private string vigenciaInput = "2025 - 2026";
+    private string directorInput = "MTRO. JOVANY IVAN CERVANTES CARRERAS";
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
+        listaCursos = await Firebase.GetCoursesAsync() ?? new();
+        listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
+        diseno = await Firebase.GetDisenoCredencialAsync() ?? new();
+    }
+
+    private Task<IEnumerable<Student>> SearchStudents(string value, CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(value)) return Task.FromResult<IEnumerable<Student>>(listaAlumnos.Take(5));
+        return Task.FromResult(listaAlumnos.Where(s => (s.Name + " " + s.PaternalLastName).Contains(value, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private void OnStudentSelected(Student? alumno)
+    {
+        selectedStudent = alumno;
+        if (alumno != null)
+        {
+            var insc = listaInscripciones.FirstOrDefault(i => i.StudentId == alumno.Id);
+            if (insc != null) cursoInput = listaCursos.FirstOrDefault(c => c.Id == insc.CourseId)?.Name ?? "SIN CURSO";
+        }
+    }
+
+    private async Task SubirFrente(InputFileChangeEventArgs e) => diseno.PlantillaFrenteBase64 = await ConvertToBase64(e.File);
+    private async Task SubirReverso(InputFileChangeEventArgs e) => diseno.PlantillaReversoBase64 = await ConvertToBase64(e.File);
+
+    private async Task<string> ConvertToBase64(IBrowserFile file)
+    {
+        using var ms = new MemoryStream();
+        await file.OpenReadStream(1024 * 1024 * 5).CopyToAsync(ms);
+        return $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+    }
+
+    private async Task GuardarDiseno()
+    {
+        await Firebase.SaveDisenoCredencialAsync(diseno);
+        Snackbar.Add("Diseño guardado exitosamente.", Severity.Success);
+    }
+
+    private async Task GenerarPDF()
+    {
+        if (selectedStudent == null) return;
+        var config = await Firebase.GetConfiguracionAsync();
+        byte[] pdf = Pdf.GenerarCredencialEstudiante(selectedStudent, matriculaInput, cursoInput, vigenciaInput, directorInput, config.LogoBase64, diseno);
+        using var streamRef = new DotNetStreamReference(new MemoryStream(pdf));
+        await JS.InvokeVoidAsync("downloadFileFromStream", $"Credencial_{selectedStudent.Name}.pdf", streamRef);
+    }
+}

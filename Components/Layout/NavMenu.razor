@@ -1,0 +1,37 @@
+﻿@using EscuelaManagement.Data.Services
+@inject UserSessionService UserSession
+
+<MudNavMenu>
+    <MudNavLink Href="/inicio" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Inicio</MudNavLink>
+    
+    @* --- SECCIÓN RESTRINGIDA A CONTROL ESCOLAR Y ADMINISTRADORES --- *@
+    @if (UserSession.EsControlEscolar)
+    {
+        <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
+        <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Cursos</MudNavLink>
+        <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Pagos</MudNavLink>
+    }
+
+    @* --- SECCIÓN GENERAL (Lo ven todos) --- *@
+    <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Alumnos</MudNavLink>
+
+    <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true">
+        
+        @* Solo Control Escolar puede crear o borrar materias y emitir credenciales *@
+        @if (UserSession.EsControlEscolar)
+        {
+            <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Materias</MudNavLink>
+            <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge">Credenciales</MudNavLink>
+        }
+
+        @* Docentes y Control Escolar pueden ver calificaciones y reportes *@
+        <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote">Calificaciones</MudNavLink>
+        <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas y Listas</MudNavLink>
+    </MudNavGroup>
+    
+    @* --- SECCIÓN ULTRA SECRETA (Solo Administradores) --- *@
+    @if (UserSession.EsAdministrador)
+    {
+        <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
+    }
+</MudNavMenu>

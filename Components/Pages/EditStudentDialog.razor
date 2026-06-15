@@ -1,0 +1,110 @@
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@using Google.Cloud.Firestore
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" Class="pb-0">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Datos Personales</b></MudText>
+                    <MudDivider />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Nombre(s)" @bind-Value="StudentToEdit.Name" Required="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Apellido Paterno" @bind-Value="StudentToEdit.PaternalLastName" Required="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
+                </MudItem>
+
+                <MudItem xs="12" Class="pb-0 mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Dirección</b></MudText>
+                    <MudDivider />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Calle" @bind-Value="StudentToEdit.Address!.Street" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Label="Num. Ext/Int" @bind-Value="StudentToEdit.Address!.ExtNumber" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Label="Código Postal" @bind-Value="StudentToEdit.Address!.ZipCode" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Colonia" @bind-Value="StudentToEdit.Address!.Neighborhood" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Municipio / Alcaldía" @bind-Value="StudentToEdit.Address!.Municipality" Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" Class="pb-0 mt-2">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Datos del Tutor (Contacto de Emergencia)</b></MudText>
+                    <MudDivider />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Nombre(s) del Tutor" @bind-Value="StudentToEdit.Guardian!.Name" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Apellidos" @bind-Value="StudentToEdit.Guardian!.PaternalLastName" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Parentesco" @bind-Value="StudentToEdit.Guardian!.Relationship" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Teléfono Tutor" @bind-Value="StudentToEdit.Guardian!.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Guardar Cambios</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    public IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] 
+    public Student StudentToEdit { get; set; } = new();
+
+    private MudForm form = default!;
+
+    private DateTime? FechaNacimiento
+    {
+        get => StudentToEdit.DateOfBirth?.ToDateTime();
+        set => StudentToEdit.DateOfBirth = value.HasValue ? Timestamp.FromDateTime(value.Value.ToUniversalTime()) : null;
+    }
+
+    protected override void OnParametersSet()
+    {
+        StudentToEdit.Address ??= new();
+        StudentToEdit.Guardian ??= new();
+    }
+
+    private async Task Save()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            await Firebase.UpdateStudentAsync(StudentToEdit);
+            Snackbar.Add("Expediente actualizado exitosamente", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

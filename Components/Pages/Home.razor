@@ -1,0 +1,69 @@
+﻿@page "/inicio"
+@using MudBlazor
+@using EscuelaManagement.Data.Services
+@inject UserSessionService UserSession
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Panel de Control</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8 text-muted">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-primary" Style="height: 130px; background-color: #fafafa;">
+                <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Color="Color.Primary" Style="font-size: 3rem;" Class="mb-2"/>
+                <MudText Typo="Typo.subtitle1"><b>Directorio</b></MudText>
+            </MudPaper>
+        </MudItem>
+
+        @if (UserSession.EsControlEscolar)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-success" Style="height: 130px; background-color: #fafafa;">
+                    <MudIcon Icon="@Icons.Material.Filled.HowToReg" Color="Color.Success" Style="font-size: 3rem;" Class="mb-2"/>
+                    <MudText Typo="Typo.subtitle1"><b>Inscripciones</b></MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-warning" Style="height: 130px; background-color: #fafafa;">
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Color="Color.Warning" Style="font-size: 3rem;" Class="mb-2"/>
+                    <MudText Typo="Typo.subtitle1"><b>Cursos Activos</b></MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-info" Style="height: 130px; background-color: #fafafa;">
+                    <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Color="Color.Info" Style="font-size: 3rem;" Class="mb-2"/>
+                    <MudText Typo="Typo.subtitle1"><b>Control de Pagos</b></MudText>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <MudCard Elevation="2" Class="mt-8 pa-6 rounded-lg">
+        <MudText Typo="Typo.h6" Color="Color.Secondary" GutterBottom="true">Accesos Rápidos</MudText>
+        <MudDivider Class="mb-4" />
+        <MudText Typo="Typo.body1" Class="mb-6">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
+        
+        <div class="d-flex flex-wrap gap-4">
+            
+            @* Botón exclusivo para Control Escolar y Administrador *@
+            @if (UserSession.EsControlEscolar)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/inscripciones" StartIcon="@Icons.Material.Filled.PersonAdd">
+                    Nueva Inscripción
+                </MudButton>
+            }
+
+            @* Botón general (Todos los roles pueden consultar expedientes) *@
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" Href="/alumnos" StartIcon="@Icons.Material.Filled.FolderShared">
+                Consultar Expedientes
+            </MudButton>
+        </div>
+    </MudCard>
+</MudContainer>
+
+@code {
+    // Aquí más adelante podemos conectar Firebase para que las tarjetas
+    // muestren números reales (ej. "150 Alumnos Activos")
+}
