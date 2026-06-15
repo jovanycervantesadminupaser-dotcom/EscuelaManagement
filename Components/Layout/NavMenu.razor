@@ -4,34 +4,59 @@
 <MudNavMenu>
     <MudNavLink Href="/inicio" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Inicio</MudNavLink>
     
-    @* --- SECCIÓN RESTRINGIDA A CONTROL ESCOLAR Y ADMINISTRADORES --- *@
-    @if (UserSession.EsControlEscolar)
+    @if (_cargando)
     {
-        <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
-        <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Cursos</MudNavLink>
-        <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Pagos</MudNavLink>
+        @* --- EFECTO DE CARGA ELEGANTE MIENTRAS COMPROBAMOS ROLES --- *@
+        <div class="px-5 py-3">
+            <MudSkeleton Width="85%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+            <MudSkeleton Width="70%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+            <MudSkeleton Width="60%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+        </div>
     }
-
-    @* --- SECCIÓN GENERAL (Lo ven todos) --- *@
-    <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Alumnos</MudNavLink>
-
-    <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true">
-        
-        @* Solo Control Escolar puede crear o borrar materias y emitir credenciales *@
+    else
+    {
+        @* --- SECCIÓN RESTRINGIDA A CONTROL ESCOLAR Y ADMINISTRADORES --- *@
         @if (UserSession.EsControlEscolar)
         {
-            <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Materias</MudNavLink>
-            <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge">Credenciales</MudNavLink>
+            <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
+            <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Cursos</MudNavLink>
+            <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Pagos</MudNavLink>
         }
 
-        @* Docentes y Control Escolar pueden ver calificaciones y reportes *@
-        <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote">Calificaciones</MudNavLink>
-        <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas y Listas</MudNavLink>
-    </MudNavGroup>
-    
-    @* --- SECCIÓN ULTRA SECRETA (Solo Administradores) --- *@
-    @if (UserSession.EsAdministrador)
-    {
-        <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
+        @* --- SECCIÓN GENERAL (Lo ven todos) --- *@
+        <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Alumnos</MudNavLink>
+
+        <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true">
+            
+            @* Solo Control Escolar puede crear o borrar materias y emitir credenciales *@
+            @if (UserSession.EsControlEscolar)
+            {
+                <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Materias</MudNavLink>
+                <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge">Credenciales</MudNavLink>
+            }
+
+            @* Docentes y Control Escolar pueden ver calificaciones y reportes *@
+            <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote">Calificaciones</MudNavLink>
+            <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas y Listas</MudNavLink>
+        </MudNavGroup>
+        
+        @* --- SECCIÓN ULTRA SECRETA (Solo Administradores) --- *@
+        @if (UserSession.EsAdministrador)
+        {
+            <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
+        }
     }
 </MudNavMenu>
+
+@code {
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Le otorgamos un breve respiro asíncrono de 150 milisegundos 
+        // para asegurar que el circuito de Blazor Server asiente los datos de UserSession
+        await Task.Delay(150);
+        
+        _cargando = false;
+    }
+}
