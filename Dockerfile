@@ -10,13 +10,15 @@ RUN dotnet publish "EscuelaManagement.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# ---- ¡EL PARCHE GRÁFICO PARA LOS PDF! ----
-# Instalamos las fuentes y herramientas para que C# pueda dibujar en Linux
+# ---- ¡EL PARCHE GRÁFICO COMPLETO PARA PDF EN LINUX! ----
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgdiplus \
+    libc6-dev \
     fontconfig \
     libfontconfig1 \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
-# ------------------------------------------
+# --------------------------------------------------------
 
 COPY --from=build /app/publish .
 
