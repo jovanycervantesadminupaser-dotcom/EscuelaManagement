@@ -13,10 +13,36 @@ public class FirebaseService
 
     public FirebaseService()
     {
-        // Nota: Asegúrate de que el archivo de credenciales esté en la raíz del proyecto.
-        string path = "firebase-credentials.json.json";
-        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
-        _db = FirestoreDb.Create("escuelamanager-d1fba");
+        // Intentamos leer la variable de entorno secreta configurada en Render
+        string base64Env = Environment.GetEnvironmentVariable("FIREBASE_CONFIG_BASE64");
+
+        if (!string.IsNullOrEmpty(base64Env))
+        {
+            // ==========================================
+            // --- MODO PRODUCCIÓN (NUBE / RENDER) ---
+            // ==========================================
+            // 1. Decodificar la cadena Base64 a texto JSON normal
+            byte[] data = Convert.FromBase64String(base64Env);
+            string jsonCreds = System.Text.Encoding.UTF8.GetString(data);
+
+            // 2. Construir la conexión inyectando el texto JSON directamente en memoria
+            FirestoreDbBuilder builder = new FirestoreDbBuilder
+            {
+                ProjectId = "escuelamanager-d1fba",
+                JsonCredentials = jsonCreds
+            };
+            _db = builder.Build(); 
+        }
+        else
+        {
+            // ==========================================
+            // --- MODO DESARROLLO (TU COMPUTADORA) ---
+            // ==========================================
+            // Seguimos usando el archivo físico local bloqueado por .gitignore
+            string path = "firebase-credentials.json.json";
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
+            _db = FirestoreDb.Create("escuelamanager-d1fba");
+        }
     }
 
     // ==========================================
