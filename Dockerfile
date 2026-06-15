@@ -2,8 +2,8 @@
 FROM debian:bookworm-slim AS build
 WORKDIR /src
 
-# Instalamos herramientas para descargar .NET directamente
-RUN apt-get update && apt-get install -y wget ca-certificates bash \
+# Agregamos 'libicu-dev' aquí para que el compilador de .NET pueda leer los textos
+RUN apt-get update && apt-get install -y wget ca-certificates bash libicu-dev \
     && wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
     && chmod +x dotnet-install.sh \
     && ./dotnet-install.sh --channel 9.0 --install-dir /usr/share/dotnet
