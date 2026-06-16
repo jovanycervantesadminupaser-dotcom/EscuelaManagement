@@ -5,7 +5,6 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
-@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -506,13 +505,25 @@
                         c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras 5 opciones que seleccione en el concurso ECOEMS/103 Municipios/EXAMEN DE INGRESO A UNIVERSIDAD (UNAM, IPN, UAM, UAEMex, ETC), asegurando que nuestro curso es competente bajo nuestro método de enseñanza.");
                         c.Item().PaddingTop(5).Text("Antes de efectuar el pago, el usuario deberá aceptar la Política de Privacidad, una vez confirmado el pago del curso seleccionado por el aspirante este no podrá solicitar reembolso.");
                         
-                        c.Item().PaddingTop(10).Text("I. Clases:").Bold().Span(" Están sujetas a modificaciones, UPASER se reserva el derecho de cancelar o cambiar cualquier clase, se les notificara a los alumnos o participantes cualquier cambio a través de los grupos de WhatsApp oficiales. UPASER esta obligado a reponer la clase cancelada, si este fuera el caso.");
+                        c.Item().PaddingTop(10).Text(t => { 
+                            t.Span("I. Clases:").Bold(); 
+                            t.Span(" Están sujetas a modificaciones, UPASER se reserva el derecho de cancelar o cambiar cualquier clase, se les notificara a los alumnos o participantes cualquier cambio a través de los grupos de WhatsApp oficiales. UPASER esta obligado a reponer la clase cancelada, si este fuera el caso."); 
+                        });
                         
-                        c.Item().PaddingTop(5).Text("II. Comportamiento:").Bold().Span(" UPASER se reserva el derecho de retirar a cualquier persona registrada en el curso, cuyo comportamiento sea considerado inapropiado, por parte de UPASER o sus docentes. En estas circunstancias UPASER no reembolsara ninguna tarifa.");
+                        c.Item().PaddingTop(5).Text(t => { 
+                            t.Span("II. Comportamiento:").Bold(); 
+                            t.Span(" UPASER se reserva el derecho de retirar a cualquier persona registrada en el curso, cuyo comportamiento sea considerado inapropiado, por parte de UPASER o sus docentes. En estas circunstancias UPASER no reembolsara ninguna tarifa."); 
+                        });
                         
-                        c.Item().PaddingTop(5).Text("III. Plazo para registrarse:").Bold().Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación.");
+                        c.Item().PaddingTop(5).Text(t => { 
+                            t.Span("III. Plazo para registrarse:").Bold(); 
+                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
+                        });
                         
-                        c.Item().PaddingTop(5).Text("IV. Talleres opcionales:").Bold().Span(" UPASER programara talleres a lo largo del curso de capacitación, estos talleres son considerados un plus CON COSTO para cualquier alumno UPASER.");
+                        c.Item().PaddingTop(5).Text(t => { 
+                            t.Span("IV. Talleres opcionales:").Bold(); 
+                            t.Span(" UPASER programara talleres a lo largo del curso de capacitación, estos talleres son considerados un plus CON COSTO para cualquier alumno UPASER."); 
+                        });
 
                         c.Item().PaddingTop(40).Row(row => {
                             row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
