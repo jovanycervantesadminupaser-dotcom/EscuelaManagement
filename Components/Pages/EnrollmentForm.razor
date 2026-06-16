@@ -5,6 +5,7 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
+@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -148,7 +149,7 @@
 
                 <MudDivider Class="my-6" />
 
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción al Curso</MudText>
+                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Documentación Legal</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="6">
                         <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
@@ -160,6 +161,17 @@
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudNumericField Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
+                    </MudItem>
+                    
+                    @* --- CHECKBOXES DE DOCUMENTOS LEGALES --- *@
+                    <MudItem xs="12" Class="mt-4">
+                        <MudCheckBox @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudCheckBox @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudCheckBox @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
                     </MudItem>
                 </MudGrid>
 
@@ -185,6 +197,11 @@
     private Student? selectedStudent;
     private bool isExistingStudent = false;
     private bool isCameraOpen = false;
+
+    // Variables para los documentos legales
+    private bool aceptaRetiroSinTutor = false;
+    private bool imprimirTerminos = false;
+    private bool imprimirGarantia = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -253,6 +270,9 @@
         tempDate = null;
         selectedStudent = null;
         isExistingStudent = false;
+        aceptaRetiroSinTutor = false;
+        imprimirTerminos = false;
+        imprimirGarantia = false;
     }
 
     private async Task AbrirCamara()
@@ -340,16 +360,18 @@
     {
         return Document.Create(container =>
         {
+            // ====================================================================
+            // PÁGINA 1: FICHA DE INSCRIPCIÓN Y AUTORIZACIÓN DE RETIRO
+            // ====================================================================
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
                 page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(12));
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
                 page.Header().Row(row =>
                 {
-                    // 1. Logotipo oficial de la escuela a la izquierda
                     if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                     {
                         var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
@@ -358,7 +380,6 @@
                         row.ConstantItem(15);
                     }
 
-                    // 2. Información Institucional al centro
                     row.RelativeItem().Column(col =>
                     {
                         col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
@@ -366,10 +387,9 @@
                         col.Item().Text($"Fecha de registro: {DateTime.Now.ToString("dd/MM/yyyy")}").FontSize(9);
                     });
 
-                    // 3. Fotografía del alumno a la derecha
                     if (!string.IsNullOrEmpty(student.PhotoBase64))
                     {
-                        var base64Data = student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1);
+                        var base64Data = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1) : student.PhotoBase64;
                         var imageBytes = Convert.FromBase64String(base64Data);
                         row.ConstantItem(65).Image(imageBytes);
                     }
@@ -394,8 +414,113 @@
                     var nombreCurso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId)?.Name ?? "No seleccionado";
                     x.Item().Text($"Curso: {nombreCurso}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
+
+                    // LÓGICA DE RETIRO (Aparece en la parte inferior de la Ficha de Inscripción)
+                    if (aceptaRetiroSinTutor)
+                    {
+                        x.Item().PaddingTop(20).Text(t => 
+                        {
+                            t.Span("AUTORIZACIÓN DE RETIRO").Bold().Underline();
+                            t.EmptyLine();
+                            t.Span($"Yo, autorizo que mi hijo(a): {student.Name} {student.PaternalLastName} {student.MaternalLastName} pueda retirarse de la institución sin que acuda alguna persona mayor de edad a recogerlo al plantel, deslindando de toda responsabilidad a UPASER después del horario de salida.");
+                        });
+                        
+                        x.Item().PaddingTop(30).Row(row => {
+                            row.RelativeItem().AlignCenter().Column(c => { 
+                                c.Item().BorderBottom(1).BorderColor(QuestPDF.Helpers.Colors.Black).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); 
+                                c.Item().Text("Firma del Padre o Tutor").FontSize(9); 
+                            });
+                        });
+                    }
                 });
             });
+
+            // ====================================================================
+            // PÁGINA 2: PÓLIZA DE GARANTÍA (Condicional)
+            // ====================================================================
+            if (imprimirGarantia)
+            {
+                container.Page(page =>
+                {
+                    page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.PageColor(QuestPDF.Helpers.Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                    page.Content().Column(c => {
+                        c.Item().Text("PÓLIZA DE GARANTÍA").Bold().FontSize(14).AlignCenter();
+                        c.Item().PaddingTop(15);
+
+                        c.Item().Text("DERECHOS").Bold();
+                        c.Item().Text("a) Recibir sus clases conforme lo señale su horario y fecha de evaluación.");
+                        c.Item().Text("b) Conocer anticipadamente temarios, formas de trabajo y criterios de evaluación de cada una de las asignaturas.");
+                        c.Item().Text("c) Ser tratado por sus docentes y autoridades educativas con cortesía, respeto y amabilidad.");
+                        
+                        c.Item().PaddingTop(10).Text("OBLIGACIONES").Bold();
+                        c.Item().Text("a) Asistir a sus clases conforme al horario establecido, teniendo como margen de tiempo 10 min. Después de haber iniciado la clase, dos retardos equivalen a una falta.");
+                        c.Item().Text("b) Respetar el tiempo de receso otorgado (30 min.).");
+                        c.Item().Text("c) Ser respetuoso con sus compañeros, docentes y personal en general.");
+                        c.Item().Text("d) Mantener orden y disciplina.");
+                        c.Item().Text("e) Cumplir con tareas e investigaciones encomendados.");
+                        c.Item().Text("f) Conservar y cuidar la institución.");
+                        c.Item().Text("g) Cumplir en tiempo y forma con los pagos estipulados.");
+                        c.Item().Text("El incumplimiento de cualquiera de las obligaciones es motivo de la perdida de garantía.").Italic();
+
+                        c.Item().PaddingTop(10).Text("ANULACIÓN DE LA GARANTÍA").Bold();
+                        c.Item().Text("• Tener menos del 90% de asistencias, tomando en cuenta que por día se pueden ver una o más clases; lo que equivale a una falta por materia.");
+                        c.Item().Text("• Tener menos del 90% en entregas de tareas y actividades asignadas por el docente.");
+                        c.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
+                        c.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
+                        
+                        c.Item().PaddingTop(10).Text("NOTA. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
+
+                        c.Item().PaddingTop(15).Text("CLAUSULA PARA USO DE MARKETING").Bold();
+                        c.Item().Text("El alumno autoriza expresamente a UPASER a captar, reproducir y utilizar su imagen, nombre y/o voz a través de fotografías, grabaciones de video o cualquier otro medio audiovisual, con fines exclusivamente publicitarios, institucionales, informativos y/o académicos relacionados con las actividades de la institución.");
+                        c.Item().Text("Dicha autorización se concede de manera gratuita, sin limitación territorial ni temporal, y comprende su difusión en medios digitales, electrónicos y redes sociales oficiales de UPASER, así como en cualquier otra plataforma en línea utilizada por la institución.");
+
+                        c.Item().PaddingTop(40).Row(row => {
+                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
+                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Alumno"); });
+                        });
+                    });
+                });
+            }
+
+            // ====================================================================
+            // PÁGINA 3: TÉRMINOS Y CONDICIONES (Condicional)
+            // ====================================================================
+            if (imprimirTerminos)
+            {
+                container.Page(page =>
+                {
+                    page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.PageColor(QuestPDF.Helpers.Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                    page.Content().Column(c => {
+                        c.Item().Text("TÉRMINOS Y CONDICIONES").Bold().FontSize(14).AlignCenter();
+                        c.Item().PaddingTop(15);
+
+                        c.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso, para que conozcas tus derechos y obligaciones como alumno UPASER.").Bold();
+                        c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras 5 opciones que seleccione en el concurso ECOEMS/103 Municipios/EXAMEN DE INGRESO A UNIVERSIDAD (UNAM, IPN, UAM, UAEMex, ETC), asegurando que nuestro curso es competente bajo nuestro método de enseñanza.");
+                        c.Item().PaddingTop(5).Text("Antes de efectuar el pago, el usuario deberá aceptar la Política de Privacidad, una vez confirmado el pago del curso seleccionado por el aspirante este no podrá solicitar reembolso.");
+                        
+                        c.Item().PaddingTop(10).Text("I. Clases:").Bold().Span(" Están sujetas a modificaciones, UPASER se reserva el derecho de cancelar o cambiar cualquier clase, se les notificara a los alumnos o participantes cualquier cambio a través de los grupos de WhatsApp oficiales. UPASER esta obligado a reponer la clase cancelada, si este fuera el caso.");
+                        
+                        c.Item().PaddingTop(5).Text("II. Comportamiento:").Bold().Span(" UPASER se reserva el derecho de retirar a cualquier persona registrada en el curso, cuyo comportamiento sea considerado inapropiado, por parte de UPASER o sus docentes. En estas circunstancias UPASER no reembolsara ninguna tarifa.");
+                        
+                        c.Item().PaddingTop(5).Text("III. Plazo para registrarse:").Bold().Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación.");
+                        
+                        c.Item().PaddingTop(5).Text("IV. Talleres opcionales:").Bold().Span(" UPASER programara talleres a lo largo del curso de capacitación, estos talleres son considerados un plus CON COSTO para cualquier alumno UPASER.");
+
+                        c.Item().PaddingTop(40).Row(row => {
+                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
+                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Alumno"); });
+                        });
+                    });
+                });
+            }
         }).GeneratePdf();
     }
 
