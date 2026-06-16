@@ -27,6 +27,12 @@ public class Student
     public string? Phone { get; set; }
 
     [FirestoreProperty]
+    public string PreviousSchool { get; set; } = "";
+
+    [FirestoreProperty]
+    public string TargetSchool { get; set; } = "";
+
+    [FirestoreProperty]
     public GuardianInfo Guardian { get; set; } = new();
     
     [FirestoreProperty]

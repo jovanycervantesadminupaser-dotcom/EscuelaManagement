@@ -5,6 +5,7 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
+@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -98,6 +99,14 @@
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                    </MudItem>
+                    
+                    @* --- NUEVOS CAMPOS AÑADIDOS --- *@
+                    <MudItem xs="12" md="6">
+                        <MudTextField Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -402,6 +411,10 @@
                     x.Item().Text($"Nombre: {student.Name} {student.PaternalLastName} {student.MaternalLastName}");
                     x.Item().Text($"Teléfono: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
                     
+                    // --- NUEVAS LÍNEAS PARA EL PDF (Escuelas) ---
+                    x.Item().Text($"Escuela de Procedencia: {(string.IsNullOrEmpty(student.PreviousSchool) ? "No registrado" : student.PreviousSchool)}");
+                    x.Item().Text($"Escuela a Ingresar: {(string.IsNullOrEmpty(student.TargetSchool) ? "No registrado" : student.TargetSchool)}");
+                    
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("2. Tutor").SemiBold();
                     x.Item().Text($"Tutor: {student.Guardian.Name} {student.Guardian.PaternalLastName} ({student.Guardian.Relationship})");
                     x.Item().Text($"Teléfono Tutor: {(string.IsNullOrEmpty(student.Guardian.Phone) ? "No registrado" : student.Guardian.Phone)}");
@@ -414,7 +427,7 @@
                     x.Item().Text($"Curso: {nombreCurso}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
 
-                    // LÓGICA DE RETIRO (Aparece en la parte inferior de la Ficha de Inscripción)
+                    // LÓGICA DE RETIRO
                     if (aceptaRetiroSinTutor)
                     {
                         x.Item().PaddingTop(20).Text(t => 
