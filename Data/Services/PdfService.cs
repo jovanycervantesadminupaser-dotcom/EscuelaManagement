@@ -126,7 +126,8 @@ namespace EscuelaManagement.Data.Services
                     {
                         column.Item().Row(row =>
                         {
-                            row.RelativeItem().Text(t => { t.Span("Alumno: ").Bold(); t.Span(alumno.Name ?? ""); });
+                            // --- LÍNEA MODIFICADA: Ahora muestra el nombre completo ---
+                            row.RelativeItem().Text(t => { t.Span("Alumno: ").Bold(); t.Span($"{alumno.Name} {alumno.PaternalLastName} {alumno.MaternalLastName}".Trim()); });
                             row.RelativeItem().Text(t => { t.Span("Curso: ").Bold(); t.Span(nombreCurso); });
                         });
                         
@@ -216,7 +217,6 @@ namespace EscuelaManagement.Data.Services
 
                     page.Content().Layers(layers =>
                     {
-                        // CORRECCIÓN: Primera capa debe ser PrimaryLayer()
                         layers.PrimaryLayer().Element(e =>
                         {
                             if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
@@ -280,7 +280,6 @@ namespace EscuelaManagement.Data.Services
 
                     page.Content().Layers(layers =>
                     {
-                        // CORRECCIÓN: Primera capa debe ser PrimaryLayer()
                         layers.PrimaryLayer().Element(e =>
                         {
                             if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
