@@ -42,7 +42,7 @@ namespace EscuelaManagement.Data.Services
                         });
                     });
 
-                    // Contenido (Tabla de alumnos con columnas de asistencia)
+                    // Contenido
                     page.Content().PaddingTop(1, Unit.Centimetre).Table(tabla =>
                     {
                         tabla.ColumnsDefinition(columnas =>
@@ -70,7 +70,6 @@ namespace EscuelaManagement.Data.Services
                         {
                             tabla.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text(index.ToString());
                             tabla.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text(alumno.Name ?? "Sin Nombre");
-                            
                             tabla.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text("");
                             tabla.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text("");
                             tabla.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text("");
@@ -79,7 +78,6 @@ namespace EscuelaManagement.Data.Services
                         }
                     });
 
-                    // Pie de página
                     page.Footer().AlignCenter().Text(x =>
                     {
                         x.CurrentPageNumber();
@@ -114,7 +112,7 @@ namespace EscuelaManagement.Data.Services
                             var base64Data = logoBase64.Contains(",") ? logoBase64.Substring(logoBase64.IndexOf(",") + 1) : logoBase64;
                             var imageBytes = Convert.FromBase64String(base64Data);
                             row.ConstantItem(75).Image(imageBytes);
-                            row.ConstantItem(15); // Espaciador
+                            row.ConstantItem(15);
                         }
 
                         row.RelativeItem().Column(col =>
@@ -124,7 +122,6 @@ namespace EscuelaManagement.Data.Services
                         });
                     });
 
-                    // Información del Estudiante
                     page.Content().PaddingTop(0.5f, Unit.Centimetre).Column(column =>
                     {
                         column.Item().Row(row =>
@@ -139,15 +136,14 @@ namespace EscuelaManagement.Data.Services
                             row.RelativeItem().Text(t => { t.Span("Ciclo Escolar: ").Bold(); t.Span("2026-2027"); });
                         });
 
-                        // Tabla de Calificaciones
                         column.Item().PaddingTop(1.5f, Unit.Centimetre).Table(tabla =>
                         {
                             tabla.ColumnsDefinition(columnas =>
                             {
-                                columnas.RelativeColumn(3); // Materia
-                                columnas.RelativeColumn(2); // Profesor
-                                columnas.RelativeColumn(1.5f); // Periodo
-                                columnas.ConstantColumn(80); // Calificación
+                                columnas.RelativeColumn(3);
+                                columnas.RelativeColumn(2);
+                                columnas.RelativeColumn(1.5f);
+                                columnas.ConstantColumn(80);
                             });
 
                             tabla.Header(header =>
@@ -174,7 +170,6 @@ namespace EscuelaManagement.Data.Services
                                 sumaNotas += cal.Nota;
                             }
 
-                            // Fila de Promedio Final
                             if (calificaciones.Count > 0)
                             {
                                 double promedio = sumaNotas / calificaciones.Count;
@@ -203,13 +198,12 @@ namespace EscuelaManagement.Data.Services
         }
 
         // ===================================================
-        // 3. GENERAR CREDENCIAL DINÁMICA (CAPAS ABSOLUTAS CR80)
+        // 3. GENERAR CREDENCIAL DINÁMICA
         // ===================================================
         public byte[] GenerarCredencialEstudiante(Student alumno, string matricula, string curso, string vigencia, string director, string logoBase64, CredencialDiseno diseno)
         {
             return Document.Create(container =>
             {
-                // Medidas estándar de una tarjeta de PVC CR80
                 var anchoCredencial = 85.6f;
                 var altoCredencial = 54f;
 
@@ -222,8 +216,8 @@ namespace EscuelaManagement.Data.Services
 
                     page.Content().Layers(layers =>
                     {
-                        // Capa 1: Imagen de Plantilla de Fondo (Frente)
-                        layers.Layer().Element(e =>
+                        // CORRECCIÓN: Primera capa debe ser PrimaryLayer()
+                        layers.PrimaryLayer().Element(e =>
                         {
                             if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
                             {
@@ -232,12 +226,10 @@ namespace EscuelaManagement.Data.Services
                             }
                             else
                             {
-                                // Fondo blanco de respaldo si no hay plantilla
                                 e.Background(Colors.White).Width(anchoCredencial, Unit.Millimetre).Height(altoCredencial, Unit.Millimetre);
                             }
                         });
 
-                        // Capa 2: Fotografía del Alumno
                         layers.Layer().PaddingLeft(diseno.FotoX, Unit.Millimetre).PaddingTop(diseno.FotoY, Unit.Millimetre)
                                       .Width(diseno.FotoW, Unit.Millimetre).Height(diseno.FotoH, Unit.Millimetre)
                                       .Element(e =>
@@ -253,7 +245,6 @@ namespace EscuelaManagement.Data.Services
                                           }
                                       });
 
-                        // Capa 3: Nombre del Alumno
                         layers.Layer().PaddingLeft(diseno.NombreX, Unit.Millimetre).PaddingTop(diseno.NombreY, Unit.Millimetre)
                                       .Column(c =>
                                       {
@@ -261,7 +252,6 @@ namespace EscuelaManagement.Data.Services
                                           c.Item().Text($"{alumno.Name} {alumno.PaternalLastName} {alumno.MaternalLastName}".ToUpper()).Bold().FontSize(diseno.NombreSize).FontColor("#003366");
                                       });
 
-                        // Capa 4: Matrícula
                         layers.Layer().PaddingLeft(diseno.MatriculaX, Unit.Millimetre).PaddingTop(diseno.MatriculaY, Unit.Millimetre)
                                       .Column(c =>
                                       {
@@ -269,7 +259,6 @@ namespace EscuelaManagement.Data.Services
                                           c.Item().Text(matricula).Bold().FontSize(diseno.MatriculaSize).FontColor(Colors.Red.Medium);
                                       });
 
-                        // Capa 5: Curso
                         layers.Layer().PaddingLeft(diseno.CursoX, Unit.Millimetre).PaddingTop(diseno.CursoY, Unit.Millimetre)
                                       .Column(c =>
                                       {
@@ -277,7 +266,6 @@ namespace EscuelaManagement.Data.Services
                                           c.Item().Text(curso).Bold().FontSize(diseno.CursoSize).FontColor(Colors.Black);
                                       });
 
-                        // Capa 6: Vigencia
                         layers.Layer().PaddingLeft(diseno.VigenciaX, Unit.Millimetre).PaddingTop(diseno.VigenciaY, Unit.Millimetre)
                                       .Text($"VIGENCIA: {vigencia}").Bold().FontSize(diseno.VigenciaSize).FontColor(Colors.Grey.Darken3);
                     });
@@ -292,8 +280,8 @@ namespace EscuelaManagement.Data.Services
 
                     page.Content().Layers(layers =>
                     {
-                        // Capa 1: Imagen de Plantilla de Fondo (Reverso)
-                        layers.Layer().Element(e =>
+                        // CORRECCIÓN: Primera capa debe ser PrimaryLayer()
+                        layers.PrimaryLayer().Element(e =>
                         {
                             if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
                             {
@@ -306,14 +294,12 @@ namespace EscuelaManagement.Data.Services
                             }
                         });
 
-                        // Capa 2: Línea de Firma
                         layers.Layer().PaddingLeft(diseno.FirmaLineaX, Unit.Millimetre).PaddingTop(diseno.FirmaLineaY, Unit.Millimetre)
                                       .Width(diseno.FirmaLineaW, Unit.Millimetre)
                                       .LineHorizontal(0.5f).LineColor(Colors.Black);
 
-                        // Capa 3: Datos de la Dirección
                         layers.Layer().PaddingLeft(diseno.DirectorX, Unit.Millimetre).PaddingTop(diseno.DirectorY, Unit.Millimetre)
-                                      .Width(diseno.FirmaLineaW, Unit.Millimetre) // Mismo ancho de la línea para centrado seguro
+                                      .Width(diseno.FirmaLineaW, Unit.Millimetre) 
                                       .Column(c =>
                                       {
                                           c.Item().AlignCenter().Text(director.ToUpper()).Bold().FontSize(diseno.DirectorSize).FontColor(Colors.Grey.Darken4);
@@ -325,9 +311,6 @@ namespace EscuelaManagement.Data.Services
         }
     }
 
-    // ===================================================
-    // DTO DE TRANSFERENCIA
-    // ===================================================
     public class FilaBoletaDto
     {
         public string NombreMateria { get; set; } = "";
