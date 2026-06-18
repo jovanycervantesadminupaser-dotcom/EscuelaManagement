@@ -214,7 +214,7 @@
                     {
                         UserSession.IniciarSesion(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
                         Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
-                        Navigation.NavigateTo("/alumnos"); 
+                        Navigation.NavigateTo("/inicio"); 
                     }
                 }
                 else
@@ -223,7 +223,7 @@
                     {
                         UserSession.IniciarSesion("Llave Maestra", email, "Administrador");
                         Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
-                        Navigation.NavigateTo("/alumnos");
+                        Navigation.NavigateTo("/inicio");
                     }
                     else
                     {
