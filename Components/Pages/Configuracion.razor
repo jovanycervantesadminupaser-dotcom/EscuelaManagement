@@ -16,28 +16,22 @@
         
         <MudTabPanel Text="Identidad Escolar" Icon="@Icons.Material.Filled.Business" Class="pa-6">
             <MudGrid>
-                <MudItem xs="12" md="7">
-                    <MudCard Elevation="0" Class="pa-4">
-                        <MudText Typo="Typo.h6" Class="mb-4">Información Institucional</MudText>
-                        
-                        <MudTextField @bind-Value="config.NombreEscuela" 
-                                      Label="Nombre de la Institución Educativa" 
-                                      Variant="Variant.Outlined" 
-                                      Required="true" 
-                                      Class="mb-6" />
-
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="Color.Primary" 
-                                   Size="Size.Large" 
-                                   StartIcon="@Icons.Material.Filled.Save" 
-                                   OnClick="GuardarAjustes">
-                            GUARDAR CONFIGURACIÓN
-                        </MudButton>
-                    </MudCard>
+                @* --- 1. NOMBRE DE LA INSTITUCIÓN --- *@
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-4">Información Institucional</MudText>
+                    <MudTextField @bind-Value="config.NombreEscuela" 
+                                  Label="Nombre de la Institución Educativa" 
+                                  Variant="Variant.Outlined" 
+                                  Required="true" />
                 </MudItem>
 
-                <MudItem xs="12" md="5" Class="d-flex flex-column align-center justify-center border-inline-start">
-                    <MudText Typo="Typo.h6" Class="mb-3">Logotipo Oficial</MudText>
+                <MudItem xs="12">
+                    <MudDivider Class="my-2" />
+                </MudItem>
+
+                @* --- 2. LOGOTIPO OFICIAL --- *@
+                <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-start pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Logotipo Oficial</MudText>
                     
                     @if (!string.IsNullOrEmpty(config.LogoBase64))
                     {
@@ -54,34 +48,44 @@
                         Subir Logotipo
                     </MudButton>
                     <InputFile id="logoInput" OnChange="CambiarLogo" accept=".jpg,.jpeg,.png" style="display: none;" />
-                    <MudText Typo="Typo.caption" Class="mt-2 text-muted">Formatos sugeridos: PNG o JPG transparentes.</MudText>
+                    <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: PNG o JPG transparentes.</MudText>
                 </MudItem>
 
-                @* --- NUEVA SECCIÓN: FONDO DE PANTALLA LOGIN --- *@
+                @* --- 3. FONDO DE PANTALLA LOGIN --- *@
+                <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-start pa-4 border-inline-start">
+                    <MudText Typo="Typo.h6" Class="mb-4">Fondo de Pantalla (Login)</MudText>
+                    
+                    @if (!string.IsNullOrEmpty(config.BackgroundLoginBase64))
+                    {
+                        <MudImage Src="@config.BackgroundLoginBase64" Width="240" Height="140" ObjectFit="ObjectFit.Cover" Elevation="2" Class="rounded-lg mb-4 border-solid border" />
+                    }
+                    else
+                    {
+                        <MudPaper Width="240px" Height="140px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: #e0e0e0;">
+                            <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 3rem;" Color="Color.Default" />
+                        </MudPaper>
+                    }
+
+                    <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        Subir Imagen de Fondo
+                    </MudButton>
+                    <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
+                    <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: JPG o PNG de alta resolución (Max 10MB).</MudText>
+                </MudItem>
+
                 <MudItem xs="12">
-                    <MudDivider Class="my-4" />
-                    <MudText Typo="Typo.h6" Class="mb-3">Fondo de Pantalla (Pantalla de Login)</MudText>
-                    <MudGrid Class="align-center">
-                        <MudItem xs="12" md="4" Class="d-flex flex-column align-center">
-                            @if (!string.IsNullOrEmpty(config.BackgroundLoginBase64))
-                            {
-                                <MudImage Src="@config.BackgroundLoginBase64" Width="240" Height="140" ObjectFit="ObjectFit.Cover" Elevation="2" Class="rounded-lg mb-3 border-solid border" />
-                            }
-                            else
-                            {
-                                <MudPaper Width="240px" Height="140px" Class="d-flex align-center justify-center rounded-lg mb-3" Style="background-color: #e0e0e0;">
-                                    <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 3rem;" Color="Color.Default" />
-                                </MudPaper>
-                            }
-                        </MudItem>
-                        <MudItem xs="12" md="8">
-                            <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
-                                Subir Imagen de Fondo
-                            </MudButton>
-                            <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
-                            <MudText Typo="Typo.caption" Class="d-block mt-2 text-muted">Formatos sugeridos: JPG o PNG de alta resolución (Max 10MB).</MudText>
-                        </MudItem>
-                    </MudGrid>
+                    <MudDivider Class="my-2" />
+                </MudItem>
+
+                @* --- 4. BOTÓN DE GUARDAR AL FINAL --- *@
+                <MudItem xs="12" Class="d-flex justify-end mt-2">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large" 
+                               StartIcon="@Icons.Material.Filled.Save" 
+                               OnClick="GuardarAjustes">
+                        GUARDAR CONFIGURACIÓN
+                    </MudButton>
                 </MudItem>
             </MudGrid>
         </MudTabPanel>
@@ -199,20 +203,30 @@
         }
     }
 
-    // --- NUEVO MÉTODO PARA SUBIR EL FONDO DE LOGIN ---
+    // --- MÉTODO PARA SUBIR EL FONDO DE LOGIN (CON MANEJO DE ERRORES) ---
     private async Task UploadBackground(InputFileChangeEventArgs e)
     {
-        var archivo = e.File;
-        if (archivo != null)
+        try
         {
-            // Límite aumentado a 10 MB porque los fondos pesan más que los logos
-            using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); 
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            var buffer = memoryStream.ToArray();
-            
-            config.BackgroundLoginBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
-            StateHasChanged();
+            var archivo = e.File;
+            if (archivo != null)
+            {
+                Snackbar.Add("Procesando imagen, por favor espera...", Severity.Info);
+                
+                using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); 
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var buffer = memoryStream.ToArray();
+                
+                config.BackgroundLoginBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
+                StateHasChanged();
+                
+                Snackbar.Add("Vista previa generada. ¡No olvides dar clic en GUARDAR CONFIGURACIÓN abajo!", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar: La imagen es demasiado pesada. Intenta con una imagen de menor resolución. ({ex.Message})", Severity.Error);
         }
     }
 
