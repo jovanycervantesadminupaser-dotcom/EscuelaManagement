@@ -96,8 +96,10 @@
                     <MudItem xs="12" md="4">
                         <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
+                    
+                    @* --- CORRECCIÓN NATIVA: MaxLength y Telephone en lugar de Mask --- *@
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" Mask="@maskTelefono" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="6">
@@ -121,8 +123,10 @@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
+                    
+                    @* --- CORRECCIÓN NATIVA AQUÍ TAMBIÉN --- *@
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" Mask="@maskTelefono" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -224,8 +228,6 @@
     private bool imprimirGarantia = false;
     private string turnoSeleccionado = "";
     private string turnoManual = "";
-
-    public IMask maskTelefono = new PatternMask("0000000000");
 
     protected override async Task OnInitializedAsync()
     {
