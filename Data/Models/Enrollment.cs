@@ -20,5 +20,8 @@ public class Enrollment
 
     // Cambiado a double para compatibilidad nativa con Firestore
     [FirestoreProperty]
-    public double DiscountAmount { get; set; } 
+    public double DiscountAmount { get; set; }
+
+    [FirestoreProperty]
+    public string Turno { get; set; } = "";
 }

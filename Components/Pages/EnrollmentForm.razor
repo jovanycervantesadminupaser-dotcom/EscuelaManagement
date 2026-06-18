@@ -5,6 +5,7 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
+@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -157,15 +158,33 @@
 
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Documentación Legal</MudText>
                 <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="Seleccionar Curso*" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
                             @foreach (var curso in cursosDisponibles)
                             {
                                 <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
-                    <MudItem xs="12" md="6">
+
+                    @* --- NUEVO: SELECTOR DE TURNO --- *@
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="Turno del Curso*" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
+                            <MudSelectItem Value="@("MATUTINO")">MATUTINO</MudSelectItem>
+                            <MudSelectItem Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
+                            <MudSelectItem Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    @* --- NUEVO: CAMPO CONDICIONAL PARA TURNO MANUAL --- *@
+                    @if (turnoSeleccionado == "OTRO")
+                    {
+                        <MudItem xs="12" md="4">
+                            <MudTextField Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" />
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12" md="4">
                         <MudNumericField Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
                     
@@ -203,9 +222,12 @@
     private bool isExistingStudent = false;
     private bool isCameraOpen = false;
 
+    // Variables para documentos legales y turnos
     private bool aceptaRetiroSinTutor = false;
     private bool imprimirTerminos = false;
     private bool imprimirGarantia = false;
+    private string turnoSeleccionado = "";
+    private string turnoManual = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -277,6 +299,8 @@
         aceptaRetiroSinTutor = false;
         imprimirTerminos = false;
         imprimirGarantia = false;
+        turnoSeleccionado = "";
+        turnoManual = "";
     }
 
     private async Task AbrirCamara()
@@ -343,6 +367,10 @@
 
             enrollment.StudentId = student.Id;
             enrollment.EnrollmentDate = DateTime.UtcNow; 
+            
+            // Asignamos el turno (si es "OTRO", usamos el manual, si no, el seleccionado)
+            enrollment.Turno = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
+
             await Firebase.AddEnrollmentAsync(enrollment);
 
             var pdfBytes = GeneratePdfDocument();
@@ -362,8 +390,13 @@
 
     private byte[] GeneratePdfDocument()
     {
+        string turnoFinal = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
+
         return Document.Create(container =>
         {
+            // ====================================================================
+            // PÁGINA 1: FICHA DE INSCRIPCIÓN Y AUTORIZACIÓN DE RETIRO
+            // ====================================================================
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
@@ -416,7 +449,7 @@
 
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("4. Curso Inscrito").SemiBold();
                     var nombreCurso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId)?.Name ?? "No seleccionado";
-                    x.Item().Text($"Curso: {nombreCurso}");
+                    x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpper())}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
 
                     if (aceptaRetiroSinTutor)
@@ -438,6 +471,9 @@
                 });
             });
 
+            // ====================================================================
+            // PÁGINA 2: PÓLIZA DE GARANTÍA (Condicional)
+            // ====================================================================
             if (imprimirGarantia)
             {
                 container.Page(page =>
@@ -486,6 +522,9 @@
                 });
             }
 
+            // ====================================================================
+            // PÁGINA 3: TÉRMINOS Y CONDICIONES (Condicional)
+            // ====================================================================
             if (imprimirTerminos)
             {
                 container.Page(page =>
@@ -515,7 +554,7 @@
                         
                         c.Item().PaddingTop(5).Text(t => { 
                             t.Span("III. Plazo para registrarse:").Bold(); 
-                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
+                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales ECOEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
                         });
                         
                         c.Item().PaddingTop(5).Text(t => { 
