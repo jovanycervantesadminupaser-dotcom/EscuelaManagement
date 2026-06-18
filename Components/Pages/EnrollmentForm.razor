@@ -5,6 +5,7 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
+@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -96,8 +97,10 @@
                     <MudItem xs="12" md="4">
                         <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
+                    
+                    @* --- AQUÍ ESTÁ LA CORRECCIÓN: Se usa la variable maskTelefono --- *@
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" Mask="@maskTelefono" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="6">
@@ -121,8 +124,10 @@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
+                    
+                    @* --- AQUÍ TAMBIÉN ESTÁ LA CORRECCIÓN --- *@
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" Mask="@maskTelefono" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -224,6 +229,9 @@
     private bool imprimirGarantia = false;
     private string turnoSeleccionado = "";
     private string turnoManual = "";
+
+    // --- AQUÍ CREAMOS LA MÁSCARA UNA SOLA VEZ ---
+    public IMask maskTelefono = new PatternMask("0000000000");
 
     protected override async Task OnInitializedAsync()
     {
