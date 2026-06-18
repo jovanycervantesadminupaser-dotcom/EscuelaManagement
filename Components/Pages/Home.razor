@@ -2,14 +2,19 @@
 @using MudBlazor
 @using EscuelaManagement.Data.Services
 @inject UserSessionService UserSession
+@inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Panel de Control</MudText>
     <MudText Typo="Typo.subtitle1" Class="mb-8 text-muted">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
 
     <MudGrid>
+        @* --- 1. DIRECTORIO --- *@
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-primary" Style="height: 130px; background-color: #fafafa;">
+            <MudPaper Elevation="2" 
+                      Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-primary cursor-pointer mud-ripple" 
+                      Style="height: 130px; background-color: #fafafa;" 
+                      @onclick="@(() => NavigationManager.NavigateTo("/alumnos"))">
                 <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Color="Color.Primary" Style="font-size: 3rem;" Class="mb-2"/>
                 <MudText Typo="Typo.subtitle1"><b>Directorio</b></MudText>
             </MudPaper>
@@ -17,22 +22,34 @@
 
         @if (UserSession.EsControlEscolar)
         {
+            @* --- 2. INSCRIPCIONES --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-success" Style="height: 130px; background-color: #fafafa;">
+                <MudPaper Elevation="2" 
+                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-success cursor-pointer mud-ripple" 
+                          Style="height: 130px; background-color: #fafafa;" 
+                          @onclick="@(() => NavigationManager.NavigateTo("/inscripciones"))">
                     <MudIcon Icon="@Icons.Material.Filled.HowToReg" Color="Color.Success" Style="font-size: 3rem;" Class="mb-2"/>
                     <MudText Typo="Typo.subtitle1"><b>Inscripciones</b></MudText>
                 </MudPaper>
             </MudItem>
 
+            @* --- 3. CURSOS ACTIVOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-warning" Style="height: 130px; background-color: #fafafa;">
+                <MudPaper Elevation="2" 
+                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-warning cursor-pointer mud-ripple" 
+                          Style="height: 130px; background-color: #fafafa;" 
+                          @onclick="@(() => NavigationManager.NavigateTo("/cursos"))">
                     <MudIcon Icon="@Icons.Material.Filled.MenuBook" Color="Color.Warning" Style="font-size: 3rem;" Class="mb-2"/>
                     <MudText Typo="Typo.subtitle1"><b>Cursos Activos</b></MudText>
                 </MudPaper>
             </MudItem>
 
+            @* --- 4. CONTROL DE PAGOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-info" Style="height: 130px; background-color: #fafafa;">
+                <MudPaper Elevation="2" 
+                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-info cursor-pointer mud-ripple" 
+                          Style="height: 130px; background-color: #fafafa;" 
+                          @onclick="@(() => NavigationManager.NavigateTo("/pagos"))">
                     <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Color="Color.Info" Style="font-size: 3rem;" Class="mb-2"/>
                     <MudText Typo="Typo.subtitle1"><b>Control de Pagos</b></MudText>
                 </MudPaper>
