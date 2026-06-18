@@ -8,63 +8,128 @@
 @inject FirebaseService Firebase
 @inject UserSessionService UserSession
 
-<MudCard Elevation="4" Class="pa-8 rounded-xl" Style="width: 100%; max-width: 450px;">
-    <MudCardHeader Class="d-flex justify-center pb-0">
-        <CardHeaderContent>
-            <div class="d-flex flex-column align-center">
-                <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Primary" Style="font-size: 4rem;" Class="mb-2" />
-                <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
-                <MudText Typo="Typo.body2" Class="text-muted mb-4">SISTEMAS VENEGAS</MudText>
-                <MudText Typo="Typo.subtitle1" Class="mb-4">Inicia sesión en tu cuenta</MudText>
+<style>
+    /* 1. CONTENEDOR DE FONDO (Ocupa toda la pantalla) */
+    .login-container {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Si no hay fondo, usa un azul por defecto para evitar pantallas en blanco */
+        background-color: #003366; 
+        background-image: url('@(string.IsNullOrEmpty(backgroundLoginBase64) ? "" : backgroundLoginBase64)');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 20px;
+    }
+
+    /* 2. EL EFECTO CRISTAL (BLUR) */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1) !important; /* Transparencia */
+        backdrop-filter: blur(15px) !important; /* Desenfoque */
+        -webkit-backdrop-filter: blur(15px) !important; /* Desenfoque para Safari */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Borde blanco tenue */
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important; /* Sombra suave */
+        border-radius: 20px !important;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    /* 3. TEXTOS SOBRE CRISTAL */
+    .glass-text {
+        color: white !important;
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.5); /* Sombra para que se lea en fondos claros o oscuros */
+    }
+
+    /* 4. CAJAS DE TEXTO TRANSPARENTES */
+    .glass-input .mud-input {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        border-radius: 8px;
+    }
+    .glass-input .mud-input-label {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+    .glass-input .mud-input-adornment .mud-icon-root {
+        color: white !important;
+    }
+    .glass-input .mud-input-slot {
+        color: white !important; /* Color del texto que escribe el usuario */
+    }
+</style>
+
+<div class="login-container">
+    <MudCard Elevation="0" Class="pa-8 glass-card">
+        <MudCardHeader Class="d-flex justify-center pb-0">
+            <CardHeaderContent>
+                <div class="d-flex flex-column align-center">
+                    @* Si tienes el logo, podrías mostrarlo aquí en lugar del ícono. Dejé el ícono original pero en blanco. *@
+                    <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 4rem; color: white; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));" Class="mb-2" />
+                    
+                    <MudText Typo="Typo.h5" Class="glass-text" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">SISTEMAS VENEGAS</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="glass-text mb-4">Inicia sesión en tu cuenta</MudText>
+                </div>
+            </CardHeaderContent>
+        </MudCardHeader>
+
+        <MudCardContent Class="pt-0">
+            <MudForm @ref="form" @bind-IsValid="@success">
+                @* Se cambió a Variant.Filled y DisableUnderLine para el efecto moderno *@
+                <MudTextField @bind-Value="email" 
+                              Label="Usuario o Correo Electrónico" 
+                              Variant="Variant.Filled" 
+                              DisableUnderLine="true"
+                              Required="true" 
+                              RequiredError="El correo es obligatorio" 
+                              InputType="InputType.Email" 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Email" 
+                              Class="mb-4 glass-input" />
+
+                <MudTextField @bind-Value="password" 
+                              Label="Contraseña" 
+                              Variant="Variant.Filled" 
+                              DisableUnderLine="true"
+                              Required="true" 
+                              RequiredError="La contraseña es obligatoria" 
+                              InputType="@passwordInput" 
+                              Adornment="Adornment.End" 
+                              AdornmentIcon="@passwordInputIcon" 
+                              OnAdornmentClick="TogglePasswordVisibility" 
+                              AdornmentAriaLabel="Mostrar contraseña"
+                              Class="mb-4 glass-input" />
+            </MudForm>
+            
+            <div class="d-flex justify-center mt-2">
+                <MudLink Href="#" Style="color: white; text-decoration: underline; opacity: 0.8; font-size: 13px;">¿Olvidaste tu contraseña?</MudLink>
             </div>
-        </CardHeaderContent>
-    </MudCardHeader>
+        </MudCardContent>
 
-    <MudCardContent Class="pt-0">
-        <MudForm @ref="form" @bind-IsValid="@success">
-            <MudTextField @bind-Value="email" 
-                          Label="Correo Electrónico" 
-                          Variant="Variant.Outlined" 
-                          Required="true" 
-                          RequiredError="El correo es obligatorio" 
-                          InputType="InputType.Email" 
-                          Adornment="Adornment.Start" 
-                          AdornmentIcon="@Icons.Material.Filled.Email" 
-                          Class="mb-4" />
-
-            <MudTextField @bind-Value="password" 
-                          Label="Contraseña" 
-                          Variant="Variant.Outlined" 
-                          Required="true" 
-                          RequiredError="La contraseña es obligatoria" 
-                          InputType="@passwordInput" 
-                          Adornment="Adornment.End" 
-                          AdornmentIcon="@passwordInputIcon" 
-                          OnAdornmentClick="TogglePasswordVisibility" 
-                          AdornmentAriaLabel="Mostrar contraseña" />
-        </MudForm>
-    </MudCardContent>
-
-    <MudCardActions Class="d-flex flex-column align-center px-4 pb-4">
-        <MudButton Variant="Variant.Filled" 
-                   Color="Color.Primary" 
-                   Size="Size.Large" 
-                   FullWidth="true" 
-                   Class="mt-4 py-3 rounded-lg"
-                   OnClick="Ingresar"
-                   Disabled="@cargando">
-            @if (cargando)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
-                <MudText Class="ms-2">VERIFICANDO...</MudText>
-            }
-            else
-            {
-                <MudText>INGRESAR AL SISTEMA</MudText>
-            }
-        </MudButton>
-    </MudCardActions>
-</MudCard>
+        <MudCardActions Class="d-flex flex-column align-center px-4 pb-4">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Success" 
+                       Size="Size.Large" 
+                       FullWidth="true" 
+                       Class="mt-4 py-3 rounded-pill"
+                       Style="font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);"
+                       OnClick="Ingresar"
+                       Disabled="@cargando">
+                @if (cargando)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                    <MudText Class="ms-2">VERIFICANDO...</MudText>
+                }
+                else
+                {
+                    <MudText>INGRESAR</MudText>
+                }
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</div>
 
 @code {
     private bool success;
@@ -73,6 +138,7 @@
     private string email = "";
     private string password = "";
     private string nombreEscuela = "Cargando...";
+    private string backgroundLoginBase64 = "";
 
     private bool isShow;
     private InputType passwordInput = InputType.Password;
@@ -83,13 +149,22 @@
         try
         {
             var configuracion = await Firebase.GetConfiguracionAsync();
-            if (!string.IsNullOrEmpty(configuracion.NombreEscuela))
+            if (configuracion != null)
             {
-                nombreEscuela = configuracion.NombreEscuela;
-            }
-            else
-            {
-                nombreEscuela = "EscuelaManager";
+                if (!string.IsNullOrEmpty(configuracion.NombreEscuela))
+                {
+                    nombreEscuela = configuracion.NombreEscuela;
+                }
+                else
+                {
+                    nombreEscuela = "EscuelaManager";
+                }
+
+                // Cargar la imagen de fondo desde Firebase
+                if (!string.IsNullOrEmpty(configuracion.BackgroundLoginBase64))
+                {
+                    backgroundLoginBase64 = configuracion.BackgroundLoginBase64;
+                }
             }
         }
         catch

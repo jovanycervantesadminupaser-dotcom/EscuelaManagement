@@ -56,6 +56,33 @@
                     <InputFile id="logoInput" OnChange="CambiarLogo" accept=".jpg,.jpeg,.png" style="display: none;" />
                     <MudText Typo="Typo.caption" Class="mt-2 text-muted">Formatos sugeridos: PNG o JPG transparentes.</MudText>
                 </MudItem>
+
+                @* --- NUEVA SECCIÓN: FONDO DE PANTALLA LOGIN --- *@
+                <MudItem xs="12">
+                    <MudDivider Class="my-4" />
+                    <MudText Typo="Typo.h6" Class="mb-3">Fondo de Pantalla (Pantalla de Login)</MudText>
+                    <MudGrid Class="align-center">
+                        <MudItem xs="12" md="4" Class="d-flex flex-column align-center">
+                            @if (!string.IsNullOrEmpty(config.BackgroundLoginBase64))
+                            {
+                                <MudImage Src="@config.BackgroundLoginBase64" Width="240" Height="140" ObjectFit="ObjectFit.Cover" Elevation="2" Class="rounded-lg mb-3 border-solid border" />
+                            }
+                            else
+                            {
+                                <MudPaper Width="240px" Height="140px" Class="d-flex align-center justify-center rounded-lg mb-3" Style="background-color: #e0e0e0;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 3rem;" Color="Color.Default" />
+                                </MudPaper>
+                            }
+                        </MudItem>
+                        <MudItem xs="12" md="8">
+                            <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                                Subir Imagen de Fondo
+                            </MudButton>
+                            <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
+                            <MudText Typo="Typo.caption" Class="d-block mt-2 text-muted">Formatos sugeridos: JPG o PNG de alta resolución (Max 10MB).</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
             </MudGrid>
         </MudTabPanel>
 
@@ -172,6 +199,23 @@
         }
     }
 
+    // --- NUEVO MÉTODO PARA SUBIR EL FONDO DE LOGIN ---
+    private async Task UploadBackground(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        if (archivo != null)
+        {
+            // Límite aumentado a 10 MB porque los fondos pesan más que los logos
+            using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); 
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
+            
+            config.BackgroundLoginBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
+            StateHasChanged();
+        }
+    }
+
     private async Task GuardarAjustes()
     {
         if (string.IsNullOrWhiteSpace(config.NombreEscuela))
@@ -237,7 +281,6 @@
 
     private async Task EliminarUsuario(Usuario usr)
     {
-        // CORRECCIÓN AQUÍ: Se usa ShowMessageBoxAsync para MudBlazor v7+
         bool? result = await DialogService.ShowMessageBoxAsync(
             "Eliminar Acceso", 
             $"¿Estás absolutamente seguro de eliminar el usuario de {usr.Nombre}? Perderá el acceso al sistema inmediatamente.", 

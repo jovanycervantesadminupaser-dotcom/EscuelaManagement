@@ -13,5 +13,8 @@ namespace EscuelaManagement.Data.Models
 
         [FirestoreProperty]
         public string LogoBase64 { get; set; } = string.Empty;
+
+        [FirestoreProperty]
+        public string BackgroundLoginBase64 { get; set; } = "";
     }
 }
