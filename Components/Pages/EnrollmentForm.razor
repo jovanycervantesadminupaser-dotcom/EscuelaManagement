@@ -5,7 +5,6 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
-@using QuestPDF.Infrastructure
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -167,7 +166,6 @@
                         </MudSelect>
                     </MudItem>
 
-                    @* --- NUEVO: SELECTOR DE TURNO --- *@
                     <MudItem xs="12" md="4">
                         <MudSelect T="string" Label="Turno del Curso*" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
                             <MudSelectItem Value="@("MATUTINO")">MATUTINO</MudSelectItem>
@@ -176,7 +174,6 @@
                         </MudSelect>
                     </MudItem>
 
-                    @* --- NUEVO: CAMPO CONDICIONAL PARA TURNO MANUAL --- *@
                     @if (turnoSeleccionado == "OTRO")
                     {
                         <MudItem xs="12" md="4">
@@ -222,7 +219,6 @@
     private bool isExistingStudent = false;
     private bool isCameraOpen = false;
 
-    // Variables para documentos legales y turnos
     private bool aceptaRetiroSinTutor = false;
     private bool imprimirTerminos = false;
     private bool imprimirGarantia = false;
@@ -368,7 +364,6 @@
             enrollment.StudentId = student.Id;
             enrollment.EnrollmentDate = DateTime.UtcNow; 
             
-            // Asignamos el turno (si es "OTRO", usamos el manual, si no, el seleccionado)
             enrollment.Turno = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
 
             await Firebase.AddEnrollmentAsync(enrollment);
@@ -394,9 +389,6 @@
 
         return Document.Create(container =>
         {
-            // ====================================================================
-            // PÁGINA 1: FICHA DE INSCRIPCIÓN Y AUTORIZACIÓN DE RETIRO
-            // ====================================================================
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
@@ -471,9 +463,6 @@
                 });
             });
 
-            // ====================================================================
-            // PÁGINA 2: PÓLIZA DE GARANTÍA (Condicional)
-            // ====================================================================
             if (imprimirGarantia)
             {
                 container.Page(page =>
@@ -522,9 +511,6 @@
                 });
             }
 
-            // ====================================================================
-            // PÁGINA 3: TÉRMINOS Y CONDICIONES (Condicional)
-            // ====================================================================
             if (imprimirTerminos)
             {
                 container.Page(page =>
