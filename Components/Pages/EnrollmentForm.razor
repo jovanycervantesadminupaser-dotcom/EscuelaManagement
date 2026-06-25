@@ -225,12 +225,12 @@
                         ¡Operación completada exitosamente!
                     </MudAlert>
                     
-                    <div class="d-flex gap-3">
-                        <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
-                            Notificar WhatsApp
+                    <div class="d-flex gap-4">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="@(() => tipoAccion = "correo")">
+                            GUARDAR Y ENVIAR POR CORREO
                         </MudButton>
-                        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="LimpiarFormulario">
-                            NUEVA INSCRIPCIÓN
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => tipoAccion = "descargar")">
+                            GUARDAR Y DESCARGAR TICKET
                         </MudButton>
                     </div>
                 }
@@ -468,7 +468,7 @@
         try
         {
             string correoSalida = "upaserescuela@gmail.com"; 
-            string contrasenaSmtp = "mtug ftus nahz qlrv"; 
+            string contrasenaSmtp = "naxl pzeg mryt vgco"; 
 
             using (var smtpClient = new SmtpClient("smtp.gmail.com")
             {
