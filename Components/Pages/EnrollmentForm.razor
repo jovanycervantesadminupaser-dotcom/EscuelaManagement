@@ -5,6 +5,8 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
+@using System.Net.Mail
+@using System.Net
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -96,8 +98,6 @@
                     <MudItem xs="12" md="4">
                         <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
-                    
-                    @* --- CORRECCIÓN NATIVA: MaxLength y Telephone en lugar de Mask --- *@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
@@ -123,10 +123,13 @@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
-                    
-                    @* --- CORRECCIÓN NATIVA AQUÍ TAMBIÉN --- *@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                    </MudItem>
+                    
+                    @* --- SE MOVIÓ AQUÍ: Campo Correo mapeado al Tutor --- *@
+                    <MudItem xs="12" md="4">
+                        <MudTextField Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio para enviar la ficha" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -202,10 +205,39 @@
 
             </MudCardContent>
 
-            <MudCardActions Class="pb-4 pr-4">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" Class="ml-auto" StartIcon="@Icons.Material.Filled.PictureAsPdf">
-                    GUARDAR Y GENERAR PDF
-                </MudButton>
+            <MudCardActions Class="pb-4 pr-4 flex-column align-end">
+                @if (!registroCompletado)
+                {
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.Save">
+                        GUARDAR Y GENERAR PDF
+                    </MudButton>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3 w-100">
+                        ¡Inscripción guardada y PDF descargado correctamente en el equipo!
+                    </MudAlert>
+                    
+                    <div class="d-flex gap-3">
+                        <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
+                            Notificar WhatsApp
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" OnClick="CompartirCorreo" Disabled="@enviandoCorreo">
+                            @if (enviandoCorreo)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Enviando...</span>
+                            }
+                            else
+                            {
+                                <span>Enviar por Correo</span>
+                            }
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="LimpiarFormulario">
+                            NUEVA INSCRIPCIÓN
+                        </MudButton>
+                    </div>
+                }
             </MudCardActions>
         </MudCard>
     </EditForm>
@@ -228,6 +260,12 @@
     private bool imprimirGarantia = false;
     private string turnoSeleccionado = "";
     private string turnoManual = "";
+
+    private bool registroCompletado = false;
+    private bool enviandoCorreo = false;
+    private byte[]? lastGeneratedPdfBytes;
+
+    public IMask maskTelefono = new PatternMask("0000000000");
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,6 +339,8 @@
         imprimirGarantia = false;
         turnoSeleccionado = "";
         turnoManual = "";
+        registroCompletado = false;
+        lastGeneratedPdfBytes = null;
     }
 
     private async Task AbrirCamara()
@@ -373,17 +413,101 @@
             await Firebase.AddEnrollmentAsync(enrollment);
 
             var pdfBytes = GeneratePdfDocument();
+            lastGeneratedPdfBytes = pdfBytes;
+
             await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
 
             Snackbar.Add("Registro e Inscripción completados con éxito", Severity.Success);
-
-            LimpiarFormulario();
-            await RecargarDatosDesdeFirebase();
+            
+            registroCompletado = true;
             StateHasChanged(); 
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al procesar la inscripción: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CompartirWhatsApp()
+    {
+        var telefono = student.Guardian.Phone;
+        if (string.IsNullOrEmpty(telefono) || telefono.Length != 10)
+        {
+            telefono = student.Phone;
+        }
+
+        if (string.IsNullOrEmpty(telefono) || telefono.Length != 10)
+        {
+            Snackbar.Add("No hay un número válido de 10 dígitos registrado para el tutor o el alumno.", Severity.Warning);
+            return;
+        }
+
+        var nombreDestinatario = string.IsNullOrEmpty(student.Guardian.Name) ? student.Name : student.Guardian.Name;
+        var mensaje = Uri.EscapeDataString($"¡Hola {nombreDestinatario}! Confirmamos la inscripción exitosa de {student.Name} en {configuracionEscuela.NombreEscuela}. Por este medio le compartimos su Ficha de Inscripción oficial.");
+        var url = $"https://wa.me/52{telefono}?text={mensaje}";
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task CompartirCorreo()
+    {
+        if (string.IsNullOrWhiteSpace(student.Guardian.Email))
+        {
+            Snackbar.Add("El tutor no cuenta con una dirección de correo válida.", Severity.Warning);
+            return;
+        }
+
+        if (lastGeneratedPdfBytes == null)
+        {
+            Snackbar.Add("No se encontraron los datos del documento a enviar.", Severity.Error);
+            return;
+        }
+
+        enviandoCorreo = true;
+        StateHasChanged();
+
+        try
+        {
+            string correoSalida = "upaserescuela@gmail.com"; 
+            string contrasenaSmtp = "mtug ftus nahz qlrv"; 
+
+            using (var smtpClient = new SmtpClient("smtp.gmail.com")
+            {
+                Port = 587,
+                Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
+                EnableSsl = true,
+            })
+            {
+                using (var mailMessage = new MailMessage())
+                {
+                    var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
+                    
+                    mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
+                    mailMessage.Subject = "Confirmación de Inscripción - UPASER";
+                    
+                    // --- MODIFICADO: Mensaje redactado directamente para el Tutor ---
+                    mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito en nuestro sistema.\n\nAdjunto a este correo encontrará la Ficha de Inscripción oficial con los términos, condiciones y póliza de garantía en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
+                    mailMessage.To.Add(student.Guardian.Email);
+
+                    using (var memoryStream = new MemoryStream(lastGeneratedPdfBytes))
+                    {
+                        var attachment = new Attachment(memoryStream, $"Ficha_Inscripcion_{student.PaternalLastName}.pdf", "application/pdf");
+                        mailMessage.Attachments.Add(attachment);
+
+                        await smtpClient.SendMailAsync(mailMessage);
+                    }
+                }
+            }
+
+            Snackbar.Add("¡El correo electrónico se ha enviado automáticamente al tutor con el PDF adjunto!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al enviar correo automático: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            enviandoCorreo = false;
+            StateHasChanged();
         }
     }
 
@@ -431,14 +555,15 @@
                     
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("1. Datos del Alumno").SemiBold();
                     x.Item().Text($"Nombre: {student.Name} {student.PaternalLastName} {student.MaternalLastName}");
-                    x.Item().Text($"Teléfono: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
+                    x.Item().Text($"Teléfono Alumno: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
                     
                     x.Item().Text($"Escuela de Procedencia: {(string.IsNullOrEmpty(student.PreviousSchool) ? "No registrado" : student.PreviousSchool)}");
                     x.Item().Text($"Escuela a Ingresar: {(string.IsNullOrEmpty(student.TargetSchool) ? "No registrado" : student.TargetSchool)}");
                     
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("2. Tutor").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("2. Tutor y Contacto").SemiBold();
                     x.Item().Text($"Tutor: {student.Guardian.Name} {student.Guardian.PaternalLastName} ({student.Guardian.Relationship})");
                     x.Item().Text($"Teléfono Tutor: {(string.IsNullOrEmpty(student.Guardian.Phone) ? "No registrado" : student.Guardian.Phone)}");
+                    x.Item().Text($"Correo Tutor: {(string.IsNullOrEmpty(student.Guardian.Email) ? "No registrado" : student.Guardian.Email)}");
 
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("3. Dirección").SemiBold();
                     x.Item().Text($"{student.Address.Street} {student.Address.ExtNumber}, Col. {student.Address.Neighborhood}, {student.Address.Municipality}, {student.Address.State}. CP: {student.Address.ZipCode}");
@@ -544,7 +669,7 @@
                         
                         c.Item().PaddingTop(5).Text(t => { 
                             t.Span("III. Plazo para registrarse:").Bold(); 
-                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales ECOEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
+                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
                         });
                         
                         c.Item().PaddingTop(5).Text(t => { 

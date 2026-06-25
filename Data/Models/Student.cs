@@ -54,6 +54,8 @@ public class GuardianInfo
     public string? Relationship { get; set; }
     [FirestoreProperty]
     public string? Phone { get; set; }
+    [FirestoreProperty]
+    public string Email { get; set; } = "";
 }
 
 [FirestoreData]
