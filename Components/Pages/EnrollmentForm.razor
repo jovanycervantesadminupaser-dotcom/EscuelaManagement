@@ -127,7 +127,6 @@
                         <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
-                    @* --- SE MOVIÓ AQUÍ: Campo Correo mapeado al Tutor --- *@
                     <MudItem xs="12" md="4">
                         <MudTextField Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio para enviar la ficha" Disabled="@isExistingStudent" />
                     </MudItem>
@@ -208,30 +207,27 @@
             <MudCardActions Class="pb-4 pr-4 flex-column align-end">
                 @if (!registroCompletado)
                 {
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.Save">
-                        GUARDAR Y GENERAR PDF
-                    </MudButton>
+                    <div class="d-flex gap-4">
+                        @* --- OPCIÓN 1: GUARDAR Y ENVIAR POR CORREO --- *@
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="@(() => tipoAccion = "correo")">
+                            GUARDAR Y ENVIAR POR CORREO
+                        </MudButton>
+
+                        @* --- OPCIÓN 2: GUARDAR E IMPRIMIR / DESCARGAR --- *@
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => tipoAccion = "descargar")">
+                            GUARDAR Y DESCARGAR PDF
+                        </MudButton>
+                    </div>
                 }
                 else
                 {
                     <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3 w-100">
-                        ¡Inscripción guardada y PDF descargado correctamente en el equipo!
+                        ¡Operación completada exitosamente!
                     </MudAlert>
                     
                     <div class="d-flex gap-3">
                         <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
                             Notificar WhatsApp
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" OnClick="CompartirCorreo" Disabled="@enviandoCorreo">
-                            @if (enviandoCorreo)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                <span>Enviando...</span>
-                            }
-                            else
-                            {
-                                <span>Enviar por Correo</span>
-                            }
                         </MudButton>
                         <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="LimpiarFormulario">
                             NUEVA INSCRIPCIÓN
@@ -264,8 +260,7 @@
     private bool registroCompletado = false;
     private bool enviandoCorreo = false;
     private byte[]? lastGeneratedPdfBytes;
-
-    public IMask maskTelefono = new PatternMask("0000000000");
+    private string tipoAccion = "descargar"; // Variable para saber qué botón se presionó
 
     protected override async Task OnInitializedAsync()
     {
@@ -341,6 +336,7 @@
         turnoManual = "";
         registroCompletado = false;
         lastGeneratedPdfBytes = null;
+        tipoAccion = "descargar";
     }
 
     private async Task AbrirCamara()
@@ -415,9 +411,17 @@
             var pdfBytes = GeneratePdfDocument();
             lastGeneratedPdfBytes = pdfBytes;
 
-            await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
-
-            Snackbar.Add("Registro e Inscripción completados con éxito", Severity.Success);
+            // Lógica según el botón presionado
+            if (tipoAccion == "correo")
+            {
+                await CompartirCorreo();
+                Snackbar.Add("Inscripción guardada. El documento fue enviado al tutor.", Severity.Success);
+            }
+            else
+            {
+                await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
+                Snackbar.Add("Inscripción guardada. El documento ha sido descargado.", Severity.Success);
+            }
             
             registroCompletado = true;
             StateHasChanged(); 
@@ -452,15 +456,11 @@
     {
         if (string.IsNullOrWhiteSpace(student.Guardian.Email))
         {
-            Snackbar.Add("El tutor no cuenta con una dirección de correo válida.", Severity.Warning);
+            Snackbar.Add("El tutor no cuenta con una dirección de correo válida. El archivo no pudo enviarse.", Severity.Warning);
             return;
         }
 
-        if (lastGeneratedPdfBytes == null)
-        {
-            Snackbar.Add("No se encontraron los datos del documento a enviar.", Severity.Error);
-            return;
-        }
+        if (lastGeneratedPdfBytes == null) return;
 
         enviandoCorreo = true;
         StateHasChanged();
@@ -483,8 +483,6 @@
                     
                     mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
                     mailMessage.Subject = "Confirmación de Inscripción - UPASER";
-                    
-                    // --- MODIFICADO: Mensaje redactado directamente para el Tutor ---
                     mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito en nuestro sistema.\n\nAdjunto a este correo encontrará la Ficha de Inscripción oficial con los términos, condiciones y póliza de garantía en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
                     mailMessage.To.Add(student.Guardian.Email);
 
