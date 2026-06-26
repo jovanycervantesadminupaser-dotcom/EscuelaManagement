@@ -87,26 +87,26 @@
                 <MudText Typo="Typo.h6" Class="mt-2 mb-4" Color="Color.Secondary">1. Datos del Alumno</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -115,20 +115,20 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">2. Datos del Tutor / Contacto</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -137,25 +137,25 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">3. Dirección</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -183,22 +183,22 @@
                     @if (turnoSeleccionado == "OTRO")
                     {
                         <MudItem xs="12" md="4">
-                            <MudTextField Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
+                            <MudTextField T="string" Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
                         </MudItem>
                     }
 
                     <MudItem xs="12" md="4">
-                        <MudNumericField Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
+                        <MudNumericField T="double" Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
                     
                     <MudItem xs="12" Class="mt-4">
-                        <MudCheckBox @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
                     </MudItem>
                 </MudGrid>
 
@@ -546,7 +546,7 @@
         }
         catch (SmtpException smtpEx)
         {
-            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación o permisos. Detalle: {smtpEx.Message}", Severity.Error);
+            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación. Detalle: {smtpEx.Message}", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -667,7 +667,7 @@
                         c.Item().Text("• Tener menos del 90% de asistencias, tomando en cuenta que por día se pueden ver una o más clases; lo que equivale a una falta por materia.");
                         c.Item().Text("• Tener menos del 90% en entregas de tareas y actividades asignadas por el docente.");
                         c.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
-                        c.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
+                        c.Item().Text("• Tener menos de 80% en las evaluations que se harán por parte de UPASER.");
                         
                         c.Item().PaddingTop(10).Text("NOTA. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
 

@@ -344,7 +344,7 @@
     {
         if (selectedStudent == null || string.IsNullOrWhiteSpace(selectedStudent.Guardian.Email))
         {
-            Snackbar.Add("El tutor no tiene un correo válido registrado. El pago se guardó pero el ticket no pudo enviarse.", Severity.Warning);
+            Snackbar.Add("El tutor no tiene un correo válido registrado.", Severity.Warning);
             return;
         }
 
