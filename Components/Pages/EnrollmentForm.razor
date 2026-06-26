@@ -46,7 +46,7 @@
         </MudGrid>
     </MudCard>
 
-    <EditForm Model="@student" OnValidSubmit="HandleSubmit">
+    <MudForm @ref="form" @bind-IsValid="@success">
         <MudCard Elevation="3">
             <MudCardContent>
                 
@@ -57,8 +57,8 @@
                             <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3" Style="background-color: #f5f5f5;">
                                 <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
                                 <div class="mt-3 d-flex gap-4">
-                                    <MudButton ButtonType="ButtonType.Button" OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
-                                    <MudButton ButtonType="ButtonType.Button" OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text">Cancelar</MudButton>
+                                    <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
+                                    <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text">Cancelar</MudButton>
                                 </div>
                             </MudPaper>
                         }
@@ -77,7 +77,7 @@
                             
                             <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
                                 <MudButton HtmlTag="label" for="fileInput" StartIcon="@Icons.Material.Filled.FileUpload">Subir Archivo</MudButton>
-                                <MudButton ButtonType="ButtonType.Button" OnClick="AbrirCamara" StartIcon="@Icons.Material.Filled.CameraAlt">Usar Cámara</MudButton>
+                                <MudButton OnClick="AbrirCamara" StartIcon="@Icons.Material.Filled.CameraAlt">Usar Cámara</MudButton>
                             </MudButtonGroup>
                             <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
                         }
@@ -87,26 +87,26 @@
                 <MudText Typo="Typo.h6" Class="mt-2 mb-4" Color="Color.Secondary">1. Datos del Alumno</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Nombre(s)*" @bind-Value="student.Name" Required="true" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -115,20 +115,20 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">2. Datos del Tutor / Contacto</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio para enviar la ficha" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -137,25 +137,25 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">3. Dirección</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -164,41 +164,41 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Documentación Legal</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Seleccionar Curso*" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
+                        <MudSelect T="string" Label="Seleccionar Curso*" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un curso">
                             @foreach (var curso in cursosDisponibles)
                             {
-                                <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem>
+                                <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Turno del Curso*" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true">
-                            <MudSelectItem Value="@("MATUTINO")">MATUTINO</MudSelectItem>
-                            <MudSelectItem Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
-                            <MudSelectItem Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
+                        <MudSelect T="string" Label="Turno del Curso*" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un turno">
+                            <MudSelectItem T="string" Value="@("MATUTINO")">MATUTINO</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
                         </MudSelect>
                     </MudItem>
 
                     @if (turnoSeleccionado == "OTRO")
                     {
                         <MudItem xs="12" md="4">
-                            <MudTextField Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" />
+                            <MudTextField T="string" Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
                         </MudItem>
                     }
 
                     <MudItem xs="12" md="4">
-                        <MudNumericField Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
+                        <MudNumericField T="double" Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
                     
                     <MudItem xs="12" Class="mt-4">
-                        <MudCheckBox @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
                     </MudItem>
                 </MudGrid>
 
@@ -208,13 +208,19 @@
                 @if (!registroCompletado)
                 {
                     <div class="d-flex gap-4">
-                        @* --- OPCIÓN 1: GUARDAR Y ENVIAR POR CORREO --- *@
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="@(() => tipoAccion = "correo")">
-                            GUARDAR Y ENVIAR POR CORREO
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo">
+                            @if (enviandoCorreo)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>ENVIANDO...</span>
+                            }
+                            else
+                            {
+                                <span>GUARDAR Y ENVIAR POR CORREO</span>
+                            }
                         </MudButton>
 
-                        @* --- OPCIÓN 2: GUARDAR E IMPRIMIR / DESCARGAR --- *@
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => tipoAccion = "descargar")">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo">
                             GUARDAR Y DESCARGAR PDF
                         </MudButton>
                     </div>
@@ -225,21 +231,24 @@
                         ¡Operación completada exitosamente!
                     </MudAlert>
                     
-                    <div class="d-flex gap-4">
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="@(() => tipoAccion = "correo")">
-                            GUARDAR Y ENVIAR POR CORREO
+                    <div class="d-flex gap-3">
+                        <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
+                            Notificar WhatsApp
                         </MudButton>
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => tipoAccion = "descargar")">
-                            GUARDAR Y DESCARGAR TICKET
+                        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="LimpiarFormulario">
+                            NUEVA INSCRIPCIÓN
                         </MudButton>
                     </div>
                 }
             </MudCardActions>
         </MudCard>
-    </EditForm>
+    </MudForm>
 </MudContainer>
 
 @code {
+    private MudForm form = default!;
+    private bool success;
+
     private Student student = new();
     private Enrollment enrollment = new();
     private DateTime? tempDate;
@@ -260,7 +269,7 @@
     private bool registroCompletado = false;
     private bool enviandoCorreo = false;
     private byte[]? lastGeneratedPdfBytes;
-    private string tipoAccion = "descargar"; // Variable para saber qué botón se presionó
+    private string tipoAccion = "descargar";
 
     protected override async Task OnInitializedAsync()
     {
@@ -335,6 +344,7 @@
         turnoSeleccionado = "";
         turnoManual = "";
         registroCompletado = false;
+        enviandoCorreo = false;
         lastGeneratedPdfBytes = null;
         tipoAccion = "descargar";
     }
@@ -385,6 +395,36 @@
         }
     }
 
+    private async Task GuardarYEnviarCorreo()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            tipoAccion = "correo";
+            enviandoCorreo = true;
+            StateHasChanged();
+            await HandleSubmit();
+        }
+        else
+        {
+            Snackbar.Add("Por favor, completa todos los campos obligatorios marcados con *", Severity.Warning);
+        }
+    }
+
+    private async Task GuardarYDescargar()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            tipoAccion = "descargar";
+            await HandleSubmit();
+        }
+        else
+        {
+            Snackbar.Add("Por favor, completa todos los campos obligatorios marcados con *", Severity.Warning);
+        }
+    }
+
     private async Task HandleSubmit()
     {
         try
@@ -411,11 +451,9 @@
             var pdfBytes = GeneratePdfDocument();
             lastGeneratedPdfBytes = pdfBytes;
 
-            // Lógica según el botón presionado
             if (tipoAccion == "correo")
             {
-                await CompartirCorreo();
-                Snackbar.Add("Inscripción guardada. El documento fue enviado al tutor.", Severity.Success);
+                await CompartirCorreoSMTP();
             }
             else
             {
@@ -430,6 +468,10 @@
         {
             Snackbar.Add($"Error al procesar la inscripción: {ex.Message}", Severity.Error);
         }
+        finally
+        {
+            enviandoCorreo = false;
+        }
     }
 
     private async Task CompartirWhatsApp()
@@ -442,7 +484,7 @@
 
         if (string.IsNullOrEmpty(telefono) || telefono.Length != 10)
         {
-            Snackbar.Add("No hay un número válido de 10 dígitos registrado para el tutor o el alumno.", Severity.Warning);
+            Snackbar.Add("No hay un número válido de 10 dígitos registrado.", Severity.Warning);
             return;
         }
 
@@ -452,23 +494,25 @@
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
-    private async Task CompartirCorreo()
+    // --- ENVÍO SMTP AUTOMÁTICO ---
+    private async Task CompartirCorreoSMTP()
     {
         if (string.IsNullOrWhiteSpace(student.Guardian.Email))
         {
-            Snackbar.Add("El tutor no cuenta con una dirección de correo válida. El archivo no pudo enviarse.", Severity.Warning);
+            Snackbar.Add("El tutor no cuenta con una dirección de correo válida.", Severity.Warning);
             return;
         }
 
         if (lastGeneratedPdfBytes == null) return;
 
-        enviandoCorreo = true;
-        StateHasChanged();
-
         try
         {
-            string correoSalida = "upaserescuela@gmail.com"; 
+            // =====================================================================
+            // ¡AQUÍ COLOCAS TUS DATOS DE GMAIL DE LA ESCUELA! 
+            // =====================================================================
+            string correoSalida = "upasersistema@gmail.com"; 
             string contrasenaSmtp = "naxl pzeg mryt vgco"; 
+            // =====================================================================
 
             using (var smtpClient = new SmtpClient("smtp.gmail.com")
             {
@@ -483,7 +527,8 @@
                     
                     mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
                     mailMessage.Subject = "Confirmación de Inscripción - UPASER";
-                    mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito en nuestro sistema.\n\nAdjunto a este correo encontrará la Ficha de Inscripción oficial con los términos, condiciones y póliza de garantía en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
+                    mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nEncontrará adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
+                    
                     mailMessage.To.Add(student.Guardian.Email);
 
                     using (var memoryStream = new MemoryStream(lastGeneratedPdfBytes))
@@ -496,16 +541,11 @@
                 }
             }
 
-            Snackbar.Add("¡El correo electrónico se ha enviado automáticamente al tutor con el PDF adjunto!", Severity.Success);
+            Snackbar.Add("¡Correo enviado automáticamente al tutor con el PDF adjunto!", Severity.Success);
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al enviar correo automático: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            enviandoCorreo = false;
-            StateHasChanged();
         }
     }
 
