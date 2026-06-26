@@ -87,26 +87,26 @@
                 <MudText Typo="Typo.h6" Class="mt-2 mb-4" Color="Color.Secondary">1. Datos del Alumno</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -115,20 +115,20 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">2. Datos del Tutor / Contacto</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
                     </MudItem>
                     
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -137,25 +137,25 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">3. Dirección</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField T="string" Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="3">
-                        <MudTextField T="string" Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField T="string" Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="6" md="2">
-                        <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -183,22 +183,22 @@
                     @if (turnoSeleccionado == "OTRO")
                     {
                         <MudItem xs="12" md="4">
-                            <MudTextField T="string" Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
+                            <MudTextField Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
                         </MudItem>
                     }
 
                     <MudItem xs="12" md="4">
-                        <MudNumericField T="double" Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
+                        <MudNumericField Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
                     
                     <MudItem xs="12" Class="mt-4">
-                        <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
+                        <MudCheckBox @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
+                        <MudCheckBox @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
+                        <MudCheckBox @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
                     </MudItem>
                 </MudGrid>
 
@@ -417,6 +417,8 @@
         if (form.IsValid)
         {
             tipoAccion = "descargar";
+            enviandoCorreo = true; 
+            StateHasChanged();
             await HandleSubmit();
         }
         else
@@ -462,7 +464,6 @@
             }
             
             registroCompletado = true;
-            StateHasChanged(); 
         }
         catch (Exception ex)
         {
@@ -471,6 +472,7 @@
         finally
         {
             enviandoCorreo = false;
+            StateHasChanged(); 
         }
     }
 
@@ -494,7 +496,6 @@
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
-    // --- ENVÍO SMTP AUTOMÁTICO ---
     private async Task CompartirCorreoSMTP()
     {
         if (string.IsNullOrWhiteSpace(student.Guardian.Email))
@@ -507,41 +508,45 @@
 
         try
         {
-            // =====================================================================
-            // ¡AQUÍ COLOCAS TUS DATOS DE GMAIL DE LA ESCUELA! 
-            // =====================================================================
-            string correoSalida = "upasersistema@gmail.com"; 
+            string correoSalida = "upaserescuela@gmail.com"; 
             string contrasenaSmtp = "naxl pzeg mryt vgco"; 
-            // =====================================================================
 
-            using (var smtpClient = new SmtpClient("smtp.gmail.com")
+            await Task.Run(() => 
             {
-                Port = 587,
-                Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
-                EnableSsl = true,
-            })
-            {
-                using (var mailMessage = new MailMessage())
+                using (var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
-                    var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
-                    
-                    mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
-                    mailMessage.Subject = "Confirmación de Inscripción - UPASER";
-                    mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nEncontrará adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
-                    
-                    mailMessage.To.Add(student.Guardian.Email);
-
-                    using (var memoryStream = new MemoryStream(lastGeneratedPdfBytes))
+                    Port = 587,
+                    Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
+                    EnableSsl = true,
+                    Timeout = 15000 
+                })
+                {
+                    using (var mailMessage = new MailMessage())
                     {
-                        var attachment = new Attachment(memoryStream, $"Ficha_Inscripcion_{student.PaternalLastName}.pdf", "application/pdf");
-                        mailMessage.Attachments.Add(attachment);
+                        var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
+                        
+                        mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
+                        mailMessage.Subject = "Confirmación de Inscripción - UPASER";
+                        mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nEncontrará adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
+                        
+                        mailMessage.To.Add(student.Guardian.Email);
 
-                        await smtpClient.SendMailAsync(mailMessage);
+                        using (var memoryStream = new MemoryStream(lastGeneratedPdfBytes))
+                        {
+                            var attachment = new Attachment(memoryStream, $"Ficha_Inscripcion_{student.PaternalLastName}.pdf", "application/pdf");
+                            mailMessage.Attachments.Add(attachment);
+
+                            smtpClient.Send(mailMessage); 
+                        }
                     }
                 }
-            }
+            });
 
             Snackbar.Add("¡Correo enviado automáticamente al tutor con el PDF adjunto!", Severity.Success);
+        }
+        catch (SmtpException smtpEx)
+        {
+            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación o permisos. Detalle: {smtpEx.Message}", Severity.Error);
         }
         catch (Exception ex)
         {

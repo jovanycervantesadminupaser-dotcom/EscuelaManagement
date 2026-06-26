@@ -293,6 +293,8 @@
         if (form.IsValid)
         {
             tipoAccion = "descargar";
+            enviandoCorreo = true;
+            StateHasChanged();
             await HandlePaymentSubmit();
         }
     }
@@ -326,7 +328,6 @@
 
             historialPagos = await Firebase.GetPaymentsByStudentAsync(selectedStudent.Id);
             CalcularSaldosCurso(ultimoCursoId);
-            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -356,32 +357,41 @@
             string contrasenaSmtp = "naxl pzeg mryt vgco"; 
             // =====================================================================
 
-            using (var smtpClient = new SmtpClient("smtp.gmail.com")
+            await Task.Run(() => 
             {
-                Port = 587,
-                Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
-                EnableSsl = true,
-            })
-            {
-                using (var mailMessage = new MailMessage())
+                using (var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
-                    var nombreTutor = string.IsNullOrEmpty(selectedStudent.Guardian.Name) ? "Padre o Tutor" : selectedStudent.Guardian.Name;
-                    
-                    mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
-                    mailMessage.Subject = "Confirmación de Pago - UPASER";
-                    mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que hemos recibido exitosamente el pago correspondiente a la cuenta de {selectedStudent.Name} {selectedStudent.PaternalLastName}.\n\nEncontrará adjunto el recibo oficial de esta transacción en formato PDF.\n\n¡Gracias por su confianza y puntualidad!\n\nSaludos cordiales,\nControl Escolar - UPASER";
-                    mailMessage.To.Add(selectedStudent.Guardian.Email);
-
-                    using (var memoryStream = new MemoryStream(pdfBytes))
+                    Port = 587,
+                    Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
+                    EnableSsl = true,
+                    Timeout = 15000
+                })
+                {
+                    using (var mailMessage = new MailMessage())
                     {
-                        var attachment = new Attachment(memoryStream, $"Ticket_UPASER_{DateTime.Now:yyyyMMdd}.pdf", "application/pdf");
-                        mailMessage.Attachments.Add(attachment);
+                        var nombreTutor = string.IsNullOrEmpty(selectedStudent.Guardian.Name) ? "Padre o Tutor" : selectedStudent.Guardian.Name;
+                        
+                        mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
+                        mailMessage.Subject = "Confirmación de Pago - UPASER";
+                        mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que hemos recibido exitosamente el pago correspondiente a la cuenta de {selectedStudent.Name} {selectedStudent.PaternalLastName}.\n\nEncontrará adjunto el recibo oficial de esta transacción en formato PDF.\n\n¡Gracias por su confianza y puntualidad!\n\nSaludos cordiales,\nControl Escolar - UPASER";
+                        mailMessage.To.Add(selectedStudent.Guardian.Email);
 
-                        await smtpClient.SendMailAsync(mailMessage);
+                        using (var memoryStream = new MemoryStream(pdfBytes))
+                        {
+                            var attachment = new Attachment(memoryStream, $"Ticket_UPASER_{DateTime.Now:yyyyMMdd}.pdf", "application/pdf");
+                            mailMessage.Attachments.Add(attachment);
+
+                            smtpClient.Send(mailMessage); 
+                        }
                     }
                 }
-            }
+            });
+
             Snackbar.Add("Pago aplicado. Ticket enviado por correo al tutor.", Severity.Success);
+        }
+        catch (SmtpException smtpEx)
+        {
+            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación o permisos. Detalle: {smtpEx.Message}", Severity.Error);
         }
         catch (Exception ex)
         {
