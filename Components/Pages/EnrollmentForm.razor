@@ -5,8 +5,6 @@
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @using QuestPDF.Fluent
-@using System.Net.Mail
-@using System.Net
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -453,13 +451,14 @@
             var pdfBytes = GeneratePdfDocument();
             lastGeneratedPdfBytes = pdfBytes;
 
+            await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
+
             if (tipoAccion == "correo")
             {
-                await CompartirCorreoSMTP();
+                await CompartirCorreoHibrido();
             }
             else
             {
-                await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
                 Snackbar.Add("Inscripción guardada. El documento ha sido descargado.", Severity.Success);
             }
             
@@ -496,7 +495,7 @@
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
-    private async Task CompartirCorreoSMTP()
+    private async Task CompartirCorreoHibrido()
     {
         if (string.IsNullOrWhiteSpace(student.Guardian.Email))
         {
@@ -504,53 +503,20 @@
             return;
         }
 
-        if (lastGeneratedPdfBytes == null) return;
-
         try
         {
-            string correoSalida = "upaserescuela@gmail.com"; 
-            string contrasenaSmtp = "naxl pzeg mryt vgco"; 
+            var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
+            var asunto = Uri.EscapeDataString("Confirmación de Inscripción - UPASER");
+            var cuerpo = Uri.EscapeDataString($"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nPor favor, encuentre adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER");
+            
+            var mailtoUrl = $"mailto:{student.Guardian.Email}?subject={asunto}&body={cuerpo}";
+            await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
 
-            await Task.Run(() => 
-            {
-                using (var smtpClient = new SmtpClient("smtp.gmail.com")
-                {
-                    Port = 587,
-                    Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
-                    EnableSsl = true,
-                    Timeout = 15000 
-                })
-                {
-                    using (var mailMessage = new MailMessage())
-                    {
-                        var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
-                        
-                        mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
-                        mailMessage.Subject = "Confirmación de Inscripción - UPASER";
-                        mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nEncontrará adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER";
-                        
-                        mailMessage.To.Add(student.Guardian.Email);
-
-                        using (var memoryStream = new MemoryStream(lastGeneratedPdfBytes))
-                        {
-                            var attachment = new Attachment(memoryStream, $"Ficha_Inscripcion_{student.PaternalLastName}.pdf", "application/pdf");
-                            mailMessage.Attachments.Add(attachment);
-
-                            smtpClient.Send(mailMessage); 
-                        }
-                    }
-                }
-            });
-
-            Snackbar.Add("¡Correo enviado automáticamente al tutor con el PDF adjunto!", Severity.Success);
-        }
-        catch (SmtpException smtpEx)
-        {
-            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación. Detalle: {smtpEx.Message}", Severity.Error);
+            Snackbar.Add("Ficha guardada localmente. Gestor de correo abierto.", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al enviar correo automático: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al abrir el gestor de correo: {ex.Message}", Severity.Error);
         }
     }
 
@@ -667,7 +633,7 @@
                         c.Item().Text("• Tener menos del 90% de asistencias, tomando en cuenta que por día se pueden ver una o más clases; lo que equivale a una falta por materia.");
                         c.Item().Text("• Tener menos del 90% en entregas de tareas y actividades asignadas por el docente.");
                         c.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
-                        c.Item().Text("• Tener menos de 80% en las evaluations que se harán por parte de UPASER.");
+                        c.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
                         
                         c.Item().PaddingTop(10).Text("NOTA. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
 

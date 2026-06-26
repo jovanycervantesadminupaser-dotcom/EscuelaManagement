@@ -4,8 +4,6 @@
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using QuestPDF.Fluent
-@using System.Net.Mail
-@using System.Net
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -313,13 +311,14 @@
             var cursoActivo = todosLosCursos.First(c => c.Id == newPayment.CourseId);
             var pdfBytes = GenerarTicketPdf(newPayment, cursoActivo);
 
+            await DescargarPdf(pdfBytes, $"Ticket_{selectedStudent.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+
             if (tipoAccion == "correo")
             {
-                await CompartirTicketPorCorreoSMTP(pdfBytes);
+                await CompartirTicketPorCorreoHibrido();
             }
             else
             {
-                await DescargarPdf(pdfBytes, $"Ticket_{selectedStudent.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
                 Snackbar.Add("Pago aplicado. Ticket descargado.", Severity.Success);
             }
 
@@ -340,7 +339,7 @@
         }
     }
 
-    private async Task CompartirTicketPorCorreoSMTP(byte[] pdfBytes)
+    private async Task CompartirTicketPorCorreoHibrido()
     {
         if (selectedStudent == null || string.IsNullOrWhiteSpace(selectedStudent.Guardian.Email))
         {
@@ -350,52 +349,18 @@
 
         try
         {
-            // =====================================================================
-            // ¡AQUÍ COLOCAS TUS DATOS DE GMAIL DE LA ESCUELA! 
-            // =====================================================================
-            string correoSalida = "upaserescuela@gmail.com"; 
-            string contrasenaSmtp = "naxl pzeg mryt vgco"; 
-            // =====================================================================
+            var nombreTutor = string.IsNullOrEmpty(selectedStudent.Guardian.Name) ? "Padre o Tutor" : selectedStudent.Guardian.Name;
+            var asunto = Uri.EscapeDataString("Confirmación de Pago - UPASER");
+            var cuerpo = Uri.EscapeDataString($"Estimado(a) {nombreTutor},\n\nLe informamos que hemos recibido exitosamente el pago correspondiente a la cuenta de {selectedStudent.Name} {selectedStudent.PaternalLastName}.\n\nPor favor, encuentre adjunto el recibo oficial de esta transacción en formato PDF.\n\n¡Gracias por su confianza y puntualidad!\n\nSaludos cordiales,\nControl Escolar - UPASER");
 
-            await Task.Run(() => 
-            {
-                using (var smtpClient = new SmtpClient("smtp.gmail.com")
-                {
-                    Port = 587,
-                    Credentials = new NetworkCredential(correoSalida, contrasenaSmtp),
-                    EnableSsl = true,
-                    Timeout = 15000
-                })
-                {
-                    using (var mailMessage = new MailMessage())
-                    {
-                        var nombreTutor = string.IsNullOrEmpty(selectedStudent.Guardian.Name) ? "Padre o Tutor" : selectedStudent.Guardian.Name;
-                        
-                        mailMessage.From = new MailAddress(correoSalida, configuracionEscuela.NombreEscuela);
-                        mailMessage.Subject = "Confirmación de Pago - UPASER";
-                        mailMessage.Body = $"Estimado(a) {nombreTutor},\n\nLe informamos que hemos recibido exitosamente el pago correspondiente a la cuenta de {selectedStudent.Name} {selectedStudent.PaternalLastName}.\n\nEncontrará adjunto el recibo oficial de esta transacción en formato PDF.\n\n¡Gracias por su confianza y puntualidad!\n\nSaludos cordiales,\nControl Escolar - UPASER";
-                        mailMessage.To.Add(selectedStudent.Guardian.Email);
+            var mailtoUrl = $"mailto:{selectedStudent.Guardian.Email}?subject={asunto}&body={cuerpo}";
+            await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
 
-                        using (var memoryStream = new MemoryStream(pdfBytes))
-                        {
-                            var attachment = new Attachment(memoryStream, $"Ticket_UPASER_{DateTime.Now:yyyyMMdd}.pdf", "application/pdf");
-                            mailMessage.Attachments.Add(attachment);
-
-                            smtpClient.Send(mailMessage); 
-                        }
-                    }
-                }
-            });
-
-            Snackbar.Add("Pago aplicado. Ticket enviado por correo al tutor.", Severity.Success);
-        }
-        catch (SmtpException smtpEx)
-        {
-            Snackbar.Add($"Error de conexión SMTP: Revisa la contraseña de aplicación o permisos. Detalle: {smtpEx.Message}", Severity.Error);
+            Snackbar.Add("Ticket guardado localmente. Gestor de correo abierto.", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Pago aplicado, pero hubo un error al enviar el correo automático: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al abrir el gestor de correo: {ex.Message}", Severity.Error);
         }
     }
 
