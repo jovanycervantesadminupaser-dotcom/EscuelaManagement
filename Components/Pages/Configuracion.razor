@@ -70,7 +70,7 @@
                         Subir Imagen de Fondo
                     </MudButton>
                     <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
-                    <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: JPG o PNG de alta resolución (Max 10MB).</MudText>
+                    <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: JPG o PNG de alta resolución.</MudText>
                 </MudItem>
 
                 <MudItem xs="12">
@@ -176,7 +176,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        config = await Firebase.GetConfiguracionAsync();
+        config = await Firebase.GetConfiguracionAsync() ?? new();
         await CargarUsuarios();
     }
 
@@ -187,23 +187,33 @@
         cargandoUsuarios = false;
     }
 
-    // --- LÓGICA DE IDENTIDAD ESCOLAR ---
+    // --- LÓGICA DE IDENTIDAD ESCOLAR CON COMPRESIÓN ---
     private async Task CambiarLogo(InputFileChangeEventArgs e)
     {
-        var archivo = e.File;
-        if (archivo != null)
+        try
         {
-            using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 2);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            var buffer = memoryStream.ToArray();
-            
-            config.LogoBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
-            StateHasChanged();
+            var archivo = e.File;
+            if (archivo != null)
+            {
+                // Comprime el logo a un máximo de 500x500 píxeles para mantenerlo super ligero
+                var format = "image/png";
+                var resizedImage = await archivo.RequestImageFileAsync(format, 500, 500);
+
+                using var stream = resizedImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var buffer = memoryStream.ToArray();
+                
+                config.LogoBase64 = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al procesar el logo: {ex.Message}", Severity.Error);
         }
     }
 
-    // --- MÉTODO PARA SUBIR EL FONDO DE LOGIN (CON MANEJO DE ERRORES) ---
     private async Task UploadBackground(InputFileChangeEventArgs e)
     {
         try
@@ -211,22 +221,27 @@
             var archivo = e.File;
             if (archivo != null)
             {
-                Snackbar.Add("Procesando imagen, por favor espera...", Severity.Info);
+                Snackbar.Add("Optimizando imagen, por favor espera...", Severity.Info);
                 
-                using var stream = archivo.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); 
+                // Comprime el fondo a resolución HD (1280x720) en formato JPG
+                // Esto garantiza que el archivo final pese menos de 1 MB para Firebase
+                var format = "image/jpeg";
+                var resizedImage = await archivo.RequestImageFileAsync(format, 1280, 720);
+                
+                using var stream = resizedImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15); 
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
                 var buffer = memoryStream.ToArray();
                 
-                config.BackgroundLoginBase64 = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(buffer)}";
+                config.BackgroundLoginBase64 = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
                 StateHasChanged();
                 
-                Snackbar.Add("Vista previa generada. ¡No olvides dar clic en GUARDAR CONFIGURACIÓN abajo!", Severity.Success);
+                Snackbar.Add("Fondo optimizado con éxito. ¡Haz clic en GUARDAR CONFIGURACIÓN!", Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar: La imagen es demasiado pesada. Intenta con una imagen de menor resolución. ({ex.Message})", Severity.Error);
+            Snackbar.Add($"Error al cargar la imagen. Intenta con una diferente. ({ex.Message})", Severity.Error);
         }
     }
 
@@ -238,8 +253,15 @@
             return;
         }
 
-        await Firebase.SaveConfiguracionAsync(config);
-        Snackbar.Add("Configuración institucional guardada correctamente.", Severity.Success);
+        try
+        {
+            await Firebase.SaveConfiguracionAsync(config);
+            Snackbar.Add("Configuración institucional guardada correctamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar en Firebase: Verifica que la imagen no sea excesivamente grande. ({ex.Message})", Severity.Error);
+        }
     }
 
     // --- LÓGICA DE USUARIOS ---
