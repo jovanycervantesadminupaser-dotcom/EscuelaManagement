@@ -14,19 +14,19 @@
                     <MudDivider />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Nombre(s)" @bind-Value="StudentToEdit.Name" Required="true" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Nombre(s)" @bind-Value="StudentToEdit.Name" Required="true" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Apellido Paterno" @bind-Value="StudentToEdit.PaternalLastName" Required="true" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Apellido Paterno" @bind-Value="StudentToEdit.PaternalLastName" Required="true" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
+                    <MudTextField T="string" Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
                 </MudItem>
 
                 <MudItem xs="12" Class="pb-0 mt-2">
@@ -34,19 +34,19 @@
                     <MudDivider />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Label="Calle" @bind-Value="StudentToEdit.Address!.Street" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Calle" @bind-Value="StudentToEdit.Address!.Street" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="3">
-                    <MudTextField Label="Num. Ext/Int" @bind-Value="StudentToEdit.Address!.ExtNumber" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Num. Ext/Int" @bind-Value="StudentToEdit.Address!.ExtNumber" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="3">
-                    <MudTextField Label="Código Postal" @bind-Value="StudentToEdit.Address!.ZipCode" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Código Postal" @bind-Value="StudentToEdit.Address!.ZipCode" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Label="Colonia" @bind-Value="StudentToEdit.Address!.Neighborhood" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Colonia" @bind-Value="StudentToEdit.Address!.Neighborhood" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Label="Municipio / Alcaldía" @bind-Value="StudentToEdit.Address!.Municipality" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="StudentToEdit.Address!.Municipality" Variant="Variant.Outlined" />
                 </MudItem>
 
                 <MudItem xs="12" Class="pb-0 mt-2">
@@ -54,16 +54,21 @@
                     <MudDivider />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Nombre(s) del Tutor" @bind-Value="StudentToEdit.Guardian!.Name" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Nombre(s) del Tutor" @bind-Value="StudentToEdit.Guardian!.Name" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Apellidos" @bind-Value="StudentToEdit.Guardian!.PaternalLastName" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Apellidos" @bind-Value="StudentToEdit.Guardian!.PaternalLastName" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Label="Parentesco" @bind-Value="StudentToEdit.Guardian!.Relationship" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Parentesco" @bind-Value="StudentToEdit.Guardian!.Relationship" Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField Label="Teléfono Tutor" @bind-Value="StudentToEdit.Guardian!.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
+                
+                @* --- AQUÍ SE AJUSTA EL TELÉFONO Y SE AGREGA EL CORREO --- *@
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Teléfono Tutor" @bind-Value="StudentToEdit.Guardian!.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Correo Electrónico" @bind-Value="StudentToEdit.Guardian!.Email" Variant="Variant.Outlined" InputType="InputType.Email" />
                 </MudItem>
             </MudGrid>
         </MudForm>
