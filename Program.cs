@@ -1,10 +1,21 @@
 using EscuelaManagement.Components;
 using MudBlazor.Services;
 using QuestPDF.Infrastructure;
+using System.Globalization;
 
 QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// =================================================================
+// 1. FORZAR LA CULTURA MEXICANA Y EL SÍMBOLO DE PESOS ($) EN EL SERVIDOR
+// =================================================================
+var cultureInfo = new CultureInfo("es-MX");
+cultureInfo.NumberFormat.CurrencySymbol = "$"; // Forzamos el símbolo clásico
+
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+// =================================================================
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -23,6 +34,15 @@ builder.Services.AddScoped<EscuelaManagement.Data.Services.UserSessionService>()
 
 var app = builder.Build();
 
+// =================================================================
+// 2. APLICAR LA LOCALIZACIÓN AL PIPELINE DE PETICIONES (BLAZOR)
+// =================================================================
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(cultureInfo)
+});
+// =================================================================
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -32,7 +52,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 
