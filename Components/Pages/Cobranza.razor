@@ -1,0 +1,296 @@
+@page "/cobranza"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@using QuestPDF.Fluent
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Módulo de Cobranza y Saldos</MudText>
+
+    @* TARJETAS INFORMATIVAS SUPERIORES *@
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
+                <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
+                <div>
+                    <MudText Typo="Typo.body2" Class="text-muted">Total por Cobrar (Morosidad)</MudText>
+                    <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
+                <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                <div>
+                    <MudText Typo="Typo.body2" Class="text-muted">Alumnos con Adeudos</MudText>
+                    <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* TABLA PRINCIPAL DE DEUDORES *@
+    <MudTable T="DebtorRowViewModel" Items="@listaDebidores" Loading="@isLoading" Elevation="3" Hover="true" Striped="true" Filter="new Func<DebtorRowViewModel,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Lista de Alumnos con Saldos Pendientes</MudText>
+            <MudSpacer />
+            <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Alumno</MudTh>
+            <MudTh>Curso Inscrito</MudTh>
+            <MudTh Style="text-align: right;">Costo (Con Desc.)</MudTh>
+            <MudTh Style="text-align: right;">Total Pagado</MudTh>
+            <MudTh Style="text-align: right;">Saldo Pendiente</MudTh>
+            <MudTh Style="text-align: center;">Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Alumno">
+                <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
+                <MudText Typo="Typo.caption" Class="text-muted">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
+            </MudTd>
+            <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
+            <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
+            <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="green-text">@context.TotalPaid.ToString("C")</MudTd>
+            <MudTd DataLabel="Saldo Pendiente" Style="text-align: right;">
+                <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">
+                    <b>@context.PendingBalance.ToString("C")</b>
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align: center;">
+                <div class="d-flex justify-center gap-2">
+                    <MudTooltip T="string" Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
+                    </MudTooltip>
+                    <MudTooltip T="string" Text="Recordatorio por WhatsApp" Arrow="true">
+                        <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Style="color: #25D366;" Size="Size.Small" OnClick="(() => EnviarRecordatorioWhatsApp(context))" />
+                    </MudTooltip>
+                    <MudTooltip T="string" Text="Recordatorio por Correo" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" OnClick="(() => EnviarRecordatorioCorreo(context))" />
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Align="Align.Center" Class="pa-4">
+                @(isLoading ? "Cargando estados financieros..." : "¡Felicidades! No se encontraron alumnos con adeudos pendientes.")
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string searchString = "";
+    private List<DebtorRowViewModel> listaDebidores = new();
+    private List<Course> todosLosCursos = new();
+    private double totalCarteraVencida = 0;
+    private ConfiguracionEscuela configuracionEscuela = new();
+
+    // Modelo de vista estructurado para agrupar los balances financieros por alumno/curso
+    public class DebtorRowViewModel
+    {
+        public string StudentId { get; set; } = "";
+        public string StudentName { get; set; } = "";
+        public string GuardianName { get; set; } = "";
+        public string GuardianPhone { get; set; } = "";
+        public string GuardianEmail { get; set; } = "";
+        public string CourseId { get; set; } = "";
+        public string CourseName { get; set; } = "";
+        public double TotalCost { get; set; }
+        public double TotalPaid { get; set; }
+        public double PendingBalance { get; set; }
+        public List<Payment> PaymentsHistory { get; set; } = new();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+            configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
+            todosLosCursos = await Firebase.GetCoursesAsync();
+            
+            var todosLosAlumnos = await Firebase.GetAllStudentsAsync();
+
+            foreach (var alumno in todosLosAlumnos)
+            {
+                // Recuperamos las inscripciones y pagos de cada alumno de manera organizada
+                var inscripciones = await Firebase.GetEnrollmentsByStudentAsync(alumno.Id);
+                var pagos = await Firebase.GetPaymentsByStudentAsync(alumno.Id);
+
+                foreach (var inscripcion in inscripciones)
+                {
+                    var curso = todosLosCursos.FirstOrDefault(c => c.Id == inscripcion.CourseId);
+                    if (curso != null)
+                    {
+                        // Calculamos costos considerando descuentos otorgados en la inscripción
+                        double costoConDescuento = curso.SinglePaymentCost * (1 - (inscripcion.DiscountAmount / 100.0));
+                        double abonadoAFecha = pagos.Where(p => p.CourseId == inscripcion.CourseId).Sum(p => p.Amount);
+                        double saldoRestante = costoConDescuento - abonadoAFecha;
+
+                        if (saldoRestante > 0.01) // Si el adeudo es mayor a cero centavos, entra a cobranza
+                        {
+                            listaDebidores.Add(new DebtorRowViewModel
+                            {
+                                StudentId = alumno.Id,
+                                StudentName = $"{alumno.Name} {alumno.PaternalLastName} {alumno.MaternalLastName}",
+                                GuardianName = string.IsNullOrEmpty(alumno.Guardian.Name) ? "Padre/Tutor" : alumno.Guardian.Name,
+                                GuardianPhone = alumno.Guardian.Phone ?? "",
+                                GuardianEmail = alumno.Guardian.Email ?? "",
+                                CourseId = curso.Id,
+                                CourseName = curso.Name,
+                                TotalCost = costoConDescuento,
+                                TotalPaid = abonadoAFecha,
+                                PendingBalance = saldoRestante,
+                                PaymentsHistory = pagos.Where(p => p.CourseId == inscripcion.CourseId).ToList()
+                            });
+                        }
+                    }
+                }
+            }
+
+            totalCarteraVencida = listaDebidores.Sum(d => d.PendingBalance);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al calcular estados de cuenta: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool FilterFunc(DebtorRowViewModel row)
+    {
+    if (string.IsNullOrWhiteSpace(searchString)) return true;
+    
+    return (row.StudentName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) || 
+           (row.CourseName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
+    private async Task EnviarRecordatorioWhatsApp(DebtorRowViewModel deudor)
+    {
+        if (string.IsNullOrEmpty(deudor.GuardianPhone) || deudor.GuardianPhone.Length != 10)
+        {
+            Snackbar.Add("El alumno no cuenta con un número de tutor válido a 10 dígitos.", Severity.Warning);
+            return;
+        }
+
+        var mensaje = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName}, le saludamos de {configuracionEscuela.NombreEscuela}. Le recordamos de manera atenta que la cuenta del alumno {deudor.StudentName} presenta un saldo pendiente de {deudor.PendingBalance.ToString("C")} correspondiente al curso {deudor.CourseName}. Agradecemos su apoyo.");
+        var url = $"https://wa.me/52{deudor.GuardianPhone}?text={mensaje}";
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task EnviarRecordatorioCorreo(DebtorRowViewModel deudor)
+    {
+        if (string.IsNullOrEmpty(deudor.GuardianEmail))
+        {
+            Snackbar.Add("El tutor no cuenta con un correo registrado.", Severity.Warning);
+            return;
+        }
+
+        var asunto = Uri.EscapeDataString("Recordatorio de Saldo Pendiente - UPASER");
+        var cuerpo = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName},\n\nPor este medio le informamos el estado financiero actual del alumno {deudor.StudentName} en el curso {deudor.CourseName}:\n\n- Costo total: {deudor.TotalCost.ToString("C")}\n- Total cubierto: {deudor.TotalPaid.ToString("C")}\n- Saldo Pendiente por Liquidar: {deudor.PendingBalance.ToString("C")}\n\nLe invitamos a acudir a control escolar para realizar su abono correspondiente.\n\nSaludos cordiales,\nAdministración - {configuracionEscuela.NombreEscuela}");
+        
+        var mailtoUrl = $"mailto:{deudor.GuardianEmail}?subject={asunto}&body={cuerpo}";
+        await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
+    }
+
+    private async Task DescargarEstadoCuenta(DebtorRowViewModel deudor)
+    {
+        try
+        {
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.PageColor(QuestPDF.Helpers.Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
+
+                    page.Header().Row(row =>
+                    {
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken3);
+                            col.Item().Text("ESTADO DE CUENTA CONSOLIDADO").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                            col.Item().Text($"Fecha de Emisión: {DateTime.Now.ToString("dd/MM/yyyy hh:mm tt")}");
+                        });
+                    });
+
+                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
+                    {
+                        x.Spacing(12);
+
+                        // Sección Informativa
+                        x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Información de la Cuenta").SemiBold();
+                        x.Item().Text($"Alumno: {deudor.StudentName}");
+                        x.Item().Text($"Tutor responsable: {deudor.GuardianName}");
+                        x.Item().Text($"Curso: {deudor.CourseName}");
+
+                        // Balance Resumido
+                        x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Resumen General de Saldos").SemiBold();
+                        x.Item().Text($"Costo Total Estructural: {deudor.TotalCost.ToString("C")}");
+                        x.Item().Text($"Total Amortizado a la Fecha: {deudor.TotalPaid.ToString("C")}").FontColor(QuestPDF.Helpers.Colors.Green.Medium);
+                        x.Item().Text($"SALDO CRÍTICO PENDIENTE: {deudor.PendingBalance.ToString("C")}").Bold().FontColor(QuestPDF.Helpers.Colors.Red.Medium);
+
+                        // Tabla de Desglose de Abonos
+                        x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Historial Cronológico de Abonos Recibidos").SemiBold();
+                        
+                        if (deudor.PaymentsHistory.Any())
+                        {
+                            x.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn();
+                                    columns.RelativeColumn();
+                                    columns.ConstantColumn(100);
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Text("Fecha").Bold();
+                                    header.Cell().Text("Concepto").Bold();
+                                    header.Cell().Text("Monto").Bold().AlignRight();
+                                });
+
+                                foreach (var pago in deudor.PaymentsHistory.OrderBy(p => p.PaymentDate))
+                                {
+                                    table.Cell().Text(pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy"));
+                                    table.Cell().Text(pago.Concept ?? "Abono regular");
+                                    table.Cell().Text(pago.Amount.ToString("C")).AlignRight();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            x.Item().Text("No se registran transacciones previas asociadas a este ciclo.").Italic();
+                        }
+                    });
+
+                    page.Footer().AlignCenter().Text("Control Escolar y Finanzas UPASER").FontSize(9).Italic();
+                });
+            }).GeneratePdf();
+
+            var safeName = deudor.StudentName.Replace(" ", "_");
+            var base64 = Convert.ToBase64String(pdfBytes);
+            var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = 'EstadoCuenta_{safeName}.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+            await JSRuntime.InvokeVoidAsync("eval", js);
+            
+            Snackbar.Add("Estado de cuenta generado y descargado.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al estructurar el reporte PDF: {ex.Message}", Severity.Error);
+        }
+    }
+}
