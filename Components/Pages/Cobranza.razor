@@ -38,14 +38,14 @@
         <ToolBarContent>
             <MudText Typo="Typo.h6">Lista de Alumnos con Saldos Pendientes</MudText>
             <MudSpacer />
-            <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
+            <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre o curso..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
         </ToolBarContent>
         <HeaderContent>
             <MudTh>Alumno</MudTh>
             <MudTh>Curso Inscrito</MudTh>
             <MudTh Style="text-align: right;">Costo (Con Desc.)</MudTh>
             <MudTh Style="text-align: right;">Total Pagado</MudTh>
-            <MudTh Style="text-align: right;">Saldo Pendiente</MudTh>
+            <MudTh Style="text-align: right;">Saldo Vencido</MudTh>
             <MudTh Style="text-align: center;">Acciones</MudTh>
         </HeaderContent>
         <RowTemplate>
@@ -56,14 +56,14 @@
             <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
             <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
             <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="green-text">@context.TotalPaid.ToString("C")</MudTd>
-            <MudTd DataLabel="Saldo Pendiente" Style="text-align: right;">
+            <MudTd DataLabel="Saldo Vencido" Style="text-align: right;">
                 <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">
                     <b>@context.PendingBalance.ToString("C")</b>
                 </MudChip>
             </MudTd>
             <MudTd DataLabel="Acciones" Style="text-align: center;">
                 <div class="d-flex justify-center gap-2">
-                    <MudTooltip T="string" Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
+                    <MudTooltip Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
                     </MudTooltip>
                     <MudTooltip T="string" Text="Recordatorio por WhatsApp" Arrow="true">
@@ -77,7 +77,7 @@
         </RowTemplate>
         <NoRecordsContent>
             <MudText Align="Align.Center" Class="pa-4">
-                @(isLoading ? "Cargando estados financieros..." : "¡Felicidades! No se encontraron alumnos con adeudos pendientes.")
+                @(isLoading ? "Cargando estados financieros financieros..." : "No se encontraron alumnos con adeudos vencidos en este momento.")
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -91,7 +91,6 @@
     private double totalCarteraVencida = 0;
     private ConfiguracionEscuela configuracionEscuela = new();
 
-    // Modelo de vista estructurado para agrupar los balances financieros por alumno/curso
     public class DebtorRowViewModel
     {
         public string StudentId { get; set; } = "";
@@ -119,7 +118,6 @@
 
             foreach (var alumno in todosLosAlumnos)
             {
-                // Recuperamos las inscripciones y pagos de cada alumno de manera organizada
                 var inscripciones = await Firebase.GetEnrollmentsByStudentAsync(alumno.Id);
                 var pagos = await Firebase.GetPaymentsByStudentAsync(alumno.Id);
 
@@ -128,12 +126,59 @@
                     var curso = todosLosCursos.FirstOrDefault(c => c.Id == inscripcion.CourseId);
                     if (curso != null)
                     {
-                        // Calculamos costos considerando descuentos otorgados en la inscripción
                         double costoConDescuento = curso.SinglePaymentCost * (1 - (inscripcion.DiscountAmount / 100.0));
                         double abonadoAFecha = pagos.Where(p => p.CourseId == inscripcion.CourseId).Sum(p => p.Amount);
-                        double saldoRestante = costoConDescuento - abonadoAFecha;
+                        double saldoGlobalRestante = costoConDescuento - abonadoAFecha;
 
-                        if (saldoRestante > 0.01) // Si el adeudo es mayor a cero centavos, entra a cobranza
+                        double montoExigibleHoy = 0;
+
+                        // Lectura de los factores dinámicos del plazo contratado
+                        string tipoPeriodo = string.IsNullOrEmpty(inscripcion.TipoPlazo) ? "Semanas" : inscripcion.TipoPlazo;
+                        int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
+                        double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
+
+                        if (tipoPeriodo.Equals("Unico", StringComparison.OrdinalIgnoreCase) || 
+                            tipoPeriodo.Equals("Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // En exhibición única el monto total es exigible inmediatamente
+                            montoExigibleHoy = costoConDescuento;
+                        }
+                        else
+                        {
+                            var fechaInscripcion = inscripcion.EnrollmentDate.ToLocalTime();
+                            var diasTranscurridos = (DateTime.Now - fechaInscripcion).TotalDays;
+                            int periodosTranscurridos = 0;
+
+                            // Cálculo del tiempo transcurrido en base al tipo de periodo
+                            if (tipoPeriodo == "Semanas")
+                            {
+                                periodosTranscurridos = (int)(diasTranscurridos / 7) + 1;
+                            }
+                            else if (tipoPeriodo == "Quincenas")
+                            {
+                                periodosTranscurridos = (int)(diasTranscurridos / 15) + 1;
+                            }
+                            else if (tipoPeriodo == "Meses")
+                            {
+                                periodosTranscurridos = (int)(diasTranscurridos / 30) + 1;
+                            }
+
+                            // Evitamos exceder el límite estructural del curso
+                            if (periodosTranscurridos > totalPeriodos) 
+                            {
+                                periodosTranscurridos = totalPeriodos;
+                            }
+
+                            montoExigibleHoy = periodosTranscurridos * costoPorPeriodo;
+                        }
+
+                        // Cálculo preciso de la morosidad real actual
+                        double montoVencidoReal = montoExigibleHoy - abonadoAFecha;
+
+                        // Si el curso completo está liquidado, la morosidad queda anulada
+                        if (saldoGlobalRestante <= 0) montoVencidoReal = 0;
+
+                        if (montoVencidoReal > 0.01) 
                         {
                             listaDebidores.Add(new DebtorRowViewModel
                             {
@@ -146,7 +191,7 @@
                                 CourseName = curso.Name,
                                 TotalCost = costoConDescuento,
                                 TotalPaid = abonadoAFecha,
-                                PendingBalance = saldoRestante,
+                                PendingBalance = montoVencidoReal,
                                 PaymentsHistory = pagos.Where(p => p.CourseId == inscripcion.CourseId).ToList()
                             });
                         }
@@ -169,10 +214,9 @@
 
     private bool FilterFunc(DebtorRowViewModel row)
     {
-    if (string.IsNullOrWhiteSpace(searchString)) return true;
-    
-    return (row.StudentName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) || 
-           (row.CourseName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false);
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        return (row.StudentName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) || 
+               (row.CourseName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
     private async Task EnviarRecordatorioWhatsApp(DebtorRowViewModel deudor)
@@ -183,7 +227,7 @@
             return;
         }
 
-        var mensaje = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName}, le saludamos de {configuracionEscuela.NombreEscuela}. Le recordamos de manera atenta que la cuenta del alumno {deudor.StudentName} presenta un saldo pendiente de {deudor.PendingBalance.ToString("C")} correspondiente al curso {deudor.CourseName}. Agradecemos su apoyo.");
+        var mensaje = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName}, le saludamos de {configuracionEscuela.NombreEscuela}. Le recordamos de manera atenta que la cuenta del alumno {deudor.StudentName} presenta un saldo vencido de {deudor.PendingBalance.ToString("C")} correspondiente al curso {deudor.CourseName}. Agradecemos su apoyo.");
         var url = $"https://wa.me/52{deudor.GuardianPhone}?text={mensaje}";
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
@@ -196,8 +240,8 @@
             return;
         }
 
-        var asunto = Uri.EscapeDataString("Recordatorio de Saldo Pendiente - UPASER");
-        var cuerpo = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName},\n\nPor este medio le informamos el estado financiero actual del alumno {deudor.StudentName} en el curso {deudor.CourseName}:\n\n- Costo total: {deudor.TotalCost.ToString("C")}\n- Total cubierto: {deudor.TotalPaid.ToString("C")}\n- Saldo Pendiente por Liquidar: {deudor.PendingBalance.ToString("C")}\n\nLe invitamos a acudir a control escolar para realizar su abono correspondiente.\n\nSaludos cordiales,\nAdministración - {configuracionEscuela.NombreEscuela}");
+        var asunto = Uri.EscapeDataString("Recordatorio de Saldo Vencido - UPASER");
+        var cuerpo = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName},\n\nPor este medio le informamos el estado financiero actual del alumno {deudor.StudentName} en el curso {deudor.CourseName}:\n\n- Costo total: {deudor.TotalCost.ToString("C")}\n- Total cubierto a la fecha: {deudor.TotalPaid.ToString("C")}\n- Saldo Atrasado Vencido: {deudor.PendingBalance.ToString("C")}\n\nLe invitamos a ponerse al corriente a la brevedad.\n\nSaludos cordiales,\nAdministración - {configuracionEscuela.NombreEscuela}");
         
         var mailtoUrl = $"mailto:{deudor.GuardianEmail}?subject={asunto}&body={cuerpo}";
         await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
@@ -230,19 +274,16 @@
                     {
                         x.Spacing(12);
 
-                        // Sección Informativa
                         x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Información de la Cuenta").SemiBold();
                         x.Item().Text($"Alumno: {deudor.StudentName}");
                         x.Item().Text($"Tutor responsable: {deudor.GuardianName}");
                         x.Item().Text($"Curso: {deudor.CourseName}");
 
-                        // Balance Resumido
                         x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Resumen General de Saldos").SemiBold();
                         x.Item().Text($"Costo Total Estructural: {deudor.TotalCost.ToString("C")}");
-                        x.Item().Text($"Total Amortizado a la Fecha: {deudor.TotalPaid.ToString("C")}").FontColor(QuestPDF.Helpers.Colors.Green.Medium);
-                        x.Item().Text($"SALDO CRÍTICO PENDIENTE: {deudor.PendingBalance.ToString("C")}").Bold().FontColor(QuestPDF.Helpers.Colors.Red.Medium);
+                        x.Item().Text($"Total Cubierto a la Fecha: {deudor.TotalPaid.ToString("C")}").FontColor(QuestPDF.Helpers.Colors.Green.Medium);
+                        x.Item().Text($"SALDO CRÍTICO VENCIDO: {deudor.PendingBalance.ToString("C")}").Bold().FontColor(QuestPDF.Helpers.Colors.Red.Medium);
 
-                        // Tabla de Desglose de Abonos
                         x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Historial Cronológico de Abonos Recibidos").SemiBold();
                         
                         if (deudor.PaymentsHistory.Any())
@@ -286,7 +327,7 @@
             var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = 'EstadoCuenta_{safeName}.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
             await JSRuntime.InvokeVoidAsync("eval", js);
             
-            Snackbar.Add("Estado de cuenta generado y descargado.", Severity.Success);
+            Snackbar.Add("Estado de cuenta generado correctamente.", Severity.Success);
         }
         catch (Exception ex)
         {

@@ -159,7 +159,7 @@
 
                 <MudDivider Class="my-6" />
 
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Documentación Legal</MudText>
+                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Esquema Financiero</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
                         <MudSelect T="string" Label="Seleccionar Curso*" @bind-Value="enrollment.CourseId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un curso">
@@ -188,6 +188,27 @@
                     <MudItem xs="12" md="4">
                         <MudNumericField T="double" Label="Descuento Aplicado (%)" @bind-Value="enrollment.DiscountAmount" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
+
+                    @* --- NUEVOS CAMPOS CONFIGURABLES PARA LA AMORTIZACIÓN Y MOROSIDAD --- *@
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="Esquema / Plazo de Pago*" @bind-Value="enrollment.TipoPlazo" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe definir el método de cobro">
+                            <MudSelectItem T="string" Value="@("Una Sola Exhibición")">Una Sola Exhibición</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("Semanas")">Semanas</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("Quincenas")">Quincenas</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("Meses")">Meses</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
+                    {
+                        <MudItem xs="6" md="4">
+                            <MudNumericField T="int" Label="Cantidad de Plazos*" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" Required="true" RequiredError="Defina el número de abonos" />
+                        </MudItem>
+                        <MudItem xs="6" md="4">
+                            <MudNumericField T="double" Label="Monto por Plazo ($)*" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Required="true" RequiredError="Defina el valor por abono" />
+                        </MudItem>
+                    }
+                    @* ------------------------------------------------------------------ *@
                     
                     <MudItem xs="12" Class="mt-4">
                         <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
@@ -209,7 +230,7 @@
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo">
                             @if (enviandoCorreo)
                             {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <MudProgressCircular T="string" Size="Size.Small" Indeterminate="true" Class="mr-2" />
                                 <span>ENVIANDO...</span>
                             }
                             else
@@ -443,8 +464,19 @@
 
             enrollment.StudentId = student.Id;
             enrollment.EnrollmentDate = DateTime.UtcNow; 
-            
             enrollment.Turno = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
+
+            // INTELLIGENT AUTO-FILL PARA EXHIBICIÓN ÚNICA
+            if (enrollment.TipoPlazo == "Una Sola Exhibición")
+            {
+                var curso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId);
+                if (curso != null)
+                {
+                    double costoConDescuento = curso.SinglePaymentCost * (1 - (enrollment.DiscountAmount / 100.0));
+                    enrollment.NumeroPlazos = 1;
+                    enrollment.MontoPlazo = costoConDescuento;
+                }
+            }
 
             await Firebase.AddEnrollmentAsync(enrollment);
 
@@ -459,7 +491,7 @@
             }
             else
             {
-                Snackbar.Add("Inscripción guardada. El documento ha sido descargado.", Severity.Success);
+                Snackbar.Add("Inscripción guardada de forma exitosa.", Severity.Success);
             }
             
             registroCompletado = true;
@@ -577,9 +609,10 @@
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("3. Dirección").SemiBold();
                     x.Item().Text($"{student.Address.Street} {student.Address.ExtNumber}, Col. {student.Address.Neighborhood}, {student.Address.Municipality}, {student.Address.State}. CP: {student.Address.ZipCode}");
 
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("4. Curso Inscrito").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("4. Curso Inscrito y Plan Financiero").SemiBold();
                     var nombreCurso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId)?.Name ?? "No seleccionado";
                     x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpper())}");
+                    x.Item().Text($"Esquema: {enrollment.TipoPlazo} | Plazos: {enrollment.NumeroPlazos} | Pago pactado: {enrollment.MontoPlazo.ToString("C")}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
 
                     if (aceptaRetiroSinTutor)
@@ -635,7 +668,7 @@
                         c.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
                         c.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
                         
-                        c.Item().PaddingTop(10).Text("NOTA. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
+                        c.Item().PaddingTop(10).Text("NOTE. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
 
                         c.Item().PaddingTop(15).Text("CLAUSULA PARA USO DE MARKETING").Bold();
                         c.Item().Text("El alumno autoriza expresamente a UPASER a captar, reproducir y utilizar su imagen, nombre y/o voz a través de fotografías, grabaciones de video o cualquier otro medio audiovisual, con fines exclusivamente publicitarios, institucionales, informativos y/o académicos relacionados con las actividades de la institución.");
