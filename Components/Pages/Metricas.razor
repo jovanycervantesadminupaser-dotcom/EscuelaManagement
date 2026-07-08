@@ -65,7 +65,6 @@
                 <MudCardContent Class="d-flex justify-center">
                     @if (dataCursos.Any())
                     {
-                        @* NOTA: Se agregó T="double" a la gráfica *@
                         <MudChart T="double" ChartType="ChartType.Pie" InputData="@dataCursos" InputLabels="@labelsCursos" Width="100%" Height="300px" />
                     }
                     else
@@ -86,7 +85,6 @@
                 <MudCardContent>
                     @if (SeriesAsesores.Any() && SeriesAsesores.First().Data.Any())
                     {
-                        @* NOTA: Se agregó T="double" a la gráfica y se quitaron las opciones obsoletas *@
                         <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="@SeriesAsesores" XAxisLabels="@labelsAsesores" Width="100%" Height="300px" />
                     }
                     else
@@ -97,13 +95,51 @@
             </MudCard>
         </MudItem>
     </MudGrid>
+
+    @* --- 3. TABLA DE DESGLOSE FINANCIERO (NUEVO) --- *@
+    <MudGrid Class="mt-4">
+        <MudItem xs="12">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Desglose Financiero por Curso</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="pa-0">
+                    <MudTable Items="@desgloseCursos" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+                        <HeaderContent>
+                            <MudTh><b>Nombre del Curso</b></MudTh>
+                            <MudTh Style="text-align:center;"><b>Inscripciones Vendidas</b></MudTh>
+                            <MudTh Style="text-align:right;"><b>Ingresos Recabados</b></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Curso">@context.NombreCurso</MudTd>
+                            <MudTd DataLabel="Inscripciones" Style="text-align:center;">
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@context.Cantidad</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Ingresos" Style="text-align:right; font-weight:500;">
+                                @context.IngresoTotal.ToString("C")
+                            </MudTd>
+                        </RowTemplate>
+                        <FooterContent>
+                            <MudTd></MudTd>
+                            <MudTd Style="text-align:center; font-size: 1.1rem;"><b>MONTO TOTAL:</b></MudTd>
+                            <MudTd Style="text-align:right; font-size: 1.1rem; color: #4caf50;">
+                                <b>@totalIngresos.ToString("C")</b>
+                            </MudTd>
+                        </FooterContent>
+                    </MudTable>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
     private bool cargando = true;
     private string filtroTiempo = "Este Mes";
     
-    // Listas maestras (Base de datos en memoria)
+    // Listas maestras
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
     
@@ -117,19 +153,26 @@
     private double[] dataCursos = Array.Empty<double>();
     private string[] labelsCursos = Array.Empty<string>();
 
-    // Variables Gráfica de Barras (Asesores) - NOTA: Se agregó el tipo <double>
+    // Variables Gráfica de Barras (Asesores)
     private List<ChartSeries<double>> SeriesAsesores = new();
     private string[] labelsAsesores = Array.Empty<string>();
 
+    // Variables para la Tabla Financiera
+    private List<DesgloseCurso> desgloseCursos = new();
+
+    // Clase auxiliar para ordenar la tabla de finanzas
+    public class DesgloseCurso
+    {
+        public string NombreCurso { get; set; } = "";
+        public int Cantidad { get; set; }
+        public double IngresoTotal { get; set; }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        // 1. Descargamos TODA la base de datos de inscripciones y cursos una sola vez
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
-        
-        // 2. Procesamos la información según el filtro por defecto
         ProcesarMetricas();
-        
         cargando = false;
     }
 
@@ -144,7 +187,7 @@
         var fechaActual = DateTime.UtcNow;
         var inscripcionesFiltradas = todasLasInscripciones.AsQueryable();
 
-        // Aplicamos el filtro de tiempo
+        // Filtro de tiempo
         if (filtroTiempo == "Este Mes")
         {
             inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Month == fechaActual.Month && e.EnrollmentDate.Year == fechaActual.Year);
@@ -160,11 +203,8 @@
         // CÁLCULO DE TARJETAS (KPIs)
         // -------------------------------------------------------------
         totalInscritos = lista.Count;
-        
-        // El ingreso proyectado es el Monto del Plazo multiplicado por el número de plazos (Costo Total del Contrato)
         totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
 
-        // Curso Estrella
         var topCurso = lista.GroupBy(e => e.CourseId)
                             .OrderByDescending(g => g.Count())
                             .FirstOrDefault();
@@ -179,7 +219,6 @@
             cursoEstrella = "Sin registros";
         }
 
-        // Mejor Asesor
         var topAsesor = lista.Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado))
                              .GroupBy(e => e.AsesorAsignado)
                              .OrderByDescending(g => g.Count())
@@ -188,21 +227,40 @@
         mejorAsesor = topAsesor != null ? topAsesor.Key : "Sin Asignar";
 
         // -------------------------------------------------------------
-        // CÁLCULO PARA GRÁFICA DE PASTEL (Cursos)
+        // CÁLCULO PARA GRÁFICAS Y TABLA DE FINANZAS
         // -------------------------------------------------------------
         var gruposCursos = lista.GroupBy(e => e.CourseId).ToList();
+        
         List<double> datosPie = new();
         List<string> etiquetasPie = new();
+        desgloseCursos.Clear(); // Limpiamos la tabla antes de rellenar
 
         foreach (var grupo in gruposCursos)
         {
             var nombreCurso = todosLosCursos.FirstOrDefault(c => c.Id == grupo.Key)?.Name ?? "Desconocido";
-            datosPie.Add(grupo.Count());
-            etiquetasPie.Add($"{nombreCurso} ({grupo.Count()})");
+            int cantidadInscritos = grupo.Count();
+            
+            // Calculamos el dinero exacto que generó ESTE curso en específico
+            double ingresoPorEsteCurso = grupo.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+            // Agregamos a la gráfica de pastel
+            datosPie.Add(cantidadInscritos);
+            etiquetasPie.Add($"{nombreCurso} ({cantidadInscritos})");
+
+            // Agregamos a la tabla financiera
+            desgloseCursos.Add(new DesgloseCurso
+            {
+                NombreCurso = nombreCurso,
+                Cantidad = cantidadInscritos,
+                IngresoTotal = ingresoPorEsteCurso
+            });
         }
 
         dataCursos = datosPie.ToArray();
         labelsCursos = etiquetasPie.ToArray();
+        
+        // Ordenamos la tabla para que el curso que más dinero generó aparezca hasta arriba
+        desgloseCursos = desgloseCursos.OrderByDescending(d => d.IngresoTotal).ToList();
 
         // -------------------------------------------------------------
         // CÁLCULO PARA GRÁFICA DE BARRAS (Ventas por Asesor)
@@ -220,7 +278,6 @@
             etiquetasBarras.Add(grupo.Key);
         }
 
-        // NOTA: Se agregó <double> a ChartSeries
         SeriesAsesores = new List<ChartSeries<double>>()
         {
             new ChartSeries<double>() { Name = "Inscripciones", Data = datosBarras.ToArray() }
