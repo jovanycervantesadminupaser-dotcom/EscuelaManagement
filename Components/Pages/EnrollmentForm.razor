@@ -48,6 +48,25 @@
         <MudCard Elevation="3">
             <MudCardContent>
                 
+                @* --- NUEVA UBICACIÓN: ASIGNACIÓN DE ASESOR AL INICIO --- *@
+                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">ASIGNAR ASESOR(A):</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="string" Label="Ejecutivo / Asesor que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor">
+                            @if(listaUsuarios != null && listaUsuarios.Any())
+                            {
+                                @foreach (var usuario in listaUsuarios.Where(u => u.Activo))
+                                {
+                                    <MudSelectItem T="string" Value="@usuario.Nombre">@usuario.Nombre (@usuario.Rol)</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+                
+                <MudDivider Class="my-6" />
+                @* -------------------------------------------------------- *@
+
                 <MudGrid Class="mb-4">
                     <MudItem xs="12" Class="d-flex flex-column align-center justify-center">
                         @if (isCameraOpen)
@@ -162,7 +181,6 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Esquema Financiero</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        @* AL CAMBIAR DE CURSO, SE LLAMA A OnCourseSelected PARA ACTUALIZAR PLAZOS *@
                         <MudSelect T="string" Label="Seleccionar Curso*" Value="@enrollment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un curso">
                             @foreach (var curso in cursosDisponibles)
                             {
@@ -187,12 +205,10 @@
                     }
 
                     <MudItem xs="12" md="4">
-                        @* AL CAMBIAR EL DESCUENTO, SE RECALCULA EL PRECIO BLOQUEADO *@
                         <MudNumericField T="double" Label="Descuento Aplicado (%)" Value="@enrollment.DiscountAmount" ValueChanged="OnDiscountChanged" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        @* AL CAMBIAR DE PLAZO, SE LLAMA A OnTipoPlazoSelected PARA AUTO-RELLENAR *@
                         <MudSelect T="string" Label="Esquema / Plazo de Pago*" Value="@enrollment.TipoPlazo" ValueChanged="OnTipoPlazoSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe definir el método de cobro" Disabled="@(currentCourse == null)">
                             @foreach (var plan in availablePaymentPlans)
                             {
@@ -204,7 +220,6 @@
                     @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
                     {
                         <MudItem xs="6" md="4">
-                            @* CASILLAS EN MODO READONLY: CERO ERRORES HUMANOS *@
                             <MudNumericField T="int" Label="Cantidad de Plazos*" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" />
                         </MudItem>
                         <MudItem xs="6" md="4">
@@ -222,25 +237,6 @@
                         <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
                     </MudItem>
                 </MudGrid>
-
-                <MudDivider Class="my-6" />
-
-                @* --- NUEVA SECCIÓN 5: ASIGNACIÓN DE ASESOR (VENTA) --- *@
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">5. Control Interno (Venta)</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudSelect T="string" Label="Ejecutivo / Asesor que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor">
-                            @if(listaUsuarios != null && listaUsuarios.Any())
-                            {
-                                @foreach (var usuario in listaUsuarios.Where(u => u.Activo))
-                                {
-                                    <MudSelectItem T="string" Value="@usuario.Nombre">@usuario.Nombre (@usuario.Rol)</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
-                    </MudItem>
-                </MudGrid>
-                @* ----------------------------------------------------- *@
 
             </MudCardContent>
 
@@ -296,7 +292,7 @@
     
     private List<Course> cursosDisponibles = new();
     private List<Student> listaAlumnosCompletos = new(); 
-    private List<Usuario> listaUsuarios = new(); // Nueva lista para cargar a los empleados
+    private List<Usuario> listaUsuarios = new(); 
     private Student? selectedStudent;
     
     // Variables para el cerebro financiero
