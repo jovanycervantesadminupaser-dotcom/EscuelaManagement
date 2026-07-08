@@ -6,13 +6,28 @@
 @inject FirebaseService Firebase
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudToolBar Class="px-0 mb-4">
+    <MudToolBar Class="px-0 mb-4 d-flex flex-wrap gap-3">
         <MudText Typo="Typo.h4" Color="Color.Primary">Panel de Ventas y Rendimiento</MudText>
         <MudSpacer />
+        
+        @* --- NUEVO: SELECTOR DE RANGO DE FECHAS (Solo visible si se elige Personalizado) --- *@
+        @if (filtroTiempo == "Personalizado")
+        {
+            <MudDateRangePicker DateRange="rangoFechasCustom" 
+                                DateRangeChanged="OnRangoFechasCambiado" 
+                                Variant="Variant.Outlined" 
+                                Margin="Margin.Dense" 
+                                Style="max-width: 260px; background-color: white;" 
+                                Clearable="true" 
+                                PlaceholderStart="Fecha Inicio" 
+                                PlaceholderEnd="Fecha Fin" />
+        }
+
         <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px; background-color: white;">
             <MudSelectItem Value="@("Este Mes")">Este Mes</MudSelectItem>
             <MudSelectItem Value="@("Este Año")">Este Año</MudSelectItem>
             <MudSelectItem Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
+            <MudSelectItem Value="@("Personalizado")">Personalizado...</MudSelectItem>
         </MudSelect>
     </MudToolBar>
 
@@ -96,7 +111,7 @@
         </MudItem>
     </MudGrid>
 
-    @* --- 3. TABLA DE DESGLOSE FINANCIERO (NUEVO) --- *@
+    @* --- 3. TABLA DE DESGLOSE FINANCIERO --- *@
     <MudGrid Class="mt-4">
         <MudItem xs="12">
             <MudCard Elevation="3">
@@ -139,6 +154,9 @@
     private bool cargando = true;
     private string filtroTiempo = "Este Mes";
     
+    // Nueva variable para almacenar el rango de fechas personalizado (Por defecto muestra los últimos 30 días)
+    private DateRange rangoFechasCustom = new DateRange(DateTime.Now.AddDays(-30).Date, DateTime.Now.Date);
+    
     // Listas maestras
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
@@ -160,7 +178,6 @@
     // Variables para la Tabla Financiera
     private List<DesgloseCurso> desgloseCursos = new();
 
-    // Clase auxiliar para ordenar la tabla de finanzas
     public class DesgloseCurso
     {
         public string NombreCurso { get; set; } = "";
@@ -182,12 +199,21 @@
         ProcesarMetricas();
     }
 
+    // Nuevo evento que se dispara al seleccionar fechas en el calendario
+    private void OnRangoFechasCambiado(DateRange nuevoRango)
+    {
+        rangoFechasCustom = nuevoRango;
+        ProcesarMetricas();
+    }
+
     private void ProcesarMetricas()
     {
         var fechaActual = DateTime.UtcNow;
         var inscripcionesFiltradas = todasLasInscripciones.AsQueryable();
 
-        // Filtro de tiempo
+        // -------------------------------------------------------------
+        // LÓGICA DE FILTRADO DE TIEMPO ACTUALIZADA
+        // -------------------------------------------------------------
         if (filtroTiempo == "Este Mes")
         {
             inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Month == fechaActual.Month && e.EnrollmentDate.Year == fechaActual.Year);
@@ -195,6 +221,16 @@
         else if (filtroTiempo == "Este Año")
         {
             inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Year == fechaActual.Year);
+        }
+        else if (filtroTiempo == "Personalizado" && rangoFechasCustom?.Start != null && rangoFechasCustom?.End != null)
+        {
+            // Extraemos el día de inicio desde las 00:00 hrs
+            var fechaInicio = rangoFechasCustom.Start.Value.Date;
+            
+            // Extraemos el día final y le sumamos 23 horas, 59 minutos para incluir todo el día
+            var fechaFin = rangoFechasCustom.End.Value.Date.AddDays(1).AddTicks(-1);
+            
+            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate >= fechaInicio && e.EnrollmentDate <= fechaFin);
         }
 
         var lista = inscripcionesFiltradas.ToList();
@@ -233,21 +269,18 @@
         
         List<double> datosPie = new();
         List<string> etiquetasPie = new();
-        desgloseCursos.Clear(); // Limpiamos la tabla antes de rellenar
+        desgloseCursos.Clear(); 
 
         foreach (var grupo in gruposCursos)
         {
             var nombreCurso = todosLosCursos.FirstOrDefault(c => c.Id == grupo.Key)?.Name ?? "Desconocido";
             int cantidadInscritos = grupo.Count();
             
-            // Calculamos el dinero exacto que generó ESTE curso en específico
             double ingresoPorEsteCurso = grupo.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
 
-            // Agregamos a la gráfica de pastel
             datosPie.Add(cantidadInscritos);
             etiquetasPie.Add($"{nombreCurso} ({cantidadInscritos})");
 
-            // Agregamos a la tabla financiera
             desgloseCursos.Add(new DesgloseCurso
             {
                 NombreCurso = nombreCurso,
@@ -259,7 +292,6 @@
         dataCursos = datosPie.ToArray();
         labelsCursos = etiquetasPie.ToArray();
         
-        // Ordenamos la tabla para que el curso que más dinero generó aparezca hasta arriba
         desgloseCursos = desgloseCursos.OrderByDescending(d => d.IngresoTotal).ToList();
 
         // -------------------------------------------------------------
