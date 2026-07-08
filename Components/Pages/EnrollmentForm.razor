@@ -223,6 +223,25 @@
                     </MudItem>
                 </MudGrid>
 
+                <MudDivider Class="my-6" />
+
+                @* --- NUEVA SECCIÓN 5: ASIGNACIÓN DE ASESOR (VENTA) --- *@
+                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">5. Control Interno (Venta)</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="string" Label="Ejecutivo / Asesor que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor">
+                            @if(listaUsuarios != null && listaUsuarios.Any())
+                            {
+                                @foreach (var usuario in listaUsuarios.Where(u => u.Activo))
+                                {
+                                    <MudSelectItem T="string" Value="@usuario.Nombre">@usuario.Nombre (@usuario.Rol)</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+                @* ----------------------------------------------------- *@
+
             </MudCardContent>
 
             <MudCardActions Class="pb-4 pr-4 flex-column align-end">
@@ -277,6 +296,7 @@
     
     private List<Course> cursosDisponibles = new();
     private List<Student> listaAlumnosCompletos = new(); 
+    private List<Usuario> listaUsuarios = new(); // Nueva lista para cargar a los empleados
     private Student? selectedStudent;
     
     // Variables para el cerebro financiero
@@ -310,6 +330,9 @@
             configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
             cursosDisponibles = await Firebase.GetCoursesAsync();
             listaAlumnosCompletos = await Firebase.GetAllStudentsAsync();
+            
+            // Cargamos la lista de empleados para el selector de ventas
+            listaUsuarios = await Firebase.GetUsuariosAsync() ?? new(); 
         }
         catch (Exception ex)
         {
@@ -538,6 +561,17 @@
             enrollment.EnrollmentDate = DateTime.UtcNow; 
             enrollment.Turno = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
 
+            if (enrollment.TipoPlazo == "Una Sola Exhibición")
+            {
+                var curso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId);
+                if (curso != null)
+                {
+                    double costoConDescuento = curso.SinglePaymentCost * (1 - (enrollment.DiscountAmount / 100.0));
+                    enrollment.NumeroPlazos = 1;
+                    enrollment.MontoPlazo = costoConDescuento;
+                }
+            }
+
             await Firebase.AddEnrollmentAsync(enrollment);
 
             var pdfBytes = GeneratePdfDocument();
@@ -674,6 +708,11 @@
                     x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpper())}");
                     x.Item().Text($"Esquema: {enrollment.TipoPlazo} | Plazos: {enrollment.NumeroPlazos} | Pago pactado: {enrollment.MontoPlazo.ToString("C")}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
+                    
+                    if(!string.IsNullOrEmpty(enrollment.AsesorAsignado))
+                    {
+                        x.Item().Text($"Asesor que inscribe: {enrollment.AsesorAsignado}").Italic().FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                    }
 
                     if (aceptaRetiroSinTutor)
                     {
