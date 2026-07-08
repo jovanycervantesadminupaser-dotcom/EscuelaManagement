@@ -21,7 +21,6 @@
             <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
             <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Cursos</MudNavLink>
             <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Pagos</MudNavLink>
-            @* --- NUEVO MÓDULO DE COBRANZA --- *@
             <MudNavLink Href="/cobranza" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountBalanceWallet">Cobranza y Saldos</MudNavLink>
         }
 
@@ -45,6 +44,8 @@
         @* --- SECCIÓN ULTRA SECRETA (Solo Administradores) --- *@
         @if (UserSession.EsAdministrador)
         {
+            @* --- NUEVO DASHBOARD DE VENTAS Y KPIs --- *@
+            <MudNavLink Href="/metricas" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Dashboard de Ventas</MudNavLink>
             <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
         }
     }

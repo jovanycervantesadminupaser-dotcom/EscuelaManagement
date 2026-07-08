@@ -1,0 +1,230 @@
+@page "/metricas"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudToolBar Class="px-0 mb-4">
+        <MudText Typo="Typo.h4" Color="Color.Primary">Panel de Ventas y Rendimiento</MudText>
+        <MudSpacer />
+        <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px; background-color: white;">
+            <MudSelectItem Value="@("Este Mes")">Este Mes</MudSelectItem>
+            <MudSelectItem Value="@("Este Año")">Este Año</MudSelectItem>
+            <MudSelectItem Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
+        </MudSelect>
+    </MudToolBar>
+
+    @if (cargando)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    }
+
+    @* --- 1. TARJETAS DE RESUMEN (KPIs) --- *@
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #4caf50; height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" Class="mb-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #2196f3; height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" Class="mb-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Total de Inscripciones</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Info"><b>@totalInscritos</b></MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #ff9800; height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Large" Class="mb-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Curso Estrella</MudText>
+                <MudText Typo="Typo.h6" Align="Align.Center" Style="line-height: 1.2;"><b>@cursoEstrella</b></MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #9c27b0; height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Default">Mejor Asesor(a)</MudText>
+                <MudText Typo="Typo.h6" Align="Align.Center"><b>@mejorAsesor</b></MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* --- 2. GRÁFICAS VISUALES --- *@
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Demanda por Curso</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="d-flex justify-center">
+                    @if (dataCursos.Any())
+                    {
+                        @* NOTA: Se agregó T="double" a la gráfica *@
+                        <MudChart T="double" ChartType="ChartType.Pie" InputData="@dataCursos" InputLabels="@labelsCursos" Width="100%" Height="300px" />
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mt-10">No hay datos en este periodo.</MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Ventas por Asesor</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (SeriesAsesores.Any() && SeriesAsesores.First().Data.Any())
+                    {
+                        @* NOTA: Se agregó T="double" a la gráfica y se quitaron las opciones obsoletas *@
+                        <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="@SeriesAsesores" XAxisLabels="@labelsAsesores" Width="100%" Height="300px" />
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mt-10 text-center">No hay ventas registradas en este periodo.</MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private bool cargando = true;
+    private string filtroTiempo = "Este Mes";
+    
+    // Listas maestras (Base de datos en memoria)
+    private List<Enrollment> todasLasInscripciones = new();
+    private List<Course> todosLosCursos = new();
+    
+    // Variables de KPIs
+    private double totalIngresos = 0;
+    private int totalInscritos = 0;
+    private string cursoEstrella = "N/A";
+    private string mejorAsesor = "N/A";
+
+    // Variables Gráfica de Pastel (Cursos)
+    private double[] dataCursos = Array.Empty<double>();
+    private string[] labelsCursos = Array.Empty<string>();
+
+    // Variables Gráfica de Barras (Asesores) - NOTA: Se agregó el tipo <double>
+    private List<ChartSeries<double>> SeriesAsesores = new();
+    private string[] labelsAsesores = Array.Empty<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Descargamos TODA la base de datos de inscripciones y cursos una sola vez
+        todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
+        todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
+        
+        // 2. Procesamos la información según el filtro por defecto
+        ProcesarMetricas();
+        
+        cargando = false;
+    }
+
+    private void OnFiltroCambiado(string nuevoFiltro)
+    {
+        filtroTiempo = nuevoFiltro;
+        ProcesarMetricas();
+    }
+
+    private void ProcesarMetricas()
+    {
+        var fechaActual = DateTime.UtcNow;
+        var inscripcionesFiltradas = todasLasInscripciones.AsQueryable();
+
+        // Aplicamos el filtro de tiempo
+        if (filtroTiempo == "Este Mes")
+        {
+            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Month == fechaActual.Month && e.EnrollmentDate.Year == fechaActual.Year);
+        }
+        else if (filtroTiempo == "Este Año")
+        {
+            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Year == fechaActual.Year);
+        }
+
+        var lista = inscripcionesFiltradas.ToList();
+
+        // -------------------------------------------------------------
+        // CÁLCULO DE TARJETAS (KPIs)
+        // -------------------------------------------------------------
+        totalInscritos = lista.Count;
+        
+        // El ingreso proyectado es el Monto del Plazo multiplicado por el número de plazos (Costo Total del Contrato)
+        totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+        // Curso Estrella
+        var topCurso = lista.GroupBy(e => e.CourseId)
+                            .OrderByDescending(g => g.Count())
+                            .FirstOrDefault();
+                            
+        if (topCurso != null && !string.IsNullOrEmpty(topCurso.Key))
+        {
+            var nombre = todosLosCursos.FirstOrDefault(c => c.Id == topCurso.Key)?.Name;
+            cursoEstrella = nombre ?? "Curso Desconocido";
+        }
+        else
+        {
+            cursoEstrella = "Sin registros";
+        }
+
+        // Mejor Asesor
+        var topAsesor = lista.Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado))
+                             .GroupBy(e => e.AsesorAsignado)
+                             .OrderByDescending(g => g.Count())
+                             .FirstOrDefault();
+                             
+        mejorAsesor = topAsesor != null ? topAsesor.Key : "Sin Asignar";
+
+        // -------------------------------------------------------------
+        // CÁLCULO PARA GRÁFICA DE PASTEL (Cursos)
+        // -------------------------------------------------------------
+        var gruposCursos = lista.GroupBy(e => e.CourseId).ToList();
+        List<double> datosPie = new();
+        List<string> etiquetasPie = new();
+
+        foreach (var grupo in gruposCursos)
+        {
+            var nombreCurso = todosLosCursos.FirstOrDefault(c => c.Id == grupo.Key)?.Name ?? "Desconocido";
+            datosPie.Add(grupo.Count());
+            etiquetasPie.Add($"{nombreCurso} ({grupo.Count()})");
+        }
+
+        dataCursos = datosPie.ToArray();
+        labelsCursos = etiquetasPie.ToArray();
+
+        // -------------------------------------------------------------
+        // CÁLCULO PARA GRÁFICA DE BARRAS (Ventas por Asesor)
+        // -------------------------------------------------------------
+        var gruposAsesores = lista.GroupBy(e => string.IsNullOrWhiteSpace(e.AsesorAsignado) ? "Venta Online / Sin Asesor" : e.AsesorAsignado)
+                                  .OrderByDescending(g => g.Count())
+                                  .ToList();
+
+        List<double> datosBarras = new();
+        List<string> etiquetasBarras = new();
+
+        foreach (var grupo in gruposAsesores)
+        {
+            datosBarras.Add(grupo.Count());
+            etiquetasBarras.Add(grupo.Key);
+        }
+
+        // NOTA: Se agregó <double> a ChartSeries
+        SeriesAsesores = new List<ChartSeries<double>>()
+        {
+            new ChartSeries<double>() { Name = "Inscripciones", Data = datosBarras.ToArray() }
+        };
+        labelsAsesores = etiquetasBarras.ToArray();
+    }
+}
