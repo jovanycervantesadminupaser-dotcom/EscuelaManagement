@@ -30,11 +30,18 @@ public class Enrollment
     // ==============================================================
 
     [FirestoreProperty]
-    public string TipoPlazo { get; set; } = ""; // Guardará: "Semanas", "Quincenas", "Meses" o "Unico"
+    public string TipoPlazo { get; set; } = ""; // Guardará: "Semanas", "Quincenas", "Meses" o "Una Sola Exhibición"
 
     [FirestoreProperty]
     public int NumeroPlazos { get; set; }       // Guardará la cantidad total de pagos (Ej. 4, 12)
 
     [FirestoreProperty]
     public double MontoPlazo { get; set; }      // Guardará el costo individual de cada pago
+
+    // ==============================================================
+    // CONTROL INTERNO DE VENTAS
+    // ==============================================================
+
+    [FirestoreProperty]
+    public string AsesorAsignado { get; set; } = ""; // Guardará el nombre del empleado que realizó la inscripción
 }
