@@ -150,6 +150,23 @@ public class FirebaseService
             .ToList();
     }
 
+    // NUEVO MÉTODO AGREGADO: Obtener todos los pagos (Para Panel de Ventas)
+    public async Task<List<Payment>> GetAllPaymentsAsync()
+    {
+        try
+        {
+            QuerySnapshot snapshot = await _db.Collection("payments").GetSnapshotAsync();
+            return snapshot.Documents
+                .Select(d => d.ConvertTo<Payment>())
+                .OrderByDescending(p => p.PaymentDate)
+                .ToList();
+        }
+        catch
+        {
+            return new List<Payment>();
+        }
+    }
+
     // ==========================================
     // --- MÉTODOS PARA MATERIAS ---
     // ==========================================

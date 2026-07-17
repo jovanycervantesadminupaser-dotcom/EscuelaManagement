@@ -45,7 +45,6 @@
             <MudSelectItem Value="@("Personalizado")">Personalizado...</MudSelectItem>
         </MudSelect>
 
-        @* --- NUEVO: FILTRO POR ASESOR --- *@
         <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 220px; background-color: white;" Placeholder="Todos los Asesores">
             <MudSelectItem Value="@("Todos")">Todos los Asesores</MudSelectItem>
             @foreach(var asesor in listaAsesoresDisponibles)
@@ -60,7 +59,39 @@
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
     }
 
-    @* --- 1. TARJETAS DE RESUMEN CON INDICADORES DE CRECIMIENTO --- *@
+    @* --- SALUD FINANCIERA: PROYECTADO VS REAL --- *@
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #2196f3; height: 100%;">
+                <div class="d-flex justify-space-between align-start mb-2">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Cobranza Efectiva (Dinero Real)</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Info"><b>@totalCobranzaReal.ToString("C")</b></MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Info" Size="Size.Large" />
+                </div>
+                <MudProgressLinear Color="Color.Info" Value="@porcentajeCobranza" Height="8px" Class="rounded-lg mb-1" />
+                <MudText Typo="Typo.caption" Color="Color.Default"><b>@porcentajeCobranza.ToString("0.1")%</b> del ingreso proyectado ha sido cobrado.</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #f44336; height: 100%;">
+                <div class="d-flex justify-space-between align-start">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Pendiente por Cobrar / Cartera Vencida</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Error"><b>@carteraVencida.ToString("C")</b></MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" />
+                </div>
+                <MudText Typo="Typo.body2" Class="mt-3" Color="Color.Default">
+                    Diferencia entre el valor de los contratos firmados en este periodo y los pagos efectivamente registrados en sistema.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* --- 1. TARJETAS DE RESUMEN (KPIs) --- *@
     <MudGrid Class="mb-6">
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #4caf50; height: 100%;">
@@ -184,7 +215,7 @@
                         </RowTemplate>
                         <FooterContent>
                             <MudTd></MudTd>
-                            <MudTd Style="text-align:center; font-size: 1.1rem;"><b>MONTO TOTAL:</b></MudTd>
+                            <MudTd Style="text-align:center; font-size: 1.1rem;"><b>MONTO TOTAL PROYECTADO:</b></MudTd>
                             <MudTd Style="text-align:right; font-size: 1.1rem; color: #4caf50;">
                                 <b>@totalIngresos.ToString("C")</b>
                             </MudTd>
@@ -200,7 +231,6 @@
     private bool cargando = true;
     private bool generandoPdf = false;
     
-    // Filtros Activos
     private string filtroTiempo = "Este Mes";
     private string filtroAsesor = "Todos";
     private DateRange rangoFechasCustom = new DateRange(DateTime.Now.AddDays(-30).Date, DateTime.Now.Date);
@@ -208,15 +238,20 @@
     private ConfiguracionEscuela configuracion = new();
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
+    private List<Payment> todosLosPagos = new(); // Nueva lista global de pagos
     private List<string> listaAsesoresDisponibles = new();
     
-    // Variables de KPIs
+    // Variables de KPIs Originales
     private double totalIngresos = 0;
     private int totalInscritos = 0;
     private string cursoEstrella = "N/A";
     private string mejorAsesor = "N/A";
 
-    // Variables de Crecimiento
+    // Variables NUEVAS para Cobranza y Morosidad
+    private double totalCobranzaReal = 0;
+    private double porcentajeCobranza = 0;
+    private double carteraVencida = 0;
+
     private bool mostrarCrecimiento = true;
     private double crecimientoIngresos = 0;
     private double crecimientoInscritos = 0;
@@ -243,8 +278,8 @@
         configuracion = await Firebase.GetConfiguracionAsync() ?? new();
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
+        todosLosPagos = await Firebase.GetAllPaymentsAsync() ?? new(); // Traemos todos los pagos de Firebase
         
-        // Extraer a todos los asesores que tienen al menos 1 inscripción en el historial global
         listaAsesoresDisponibles = todasLasInscripciones
             .Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado))
             .Select(e => e.AsesorAsignado)
@@ -284,7 +319,6 @@
         DateTime? prevEnd = null;
         mostrarCrecimiento = true;
 
-        // 1. Calculamos las fechas
         if (filtroTiempo == "Este Mes")
         {
             currentStart = new DateTime(fechaActual.Year, fechaActual.Month, 1);
@@ -315,7 +349,6 @@
             mostrarCrecimiento = false; 
         }
 
-        // 2. Filtramos las listas en base a las fechas calculadas
         var queryActual = todasLasInscripciones.AsQueryable();
         var queryAnterior = todasLasInscripciones.AsQueryable();
 
@@ -328,7 +361,6 @@
             queryAnterior = queryAnterior.Where(e => e.EnrollmentDate >= prevStart.Value && e.EnrollmentDate <= prevEnd.Value);
         }
 
-        // 3. NUEVO: APLICAMOS EL FILTRO DEL ASESOR SELECCIONADO
         if (filtroAsesor != "Todos")
         {
             queryActual = queryActual.Where(e => e.AsesorAsignado == filtroAsesor);
@@ -339,10 +371,28 @@
         var listaPrev = queryAnterior.ToList();
 
         // -------------------------------------------------------------
-        // CÁLCULO DE TARJETAS (KPIs) Y CRECIMIENTO
+        // CÁLCULO DE TARJETAS (KPIs) Y COBRANZA REAL (NUEVO)
         // -------------------------------------------------------------
         totalInscritos = lista.Count;
         totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+        totalCobranzaReal = 0;
+        foreach (var inscripcion in lista)
+        {
+            // Sumamos todos los pagos asociados EXACTAMENTE al alumno y curso de esta inscripción filtrada
+            var pagosDeEstaInscripcion = todosLosPagos
+                .Where(p => p.StudentId == inscripcion.StudentId && p.CourseId == inscripcion.CourseId)
+                .Sum(p => p.Amount);
+                
+            totalCobranzaReal += pagosDeEstaInscripcion;
+        }
+
+        // Evitamos que el porcentaje rompa la barra visual si los alumnos pagan por adelantado (más del 100%)
+        porcentajeCobranza = totalIngresos > 0 ? (totalCobranzaReal / totalIngresos) * 100 : 0;
+        if (porcentajeCobranza > 100) porcentajeCobranza = 100;
+
+        carteraVencida = totalIngresos - totalCobranzaReal;
+        if (carteraVencida < 0) carteraVencida = 0;
 
         int prevInscritos = listaPrev.Count;
         double prevIngresos = listaPrev.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
@@ -400,7 +450,6 @@
 
         dataCursos = datosPie.ToArray();
         labelsCursos = etiquetasPie.ToArray();
-        
         desgloseCursos = desgloseCursos.OrderByDescending(d => d.IngresoTotal).ToList();
 
         // -------------------------------------------------------------
@@ -485,9 +534,7 @@
                             ? $"Del {rangoFechasCustom.Start:dd/MMM/yyyy} al {rangoFechasCustom.End:dd/MMM/yyyy}" 
                             : filtroTiempo;
                         
-                        // En el PDF mostramos si filtramos a alguien en específico
                         string textoFiltroAsesor = filtroAsesor == "Todos" ? "Todos los Asesores" : $"Asesor: {filtroAsesor}";
-                        
                         col.Item().Text($"Periodo: {periodoTexto} | {textoFiltroAsesor}").FontSize(10);
                     });
                 });
@@ -496,12 +543,13 @@
                 {
                     x.Spacing(15);
                     
+                    // AÑADIMOS LA COBRANZA REAL Y CARTERA VENCIDA AL PDF
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Padding(10).Row(row =>
                     {
-                        row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Green.Darken2); });
-                        row.RelativeItem().Column(c => { c.Item().Text("Total Inscripciones").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalInscritos.ToString()).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); });
-                        row.RelativeItem().Column(c => { c.Item().Text("Curso Estrella").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(cursoEstrella).SemiBold().FontSize(11); });
-                        row.RelativeItem().Column(c => { c.Item().Text("Mejor Asesor(a)").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(mejorAsesor).SemiBold().FontSize(11); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Cobranza Real").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalCobranzaReal.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Cartera Vencida").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(carteraVencida.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Red.Medium); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Total Inscripciones").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalInscritos.ToString()).SemiBold().FontSize(12); });
                     });
 
                     x.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Grey.Lighten2);
@@ -521,7 +569,7 @@
                         {
                             header.Cell().BorderBottom(1).PaddingBottom(5).Text("Curso / Programa").SemiBold();
                             header.Cell().BorderBottom(1).PaddingBottom(5).AlignCenter().Text("Inscripciones").SemiBold();
-                            header.Cell().BorderBottom(1).PaddingBottom(5).AlignRight().Text("Monto Recabado").SemiBold();
+                            header.Cell().BorderBottom(1).PaddingBottom(5).AlignRight().Text("Monto Proyectado").SemiBold();
                         });
 
                         foreach (var item in desgloseCursos)
@@ -532,7 +580,7 @@
                         }
                         
                         table.Cell().PaddingTop(10).Text("");
-                        table.Cell().PaddingTop(10).AlignCenter().Text("MONTO TOTAL:").SemiBold().FontSize(12);
+                        table.Cell().PaddingTop(10).AlignCenter().Text("PROYECCIÓN TOTAL:").SemiBold().FontSize(12);
                         table.Cell().PaddingTop(10).AlignRight().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Green.Darken3);
                     });
                 });
