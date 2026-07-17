@@ -4,7 +4,6 @@
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using QuestPDF.Fluent
-@* <-- ELIMINAMOS LOS USINGS AMBIGUOS DE QUESTPDF DE AQUÍ *@
 @inject FirebaseService Firebase
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
@@ -52,12 +51,25 @@
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
     }
 
+    @* --- 1. TARJETAS DE RESUMEN CON INDICADORES DE CRECIMIENTO --- *@
     <MudGrid Class="mb-6">
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #4caf50; height: 100%;">
                 <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" Class="mb-2" />
                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
+                
+                @* INDICADOR DE CRECIMIENTO (INGRESOS) *@
+                @if (mostrarCrecimiento)
+                {
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@(crecimientoIngresos >= 0 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)" 
+                                 Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)" Class="ml-1">
+                            <b>@(crecimientoIngresos >= 0 ? "+" : "")@crecimientoIngresos.ToString("0.1")%</b> vs periodo ant.
+                        </MudText>
+                    </div>
+                }
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -65,6 +77,18 @@
                 <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" Class="mb-2" />
                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Total de Inscripciones</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Info"><b>@totalInscritos</b></MudText>
+
+                @* INDICADOR DE CRECIMIENTO (INSCRITOS) *@
+                @if (mostrarCrecimiento)
+                {
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@(crecimientoInscritos >= 0 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)" 
+                                 Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)" Class="ml-1">
+                            <b>@(crecimientoInscritos >= 0 ? "+" : "")@crecimientoInscritos.ToString("0.1")%</b> vs periodo ant.
+                        </MudText>
+                    </div>
+                }
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -83,6 +107,7 @@
         </MudItem>
     </MudGrid>
 
+    @* --- 2. GRÁFICAS VISUALES --- *@
     <MudGrid>
         <MudItem xs="12" md="6">
             <MudCard Elevation="3" Style="height: 100%;">
@@ -125,6 +150,7 @@
         </MudItem>
     </MudGrid>
 
+    @* --- 3. TABLA DE DESGLOSE FINANCIERO --- *@
     <MudGrid Class="mt-4">
         <MudItem xs="12">
             <MudCard Elevation="3">
@@ -174,10 +200,16 @@
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
     
+    // Variables de KPIs
     private double totalIngresos = 0;
     private int totalInscritos = 0;
     private string cursoEstrella = "N/A";
     private string mejorAsesor = "N/A";
+
+    // Variables de Crecimiento
+    private bool mostrarCrecimiento = true;
+    private double crecimientoIngresos = 0;
+    private double crecimientoInscritos = 0;
 
     private double[] dataCursos = Array.Empty<double>();
     private string[] labelsCursos = Array.Empty<string>();
@@ -221,28 +253,73 @@
     private void ProcesarMetricas()
     {
         var fechaActual = DateTime.UtcNow;
-        var inscripcionesFiltradas = todasLasInscripciones.AsQueryable();
+        
+        DateTime? currentStart = null;
+        DateTime? currentEnd = null;
+        DateTime? prevStart = null;
+        DateTime? prevEnd = null;
+        mostrarCrecimiento = true;
 
+        // 1. Calculamos las fechas actuales y las fechas del periodo anterior para comparar
         if (filtroTiempo == "Este Mes")
         {
-            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Month == fechaActual.Month && e.EnrollmentDate.Year == fechaActual.Year);
+            currentStart = new DateTime(fechaActual.Year, fechaActual.Month, 1);
+            currentEnd = currentStart.Value.AddMonths(1).AddTicks(-1);
+            
+            prevStart = currentStart.Value.AddMonths(-1);
+            prevEnd = currentStart.Value.AddTicks(-1);
         }
         else if (filtroTiempo == "Este Año")
         {
-            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate.Year == fechaActual.Year);
+            currentStart = new DateTime(fechaActual.Year, 1, 1);
+            currentEnd = currentStart.Value.AddYears(1).AddTicks(-1);
+            
+            prevStart = currentStart.Value.AddYears(-1);
+            prevEnd = currentStart.Value.AddTicks(-1);
         }
         else if (filtroTiempo == "Personalizado" && rangoFechasCustom?.Start != null && rangoFechasCustom?.End != null)
         {
-            var fechaInicio = rangoFechasCustom.Start.Value.Date;
-            var fechaFin = rangoFechasCustom.End.Value.Date.AddDays(1).AddTicks(-1);
+            currentStart = rangoFechasCustom.Start.Value.Date;
+            currentEnd = rangoFechasCustom.End.Value.Date.AddDays(1).AddTicks(-1);
             
-            inscripcionesFiltradas = inscripcionesFiltradas.Where(e => e.EnrollmentDate >= fechaInicio && e.EnrollmentDate <= fechaFin);
+            TimeSpan duracion = currentEnd.Value - currentStart.Value;
+            prevEnd = currentStart.Value.AddTicks(-1);
+            prevStart = prevEnd.Value.Add(-duracion);
+        }
+        else
+        {
+            // Histórico: No hay periodo "anterior" contra qué comparar
+            mostrarCrecimiento = false; 
         }
 
-        var lista = inscripcionesFiltradas.ToList();
+        // 2. Filtramos las listas en base a las fechas calculadas
+        var queryActual = todasLasInscripciones.AsQueryable();
+        var queryAnterior = todasLasInscripciones.AsQueryable();
 
+        if (currentStart.HasValue && currentEnd.HasValue)
+        {
+            queryActual = queryActual.Where(e => e.EnrollmentDate >= currentStart.Value && e.EnrollmentDate <= currentEnd.Value);
+        }
+        if (prevStart.HasValue && prevEnd.HasValue)
+        {
+            queryAnterior = queryAnterior.Where(e => e.EnrollmentDate >= prevStart.Value && e.EnrollmentDate <= prevEnd.Value);
+        }
+
+        var lista = queryActual.ToList();
+        var listaPrev = queryAnterior.ToList();
+
+        // -------------------------------------------------------------
+        // CÁLCULO DE TARJETAS (KPIs) Y CRECIMIENTO
+        // -------------------------------------------------------------
         totalInscritos = lista.Count;
         totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+        int prevInscritos = listaPrev.Count;
+        double prevIngresos = listaPrev.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+        // Matemáticas para sacar el % (Protegido contra división entre cero)
+        crecimientoInscritos = prevInscritos == 0 ? (totalInscritos > 0 ? 100 : 0) : ((double)(totalInscritos - prevInscritos) / prevInscritos) * 100;
+        crecimientoIngresos = prevIngresos == 0 ? (totalIngresos > 0 ? 100 : 0) : ((totalIngresos - prevIngresos) / prevIngresos) * 100;
 
         var topCurso = lista.GroupBy(e => e.CourseId)
                             .OrderByDescending(g => g.Count())
@@ -265,6 +342,9 @@
                              
         mejorAsesor = topAsesor != null ? topAsesor.Key : "Sin Asignar";
 
+        // -------------------------------------------------------------
+        // CÁLCULO PARA GRÁFICAS Y TABLA DE FINANZAS
+        // -------------------------------------------------------------
         var gruposCursos = lista.GroupBy(e => e.CourseId).ToList();
         
         List<double> datosPie = new();
@@ -294,6 +374,9 @@
         
         desgloseCursos = desgloseCursos.OrderByDescending(d => d.IngresoTotal).ToList();
 
+        // -------------------------------------------------------------
+        // CÁLCULO PARA GRÁFICA DE BARRAS (Ventas por Asesor)
+        // -------------------------------------------------------------
         var gruposAsesores = lista.GroupBy(e => string.IsNullOrWhiteSpace(e.AsesorAsignado) ? "Venta Online / Sin Asesor" : e.AsesorAsignado)
                                   .OrderByDescending(g => g.Count())
                                   .ToList();
@@ -349,7 +432,6 @@
         {
             container.Page(page =>
             {
-                // NOTA: Aquí usamos los nombres completamente calificados para evitar chocar con MudBlazor
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
                 page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
