@@ -3,14 +3,29 @@
 @using MudBlazor
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
+@using QuestPDF.Fluent
+@* <-- ELIMINAMOS LOS USINGS AMBIGUOS DE QUESTPDF DE AQUÍ *@
 @inject FirebaseService Firebase
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudToolBar Class="px-0 mb-4 d-flex flex-wrap gap-3">
         <MudText Typo="Typo.h4" Color="Color.Primary">Panel de Ventas y Rendimiento</MudText>
         <MudSpacer />
         
-        @* --- SELECTOR DE RANGO DE FECHAS COMPACTO (DisableToolbar="true") --- *@
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="DescargarReportePDF" Disabled="@generandoPdf">
+            @if (generandoPdf)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
+                <span>GENERANDO...</span>
+            }
+            else
+            {
+                <span>EXPORTAR PDF</span>
+            }
+        </MudButton>
+
         @if (filtroTiempo == "Personalizado")
         {
             <MudDateRangePicker DateRange="rangoFechasCustom" 
@@ -37,7 +52,6 @@
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
     }
 
-    @* --- 1. TARJETAS DE RESUMEN (KPIs) --- *@
     <MudGrid Class="mb-6">
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #4caf50; height: 100%;">
@@ -69,7 +83,6 @@
         </MudItem>
     </MudGrid>
 
-    @* --- 2. GRÁFICAS VISUALES --- *@
     <MudGrid>
         <MudItem xs="12" md="6">
             <MudCard Elevation="3" Style="height: 100%;">
@@ -112,7 +125,6 @@
         </MudItem>
     </MudGrid>
 
-    @* --- 3. TABLA DE DESGLOSE FINANCIERO --- *@
     <MudGrid Class="mt-4">
         <MudItem xs="12">
             <MudCard Elevation="3">
@@ -153,43 +165,43 @@
 
 @code {
     private bool cargando = true;
+    private bool generandoPdf = false;
     private string filtroTiempo = "Este Mes";
     
     private DateRange rangoFechasCustom = new DateRange(DateTime.Now.AddDays(-30).Date, DateTime.Now.Date);
     
-    // Listas maestras
+    private ConfiguracionEscuela configuracion = new();
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
     
-    // Variables de KPIs
     private double totalIngresos = 0;
     private int totalInscritos = 0;
     private string cursoEstrella = "N/A";
     private string mejorAsesor = "N/A";
 
-    // Variables Gráfica de Pastel (Cursos)
     private double[] dataCursos = Array.Empty<double>();
     private string[] labelsCursos = Array.Empty<string>();
 
-    // Variables Gráfica de Barras (Asesores)
     private List<ChartSeries<double>> SeriesAsesores = new();
     private string[] labelsAsesores = Array.Empty<string>();
 
-    // Variables para la Tabla Financiera
     private List<DesgloseCurso> desgloseCursos = new();
 
     public class DesgloseCurso
     {
         public string NombreCurso { get; set; } = "";
         public int Cantidad { get; set; }
-        public double NgresoTotal { get; set; }
         public double IngresoTotal { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        configuracion = await Firebase.GetConfiguracionAsync() ?? new();
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
+        
         ProcesarMetricas();
         cargando = false;
     }
@@ -229,9 +241,6 @@
 
         var lista = inscripcionesFiltradas.ToList();
 
-        // -------------------------------------------------------------
-        // CÁLCULO DE TARJETAS (KPIs)
-        // -------------------------------------------------------------
         totalInscritos = lista.Count;
         totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
 
@@ -256,9 +265,6 @@
                              
         mejorAsesor = topAsesor != null ? topAsesor.Key : "Sin Asignar";
 
-        // -------------------------------------------------------------
-        // CÁLCULO PARA GRÁFICAS Y TABLA DE FINANZAS
-        // -------------------------------------------------------------
         var gruposCursos = lista.GroupBy(e => e.CourseId).ToList();
         
         List<double> datosPie = new();
@@ -288,9 +294,6 @@
         
         desgloseCursos = desgloseCursos.OrderByDescending(d => d.IngresoTotal).ToList();
 
-        // -------------------------------------------------------------
-        // CÁLCULO PARA GRÁFICA DE BARRAS (Ventas por Asesor)
-        // -------------------------------------------------------------
         var gruposAsesores = lista.GroupBy(e => string.IsNullOrWhiteSpace(e.AsesorAsignado) ? "Venta Online / Sin Asesor" : e.AsesorAsignado)
                                   .OrderByDescending(g => g.Count())
                                   .ToList();
@@ -309,5 +312,125 @@
             new ChartSeries<double>() { Name = "Inscripciones", Data = datosBarras.ToArray() }
         };
         labelsAsesores = etiquetasBarras.ToArray();
+    }
+
+    private async Task DescargarReportePDF()
+    {
+        try
+        {
+            generandoPdf = true;
+            StateHasChanged();
+            
+            await Task.Delay(100); 
+
+            var pdfBytes = GeneratePdfDocument();
+            var fileName = $"Reporte_Ventas_{DateTime.Now:yyyyMMdd}.pdf";
+
+            var base64 = Convert.ToBase64String(pdfBytes);
+            var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = '{fileName}'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+            await JSRuntime.InvokeVoidAsync("eval", js);
+
+            Snackbar.Add("Reporte PDF descargado exitosamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al generar el PDF: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            generandoPdf = false;
+            StateHasChanged();
+        }
+    }
+
+    private byte[] GeneratePdfDocument()
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                // NOTA: Aquí usamos los nombres completamente calificados para evitar chocar con MudBlazor
+                page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                page.PageColor(QuestPDF.Helpers.Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                page.Header().Row(row =>
+                {
+                    if (!string.IsNullOrEmpty(configuracion.LogoBase64))
+                    {
+                        var base64Logo = configuracion.LogoBase64.Contains(",") ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) : configuracion.LogoBase64;
+                        var logoBytes = Convert.FromBase64String(base64Logo);
+                        row.ConstantItem(60).Image(logoBytes);
+                        row.ConstantItem(15);
+                    }
+
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text(string.IsNullOrEmpty(configuracion.NombreEscuela) ? "Institución Educativa" : configuracion.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                        col.Item().Text("REPORTE FINANCIERO Y DE VENTAS").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        
+                        string periodoTexto = filtroTiempo == "Personalizado" 
+                            ? $"Del {rangoFechasCustom.Start:dd/MMM/yyyy} al {rangoFechasCustom.End:dd/MMM/yyyy}" 
+                            : filtroTiempo;
+                        col.Item().Text($"Periodo de evaluación: {periodoTexto}").FontSize(10);
+                    });
+                });
+
+                page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
+                {
+                    x.Spacing(15);
+                    
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Padding(10).Row(row =>
+                    {
+                        row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Green.Darken2); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Total Inscripciones").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalInscritos.ToString()).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Curso Estrella").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(cursoEstrella).SemiBold().FontSize(11); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Mejor Asesor(a)").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(mejorAsesor).SemiBold().FontSize(11); });
+                    });
+
+                    x.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Grey.Lighten2);
+
+                    x.Item().Text("DESGLOSE POR CURSO").SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken3);
+                    
+                    x.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(3); 
+                            columns.RelativeColumn(1); 
+                            columns.RelativeColumn(1.5f); 
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().BorderBottom(1).PaddingBottom(5).Text("Curso / Programa").SemiBold();
+                            header.Cell().BorderBottom(1).PaddingBottom(5).AlignCenter().Text("Inscripciones").SemiBold();
+                            header.Cell().BorderBottom(1).PaddingBottom(5).AlignRight().Text("Monto Recabado").SemiBold();
+                        });
+
+                        foreach (var item in desgloseCursos)
+                        {
+                            table.Cell().PaddingVertical(5).BorderBottom(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten4).Text(item.NombreCurso);
+                            table.Cell().PaddingVertical(5).BorderBottom(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten4).AlignCenter().Text(item.Cantidad.ToString());
+                            table.Cell().PaddingVertical(5).BorderBottom(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten4).AlignRight().Text(item.IngresoTotal.ToString("C"));
+                        }
+                        
+                        table.Cell().PaddingTop(10).Text("");
+                        table.Cell().PaddingTop(10).AlignCenter().Text("MONTO TOTAL:").SemiBold().FontSize(12);
+                        table.Cell().PaddingTop(10).AlignRight().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Green.Darken3);
+                    });
+                });
+                
+                page.Footer().AlignCenter().Text(x =>
+                {
+                    x.Span("Página ");
+                    x.CurrentPageNumber();
+                    x.Span(" de ");
+                    x.TotalPages();
+                    x.Span($" | Documento generado el {DateTime.Now:dd/MM/yyyy a las HH:mm hrs}");
+                });
+            });
+        }).GeneratePdf();
     }
 }
