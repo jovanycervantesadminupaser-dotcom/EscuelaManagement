@@ -31,18 +31,27 @@
                                 DateRangeChanged="OnRangoFechasCambiado" 
                                 Variant="Variant.Outlined" 
                                 Margin="Margin.Dense" 
-                                Style="max-width: 260px; background-color: white;" 
+                                Style="max-width: 240px; background-color: white;" 
                                 Clearable="true" 
                                 PlaceholderStart="Fecha Inicio" 
                                 PlaceholderEnd="Fecha Fin"
                                 DisableToolbar="true" />
         }
 
-        <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px; background-color: white;">
+        <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 180px; background-color: white;">
             <MudSelectItem Value="@("Este Mes")">Este Mes</MudSelectItem>
             <MudSelectItem Value="@("Este Año")">Este Año</MudSelectItem>
             <MudSelectItem Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
             <MudSelectItem Value="@("Personalizado")">Personalizado...</MudSelectItem>
+        </MudSelect>
+
+        @* --- NUEVO: FILTRO POR ASESOR --- *@
+        <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 220px; background-color: white;" Placeholder="Todos los Asesores">
+            <MudSelectItem Value="@("Todos")">Todos los Asesores</MudSelectItem>
+            @foreach(var asesor in listaAsesoresDisponibles)
+            {
+                <MudSelectItem Value="@asesor">@asesor</MudSelectItem>
+            }
         </MudSelect>
     </MudToolBar>
 
@@ -59,7 +68,6 @@
                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
                 
-                @* INDICADOR DE CRECIMIENTO (INGRESOS) *@
                 @if (mostrarCrecimiento)
                 {
                     <div class="d-flex align-center mt-1">
@@ -78,7 +86,6 @@
                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Total de Inscripciones</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Info"><b>@totalInscritos</b></MudText>
 
-                @* INDICADOR DE CRECIMIENTO (INSCRITOS) *@
                 @if (mostrarCrecimiento)
                 {
                     <div class="d-flex align-center mt-1">
@@ -192,13 +199,16 @@
 @code {
     private bool cargando = true;
     private bool generandoPdf = false;
-    private string filtroTiempo = "Este Mes";
     
+    // Filtros Activos
+    private string filtroTiempo = "Este Mes";
+    private string filtroAsesor = "Todos";
     private DateRange rangoFechasCustom = new DateRange(DateTime.Now.AddDays(-30).Date, DateTime.Now.Date);
     
     private ConfiguracionEscuela configuracion = new();
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
+    private List<string> listaAsesoresDisponibles = new();
     
     // Variables de KPIs
     private double totalIngresos = 0;
@@ -234,6 +244,14 @@
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
         
+        // Extraer a todos los asesores que tienen al menos 1 inscripción en el historial global
+        listaAsesoresDisponibles = todasLasInscripciones
+            .Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado))
+            .Select(e => e.AsesorAsignado)
+            .Distinct()
+            .OrderBy(a => a)
+            .ToList();
+
         ProcesarMetricas();
         cargando = false;
     }
@@ -250,6 +268,12 @@
         ProcesarMetricas();
     }
 
+    private void OnFiltroAsesorCambiado(string nuevoAsesor)
+    {
+        filtroAsesor = nuevoAsesor;
+        ProcesarMetricas();
+    }
+
     private void ProcesarMetricas()
     {
         var fechaActual = DateTime.UtcNow;
@@ -260,7 +284,7 @@
         DateTime? prevEnd = null;
         mostrarCrecimiento = true;
 
-        // 1. Calculamos las fechas actuales y las fechas del periodo anterior para comparar
+        // 1. Calculamos las fechas
         if (filtroTiempo == "Este Mes")
         {
             currentStart = new DateTime(fechaActual.Year, fechaActual.Month, 1);
@@ -288,7 +312,6 @@
         }
         else
         {
-            // Histórico: No hay periodo "anterior" contra qué comparar
             mostrarCrecimiento = false; 
         }
 
@@ -305,6 +328,13 @@
             queryAnterior = queryAnterior.Where(e => e.EnrollmentDate >= prevStart.Value && e.EnrollmentDate <= prevEnd.Value);
         }
 
+        // 3. NUEVO: APLICAMOS EL FILTRO DEL ASESOR SELECCIONADO
+        if (filtroAsesor != "Todos")
+        {
+            queryActual = queryActual.Where(e => e.AsesorAsignado == filtroAsesor);
+            queryAnterior = queryAnterior.Where(e => e.AsesorAsignado == filtroAsesor);
+        }
+
         var lista = queryActual.ToList();
         var listaPrev = queryAnterior.ToList();
 
@@ -317,7 +347,6 @@
         int prevInscritos = listaPrev.Count;
         double prevIngresos = listaPrev.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
 
-        // Matemáticas para sacar el % (Protegido contra división entre cero)
         crecimientoInscritos = prevInscritos == 0 ? (totalInscritos > 0 ? 100 : 0) : ((double)(totalInscritos - prevInscritos) / prevInscritos) * 100;
         crecimientoIngresos = prevIngresos == 0 ? (totalIngresos > 0 ? 100 : 0) : ((totalIngresos - prevIngresos) / prevIngresos) * 100;
 
@@ -340,7 +369,7 @@
                              .OrderByDescending(g => g.Count())
                              .FirstOrDefault();
                              
-        mejorAsesor = topAsesor != null ? topAsesor.Key : "Sin Asignar";
+        mejorAsesor = topAsesor != null ? topAsesor.Key : (filtroAsesor == "Todos" ? "Sin Asignar" : filtroAsesor);
 
         // -------------------------------------------------------------
         // CÁLCULO PARA GRÁFICAS Y TABLA DE FINANZAS
@@ -455,7 +484,11 @@
                         string periodoTexto = filtroTiempo == "Personalizado" 
                             ? $"Del {rangoFechasCustom.Start:dd/MMM/yyyy} al {rangoFechasCustom.End:dd/MMM/yyyy}" 
                             : filtroTiempo;
-                        col.Item().Text($"Periodo de evaluación: {periodoTexto}").FontSize(10);
+                        
+                        // En el PDF mostramos si filtramos a alguien en específico
+                        string textoFiltroAsesor = filtroAsesor == "Todos" ? "Todos los Asesores" : $"Asesor: {filtroAsesor}";
+                        
+                        col.Item().Text($"Periodo: {periodoTexto} | {textoFiltroAsesor}").FontSize(10);
                     });
                 });
 
