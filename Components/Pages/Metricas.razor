@@ -85,7 +85,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" />
                 </div>
                 <MudText Typo="Typo.body2" Class="mt-3" Color="Color.Default">
-                    Diferencia entre el valor de los contratos firmados en este periodo y los pagos efectivamente registrados en sistema.
+                    Diferencia entre el valor exigible a la fecha (por semanas/meses transcurridos) y los pagos registrados.
                 </MudText>
             </MudPaper>
         </MudItem>
@@ -238,7 +238,7 @@
     private ConfiguracionEscuela configuracion = new();
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
-    private List<Payment> todosLosPagos = new(); // Nueva lista global de pagos
+    private List<Payment> todosLosPagos = new();
     private List<string> listaAsesoresDisponibles = new();
     
     // Variables de KPIs Originales
@@ -278,7 +278,7 @@
         configuracion = await Firebase.GetConfiguracionAsync() ?? new();
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
-        todosLosPagos = await Firebase.GetAllPaymentsAsync() ?? new(); // Traemos todos los pagos de Firebase
+        todosLosPagos = await Firebase.GetAllPaymentsAsync() ?? new(); 
         
         listaAsesoresDisponibles = todasLasInscripciones
             .Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado))
@@ -371,28 +371,81 @@
         var listaPrev = queryAnterior.ToList();
 
         // -------------------------------------------------------------
-        // CÁLCULO DE TARJETAS (KPIs) Y COBRANZA REAL (NUEVO)
+        // CÁLCULO DE TARJETAS (KPIs) Y COBRANZA REAL / CARTERA VENCIDA
         // -------------------------------------------------------------
         totalInscritos = lista.Count;
         totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
 
         totalCobranzaReal = 0;
+        carteraVencida = 0; // Reiniciamos la cartera
+
         foreach (var inscripcion in lista)
         {
-            // Sumamos todos los pagos asociados EXACTAMENTE al alumno y curso de esta inscripción filtrada
             var pagosDeEstaInscripcion = todosLosPagos
                 .Where(p => p.StudentId == inscripcion.StudentId && p.CourseId == inscripcion.CourseId)
                 .Sum(p => p.Amount);
                 
             totalCobranzaReal += pagosDeEstaInscripcion;
+
+            // =========================================================================
+            // IMPORTADO DESDE TU CÓDIGO DE COBRANZA: Cálculo exacto de deuda al día de hoy
+            // =========================================================================
+            var curso = todosLosCursos.FirstOrDefault(c => c.Id == inscripcion.CourseId);
+            if (curso != null)
+            {
+                double costoConDescuento = curso.SinglePaymentCost * (1 - (inscripcion.DiscountAmount / 100.0));
+                double abonadoAFecha = pagosDeEstaInscripcion;
+                double saldoGlobalRestante = costoConDescuento - abonadoAFecha;
+                double montoExigibleHoy = 0;
+
+                string tipoPeriodo = string.IsNullOrEmpty(inscripcion.TipoPlazo) ? "Semanas" : inscripcion.TipoPlazo;
+                int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
+                double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
+
+                if (tipoPeriodo.Equals("Unico", StringComparison.OrdinalIgnoreCase) || 
+                    tipoPeriodo.Equals("Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
+                {
+                    montoExigibleHoy = costoConDescuento;
+                }
+                else
+                {
+                    var fechaInscripcion = inscripcion.EnrollmentDate.ToLocalTime();
+                    var diasTranscurridos = (DateTime.Now - fechaInscripcion).TotalDays;
+                    int periodosTranscurridos = 0;
+
+                    if (tipoPeriodo == "Semanas")
+                    {
+                        periodosTranscurridos = (int)(diasTranscurridos / 7) + 1;
+                    }
+                    else if (tipoPeriodo == "Quincenas")
+                    {
+                        periodosTranscurridos = (int)(diasTranscurridos / 15) + 1;
+                    }
+                    else if (tipoPeriodo == "Meses")
+                    {
+                        periodosTranscurridos = (int)(diasTranscurridos / 30) + 1;
+                    }
+
+                    if (periodosTranscurridos > totalPeriodos) 
+                    {
+                        periodosTranscurridos = totalPeriodos;
+                    }
+
+                    montoExigibleHoy = periodosTranscurridos * costoPorPeriodo;
+                }
+
+                double montoVencidoReal = montoExigibleHoy - abonadoAFecha;
+                if (saldoGlobalRestante <= 0) montoVencidoReal = 0;
+                
+                if (montoVencidoReal > 0.01) 
+                {
+                    carteraVencida += montoVencidoReal; 
+                }
+            }
         }
 
-        // Evitamos que el porcentaje rompa la barra visual si los alumnos pagan por adelantado (más del 100%)
         porcentajeCobranza = totalIngresos > 0 ? (totalCobranzaReal / totalIngresos) * 100 : 0;
         if (porcentajeCobranza > 100) porcentajeCobranza = 100;
-
-        carteraVencida = totalIngresos - totalCobranzaReal;
-        if (carteraVencida < 0) carteraVencida = 0;
 
         int prevInscritos = listaPrev.Count;
         double prevIngresos = listaPrev.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
@@ -543,7 +596,6 @@
                 {
                     x.Spacing(15);
                     
-                    // AÑADIMOS LA COBRANZA REAL Y CARTERA VENCIDA AL PDF
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Padding(10).Row(row =>
                     {
                         row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3); });
