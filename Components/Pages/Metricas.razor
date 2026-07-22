@@ -1,6 +1,7 @@
 @page "/metricas"
 @rendermode RenderMode.InteractiveServer
 @using MudBlazor
+@using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using QuestPDF.Fluent
@@ -274,7 +275,6 @@
                 int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
                 double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
 
-                // Validación robusta para ignorar acentos, mayúsculas o variantes de texto
                 if (tipoPeriodo.Contains("exhibición", StringComparison.OrdinalIgnoreCase) || 
                     tipoPeriodo.Contains("exhibicion", StringComparison.OrdinalIgnoreCase) || 
                     tipoPeriodo.Contains("único", StringComparison.OrdinalIgnoreCase) || 
@@ -329,8 +329,30 @@
 
     private async Task DescargarReportePDF()
     {
-        try { generandoPdf = true; StateHasChanged(); await Task.Delay(100); var pdfBytes = GeneratePdfDocument(); var fileName = $"Reporte_Ventas_{DateTime.Now:yyyyMMdd}.pdf"; var base64 = Convert.ToBase64String(pdfBytes); var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = '{fileName}'; document.body.appendChild(a); a.click(); document.body.removeChild(a);"; await JSRuntime.InvokeVoidAsync("eval", js); Snackbar.Add("Reporte PDF descargado exitosamente.", Severity.Success); }
-        catch (Exception ex) { Snackbar.Add($"Error al generar el PDF: {ex.Message}", Severity.Error); } finally { generandoPdf = false; StateHasChanged(); }
+        try 
+        { 
+            generandoPdf = true; 
+            StateHasChanged(); 
+            await Task.Delay(100); 
+            
+            var pdfBytes = GeneratePdfDocument(); 
+            var fileName = $"Reporte_Ventas_{DateTime.Now:yyyyMMdd}.pdf"; 
+            
+            using var stream = new MemoryStream(pdfBytes);
+            using var streamRef = new DotNetStreamReference(stream);
+            await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
+            
+            Snackbar.Add("Reporte PDF descargado exitosamente.", Severity.Success); 
+        }
+        catch (Exception ex) 
+        { 
+            Snackbar.Add($"Error al generar el PDF: {ex.Message}", Severity.Error); 
+        } 
+        finally 
+        { 
+            generandoPdf = false; 
+            StateHasChanged(); 
+        }
     }
 
     private byte[] GeneratePdfDocument()
@@ -339,12 +361,51 @@
         {
             container.Page(page =>
             {
-                page.Size(QuestPDF.Helpers.PageSizes.Letter); page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre); page.PageColor(QuestPDF.Helpers.Colors.White); page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                page.Size(QuestPDF.Helpers.PageSizes.Letter); 
+                page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre); 
+                page.PageColor(QuestPDF.Helpers.Colors.White); 
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                // --- MARCA DE AGUA CENTRADA ---
+                page.Background().Layers(layers =>
+                {
+                    if (!string.IsNullOrEmpty(configuracion.LogoBase64))
+                    {
+                        try
+                        {
+                            var base64Watermark = configuracion.LogoBase64.Contains(",") 
+                                ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) 
+                                : configuracion.LogoBase64;
+                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                            layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                        }
+                        catch { }
+                    }
+                });
+
                 page.Header().Row(row =>
                 {
-                    if (!string.IsNullOrEmpty(configuracion.LogoBase64)) { var base64Logo = configuracion.LogoBase64.Contains(",") ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) : configuracion.LogoBase64; var logoBytes = Convert.FromBase64String(base64Logo); row.ConstantItem(60).Image(logoBytes); row.ConstantItem(15); }
-                    row.RelativeItem().Column(col => { col.Item().Text(string.IsNullOrEmpty(configuracion.NombreEscuela) ? "Institución Educativa" : configuracion.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); col.Item().Text("REPORTE FINANCIERO Y DE VENTAS").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3); string periodoTexto = filtroTiempo == "Personalizado" ? $"Del {rangoFechasCustom.Start:dd/MMM/yyyy} al {rangoFechasCustom.End:dd/MMM/yyyy}" : filtroTiempo; string textoFiltroAsesor = filtroAsesor == "Todos" ? "Todos los Asesores" : $"Asesor: {filtroAsesor}"; col.Item().Text($"Periodo: {periodoTexto} | {textoFiltroAsesor}").FontSize(10); });
+                    if (!string.IsNullOrEmpty(configuracion.LogoBase64)) 
+                    { 
+                        var base64Logo = configuracion.LogoBase64.Contains(",") 
+                            ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) 
+                            : configuracion.LogoBase64; 
+                        var logoBytes = Convert.FromBase64String(base64Logo); 
+                        
+                        row.ConstantItem(100).Image(logoBytes); // Logo Agrandado (Antes 60)
+                        row.ConstantItem(15); 
+                    }
+                    row.RelativeItem().Column(col => 
+                    { 
+                        col.Item().Text(string.IsNullOrEmpty(configuracion.NombreEscuela) ? "Institución Educativa" : configuracion.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); 
+                        col.Item().Text("REPORTE FINANCIERO Y DE VENTAS").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3); 
+                        string periodoTexto = filtroTiempo == "Personalizado" ? $"Del {rangoFechasCustom.Start:dd/MMM/yyyy} al {rangoFechasCustom.End:dd/MMM/yyyy}" : filtroTiempo; 
+                        string textoFiltroAsesor = filtroAsesor == "Todos" ? "Todos los Asesores" : $"Asesor: {filtroAsesor}"; 
+                        col.Item().Text($"Periodo: {periodoTexto} | {textoFiltroAsesor}").FontSize(10); 
+                    });
                 });
+
                 page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
                 {
                     x.Spacing(15);

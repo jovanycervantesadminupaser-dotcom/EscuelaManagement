@@ -60,16 +60,26 @@
         // --- SCRIPT PARA DESCARGA DE PDF ---
         // ==========================================
         window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+            // Convierte el stream de Blazor a un archivo real en el navegador
             const arrayBuffer = await contentStreamReference.arrayBuffer();
-            const blob = new Blob([arrayBuffer]);
+            
+            // EL SECRETO PARA iOS/SAFARI: Especificar explícitamente que es un PDF
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' }); 
             const url = URL.createObjectURL(blob);
+            
+            // Crea el enlace de descarga
             const anchorElement = document.createElement('a');
             anchorElement.href = url;
             anchorElement.download = fileName ?? '';
             anchorElement.click();
             anchorElement.remove();
+            
+            // Limpia la memoria
             URL.revokeObjectURL(url);
         }
+
+        // Creamos un alias para que los métodos DescargarPdf de Cobranza, Pagos y Métricas funcionen sin problemas
+        window.descargarArchivoPdf = window.downloadFileFromStream;
     </script>
 </body>
 

@@ -1,6 +1,7 @@
 @page "/pagos"
 @rendermode RenderMode.InteractiveServer
 @using MudBlazor
+@using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using QuestPDF.Fluent
@@ -393,13 +394,40 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(12));
 
+                // --- MARCA DE AGUA CENTRADA ---
+                page.Background().Layers(layers =>
+                {
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    {
+                        try
+                        {
+                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                : configuracionEscuela.LogoBase64;
+                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                            layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                        }
+                        catch { }
+                    }
+                });
+
                 page.Header().Row(row =>
                 {
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    {
+                        var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
+                        var logoBytes = Convert.FromBase64String(base64Logo);
+                        row.ConstantItem(100).Image(logoBytes); // LOGO GRANDE
+                        row.ConstantItem(15);
+                    }
+
                     row.RelativeItem().Column(col =>
                     {
-                        col.Item().Text("COMPROBANTE OFICIAL DE PAGO").SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Green.Darken2);
-                        col.Item().Text($"Folio: {pago.Id.Substring(0, 8).ToUpper()}");
-                        col.Item().Text($"Fecha: {pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")}");
+                        col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken3);
+                        col.Item().Text("COMPROBANTE OFICIAL DE PAGO").SemiBold().FontSize(14).FontColor(QuestPDF.Helpers.Colors.Green.Darken2);
+                        col.Item().Text($"Folio: {pago.Id.Substring(0, 8).ToUpper()}").FontSize(10);
+                        col.Item().Text($"Fecha: {pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")}").FontSize(10);
                     });
                 });
 
@@ -435,8 +463,9 @@
 
     private async Task DescargarPdf(byte[] bytes, string fileName)
     {
-        var base64 = Convert.ToBase64String(bytes);
-        var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = '{fileName}'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
-        await JSRuntime.InvokeVoidAsync("eval", js);
+        // --- DESCARGA MODERNA COMPATIBLE CON IPAD/SAFARI/ANDROID ---
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
     }
 }

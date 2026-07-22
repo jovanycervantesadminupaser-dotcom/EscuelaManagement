@@ -1,6 +1,7 @@
 @page "/inscripciones"
 @rendermode RenderMode.InteractiveServer
 @using MudBlazor
+@using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
@@ -342,7 +343,6 @@
         }
     }
 
-    // --- CEREBRO FINANCIERO: SELECCIÓN DE CURSO ---
     private void OnCourseSelected(string courseId)
     {
         enrollment.CourseId = courseId;
@@ -362,27 +362,23 @@
             }
         }
 
-        // Reseteamos el plazo para obligar a elegir de nuevo y evitamos que se queden precios viejos pegados
         enrollment.TipoPlazo = "";
         enrollment.NumeroPlazos = 0;
         enrollment.MontoPlazo = 0;
     }
 
-    // --- CEREBRO FINANCIERO: RECALCULAR CON DESCUENTOS ---
     private void OnDiscountChanged(double value)
     {
         enrollment.DiscountAmount = value;
         CalcalcularEsquemaFinanciero();
     }
 
-    // --- CEREBRO FINANCIERO: SELECCIÓN DE TIPO DE PLAZO ---
     private void OnTipoPlazoSelected(string tipoPlazo)
     {
         enrollment.TipoPlazo = tipoPlazo;
         CalcalcularEsquemaFinanciero();
     }
 
-    // --- CEREBRO FINANCIERO: EL CÁLCULO MÁGICO ---
     private void CalcalcularEsquemaFinanciero()
     {
         if (currentCourse == null || string.IsNullOrEmpty(enrollment.TipoPlazo)) return;
@@ -654,6 +650,9 @@
 
         return Document.Create(container =>
         {
+            // ----------------------------------------------------
+            // PÁGINA 1: FICHA DE INSCRIPCIÓN
+            // ----------------------------------------------------
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
@@ -661,13 +660,31 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
+                // --- MARCA DE AGUA CENTRADA ---
+                page.Background().Layers(layers =>
+                {
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    {
+                        try
+                        {
+                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                : configuracionEscuela.LogoBase64;
+                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                            layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                        }
+                        catch { }
+                    }
+                });
+
                 page.Header().Row(row =>
                 {
                     if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                     {
                         var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
                         var logoBytes = Convert.FromBase64String(base64Logo);
-                        row.ConstantItem(55).Image(logoBytes);
+                        row.ConstantItem(100).Image(logoBytes); // LOGO GRANDE (100)
                         row.ConstantItem(15);
                     }
 
@@ -735,6 +752,9 @@
                 });
             });
 
+            // ----------------------------------------------------
+            // PÁGINA 2: PÓLIZA DE GARANTÍA
+            // ----------------------------------------------------
             if (imprimirGarantia)
             {
                 container.Page(page =>
@@ -744,9 +764,44 @@
                     page.PageColor(QuestPDF.Helpers.Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                    page.Content().Column(c => {
-                        c.Item().Text("PÓLIZA DE GARANTÍA").Bold().FontSize(14).AlignCenter();
-                        c.Item().PaddingTop(15);
+                    // --- MARCA DE AGUA CENTRADA ---
+                    page.Background().Layers(layers =>
+                    {
+                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        {
+                            try
+                            {
+                                var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                    : configuracionEscuela.LogoBase64;
+                                var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                                layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                            }
+                            catch { }
+                        }
+                    });
+
+                    // --- CABECERA OFICIAL ---
+                    page.Header().Row(row =>
+                    {
+                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        {
+                            var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
+                            var logoBytes = Convert.FromBase64String(base64Logo);
+                            row.ConstantItem(100).Image(logoBytes);
+                            row.ConstantItem(15);
+                        }
+
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                            col.Item().Text("PÓLIZA DE GARANTÍA").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        });
+                    });
+
+                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
+                        c.Item().PaddingTop(10);
 
                         c.Item().Text("DERECHOS").Bold();
                         c.Item().Text("a) Recibir sus clases conforme lo señale su horario y fecha de evaluación.");
@@ -783,6 +838,9 @@
                 });
             }
 
+            // ----------------------------------------------------
+            // PÁGINA 3: TÉRMINOS Y CONDICIONES
+            // ----------------------------------------------------
             if (imprimirTerminos)
             {
                 container.Page(page =>
@@ -792,9 +850,44 @@
                     page.PageColor(QuestPDF.Helpers.Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                    page.Content().Column(c => {
-                        c.Item().Text("TÉRMINOS Y CONDICIONES").Bold().FontSize(14).AlignCenter();
-                        c.Item().PaddingTop(15);
+                    // --- MARCA DE AGUA CENTRADA ---
+                    page.Background().Layers(layers =>
+                    {
+                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        {
+                            try
+                            {
+                                var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                    : configuracionEscuela.LogoBase64;
+                                var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                                layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                            }
+                            catch { }
+                        }
+                    });
+
+                    // --- CABECERA OFICIAL ---
+                    page.Header().Row(row =>
+                    {
+                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        {
+                            var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
+                            var logoBytes = Convert.FromBase64String(base64Logo);
+                            row.ConstantItem(100).Image(logoBytes);
+                            row.ConstantItem(15);
+                        }
+
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                            col.Item().Text("TÉRMINOS Y CONDICIONES").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        });
+                    });
+
+                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
+                        c.Item().PaddingTop(10);
 
                         c.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso, para que conozcas tus derechos y obligaciones como alumno UPASER.").Bold();
                         c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras 5 opciones que seleccione en el concurso ECOEMS/103 Municipios/EXAMEN DE INGRESO A UNIVERSIDAD (UNAM, IPN, UAM, UAEMex, ETC), asegurando que nuestro curso es competente bajo nuestro método de enseñanza.");
@@ -832,8 +925,9 @@
 
     private async Task DescargarPdf(byte[] bytes, string fileName)
     {
-        var base64 = Convert.ToBase64String(bytes);
-        var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = '{fileName}'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
-        await JSRuntime.InvokeVoidAsync("eval", js);
+        // --- DESCARGA MODERNA COMPATIBLE CON IPAD/SAFARI/ANDROID ---
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
     }
 }
