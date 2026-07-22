@@ -366,23 +366,20 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White); 
                 page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                // --- MARCA DE AGUA CENTRADA ---
-                page.Background().Layers(layers =>
+                // --- MARCA DE AGUA CENTRADA (CORREGIDA) ---
+                if (!string.IsNullOrEmpty(configuracion.LogoBase64))
                 {
-                    if (!string.IsNullOrEmpty(configuracion.LogoBase64))
+                    try
                     {
-                        try
-                        {
-                            var base64Watermark = configuracion.LogoBase64.Contains(",") 
-                                ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) 
-                                : configuracion.LogoBase64;
-                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
+                        var base64Watermark = configuracion.LogoBase64.Contains(",") 
+                            ? configuracion.LogoBase64.Substring(configuracion.LogoBase64.IndexOf(",") + 1) 
+                            : configuracion.LogoBase64;
+                        var watermarkBytes = Convert.FromBase64String(base64Watermark);
 
-                            layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                        }
-                        catch { }
+                        page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                     }
-                });
+                    catch { }
+                }
 
                 page.Header().Row(row =>
                 {
