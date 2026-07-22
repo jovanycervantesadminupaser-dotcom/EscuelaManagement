@@ -142,8 +142,12 @@
                         int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
                         double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
 
-                        if (tipoPeriodo.Equals("Unico", StringComparison.OrdinalIgnoreCase) || 
-                            tipoPeriodo.Equals("Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
+                        // Validación robusta para ignorar acentos, mayúsculas o variantes de texto
+                        if (tipoPeriodo.Contains("exhibición", StringComparison.OrdinalIgnoreCase) || 
+                            tipoPeriodo.Contains("exhibicion", StringComparison.OrdinalIgnoreCase) || 
+                            tipoPeriodo.Contains("único", StringComparison.OrdinalIgnoreCase) || 
+                            tipoPeriodo.Contains("unico", StringComparison.OrdinalIgnoreCase) ||
+                            tipoPeriodo.Contains("contado", StringComparison.OrdinalIgnoreCase))
                         {
                             montoExigibleHoy = costoConDescuento;
                         }
