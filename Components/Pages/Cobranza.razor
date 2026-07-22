@@ -11,76 +11,83 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Módulo de Cobranza y Saldos</MudText>
 
-    @* TARJETAS INFORMATIVAS SUPERIORES *@
-    <MudGrid Class="mb-4">
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
-                <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
-                <div>
-                    <MudText Typo="Typo.body2" Class="text-muted">Total por Cobrar (Morosidad)</MudText>
-                    <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
-                </div>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
-                <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
-                <div>
-                    <MudText Typo="Typo.body2" Class="text-muted">Alumnos con Adeudos</MudText>
-                    <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
-                </div>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+    @if (isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    }
+    else
+    {
+        <div class="fade-in-suave">
+            @* TARJETAS INFORMATIVAS SUPERIORES *@
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
+                        <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.body2" Class="text-muted">Total por Cobrar (Morosidad)</MudText>
+                            <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.body2" Class="text-muted">Alumnos con Adeudos</MudText>
+                            <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
 
-    @* TABLA PRINCIPAL DE DEUDORES *@
-    <MudTable T="DebtorRowViewModel" Items="@listaDebidores" Loading="@isLoading" Elevation="3" Hover="true" Striped="true" Filter="new Func<DebtorRowViewModel,bool>(FilterFunc)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Lista de Alumnos con Saldos Pendientes</MudText>
-            <MudSpacer />
-            <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre o curso..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>Alumno</MudTh>
-            <MudTh>Curso Inscrito</MudTh>
-            <MudTh Style="text-align: right;">Costo (Con Desc.)</MudTh>
-            <MudTh Style="text-align: right;">Total Pagado</MudTh>
-            <MudTh Style="text-align: right;">Saldo Vencido</MudTh>
-            <MudTh Style="text-align: center;">Acciones</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Alumno">
-                <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
-                <MudText Typo="Typo.caption" Class="text-muted">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
-            </MudTd>
-            <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
-            <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
-            <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="green-text">@context.TotalPaid.ToString("C")</MudTd>
-            <MudTd DataLabel="Saldo Vencido" Style="text-align: right;">
-                <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">
-                    <b>@context.PendingBalance.ToString("C")</b>
-                </MudChip>
-            </MudTd>
-            <MudTd DataLabel="Acciones" Style="text-align: center;">
-                <div class="d-flex justify-center gap-2">
-                    <MudTooltip Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
-                    </MudTooltip>
-                    <MudTooltip T="string" Text="Recordatorio por WhatsApp" Arrow="true">
-                        <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Style="color: #25D366;" Size="Size.Small" OnClick="(() => EnviarRecordatorioWhatsApp(context))" />
-                    </MudTooltip>
-                    <MudTooltip T="string" Text="Recordatorio por Correo" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" OnClick="(() => EnviarRecordatorioCorreo(context))" />
-                    </MudTooltip>
-                </div>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Align="Align.Center" Class="pa-4">
-                @(isLoading ? "Cargando estados financieros financieros..." : "No se encontraron alumnos con adeudos vencidos en este momento.")
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+            @* TABLA PRINCIPAL DE DEUDORES *@
+            <MudTable T="DebtorRowViewModel" Items="@listaDebidores" Elevation="3" Hover="true" Striped="true" Filter="new Func<DebtorRowViewModel,bool>(FilterFunc)">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Lista de Alumnos con Saldos Pendientes</MudText>
+                    <MudSpacer />
+                    <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre o curso..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Alumno</MudTh>
+                    <MudTh>Curso Inscrito</MudTh>
+                    <MudTh Style="text-align: right;">Costo (Con Desc.)</MudTh>
+                    <MudTh Style="text-align: right;">Total Pagado</MudTh>
+                    <MudTh Style="text-align: right;">Saldo Vencido</MudTh>
+                    <MudTh Style="text-align: center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Alumno">
+                        <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
+                    <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
+                    <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="green-text">@context.TotalPaid.ToString("C")</MudTd>
+                    <MudTd DataLabel="Saldo Vencido" Style="text-align: right;">
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">
+                            <b>@context.PendingBalance.ToString("C")</b>
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Acciones" Style="text-align: center;">
+                        <div class="d-flex justify-center gap-2">
+                            <MudTooltip Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
+                            </MudTooltip>
+                            <MudTooltip T="string" Text="Recordatorio por WhatsApp" Arrow="true">
+                                <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Style="color: #25D366;" Size="Size.Small" OnClick="(() => EnviarRecordatorioWhatsApp(context))" />
+                            </MudTooltip>
+                            <MudTooltip T="string" Text="Recordatorio por Correo" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" OnClick="(() => EnviarRecordatorioCorreo(context))" />
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Class="pa-4">No se encontraron alumnos con adeudos vencidos en este momento.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </div>
+    }
 </MudContainer>
 
 @code {
@@ -129,10 +136,8 @@
                         double costoConDescuento = curso.SinglePaymentCost * (1 - (inscripcion.DiscountAmount / 100.0));
                         double abonadoAFecha = pagos.Where(p => p.CourseId == inscripcion.CourseId).Sum(p => p.Amount);
                         double saldoGlobalRestante = costoConDescuento - abonadoAFecha;
-
                         double montoExigibleHoy = 0;
 
-                        // Lectura de los factores dinámicos del plazo contratado
                         string tipoPeriodo = string.IsNullOrEmpty(inscripcion.TipoPlazo) ? "Semanas" : inscripcion.TipoPlazo;
                         int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
                         double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
@@ -140,7 +145,6 @@
                         if (tipoPeriodo.Equals("Unico", StringComparison.OrdinalIgnoreCase) || 
                             tipoPeriodo.Equals("Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
                         {
-                            // En exhibición única el monto total es exigible inmediatamente
                             montoExigibleHoy = costoConDescuento;
                         }
                         else
@@ -149,33 +153,15 @@
                             var diasTranscurridos = (DateTime.Now - fechaInscripcion).TotalDays;
                             int periodosTranscurridos = 0;
 
-                            // Cálculo del tiempo transcurrido en base al tipo de periodo
-                            if (tipoPeriodo == "Semanas")
-                            {
-                                periodosTranscurridos = (int)(diasTranscurridos / 7) + 1;
-                            }
-                            else if (tipoPeriodo == "Quincenas")
-                            {
-                                periodosTranscurridos = (int)(diasTranscurridos / 15) + 1;
-                            }
-                            else if (tipoPeriodo == "Meses")
-                            {
-                                periodosTranscurridos = (int)(diasTranscurridos / 30) + 1;
-                            }
+                            if (tipoPeriodo == "Semanas") periodosTranscurridos = (int)(diasTranscurridos / 7) + 1;
+                            else if (tipoPeriodo == "Quincenas") periodosTranscurridos = (int)(diasTranscurridos / 15) + 1;
+                            else if (tipoPeriodo == "Meses") periodosTranscurridos = (int)(diasTranscurridos / 30) + 1;
 
-                            // Evitamos exceder el límite estructural del curso
-                            if (periodosTranscurridos > totalPeriodos) 
-                            {
-                                periodosTranscurridos = totalPeriodos;
-                            }
-
+                            if (periodosTranscurridos > totalPeriodos) periodosTranscurridos = totalPeriodos;
                             montoExigibleHoy = periodosTranscurridos * costoPorPeriodo;
                         }
 
-                        // Cálculo preciso de la morosidad real actual
                         double montoVencidoReal = montoExigibleHoy - abonadoAFecha;
-
-                        // Si el curso completo está liquidado, la morosidad queda anulada
                         if (saldoGlobalRestante <= 0) montoVencidoReal = 0;
 
                         if (montoVencidoReal > 0.01) 
@@ -198,7 +184,6 @@
                     }
                 }
             }
-
             totalCarteraVencida = listaDebidores.Sum(d => d.PendingBalance);
         }
         catch (Exception ex)
@@ -226,7 +211,6 @@
             Snackbar.Add("El alumno no cuenta con un número de tutor válido a 10 dígitos.", Severity.Warning);
             return;
         }
-
         var mensaje = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName}, le saludamos de {configuracionEscuela.NombreEscuela}. Le recordamos de manera atenta que la cuenta del alumno {deudor.StudentName} presenta un saldo vencido de {deudor.PendingBalance.ToString("C")} correspondiente al curso {deudor.CourseName}. Agradecemos su apoyo.");
         var url = $"https://wa.me/52{deudor.GuardianPhone}?text={mensaje}";
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
@@ -239,10 +223,8 @@
             Snackbar.Add("El tutor no cuenta con un correo registrado.", Severity.Warning);
             return;
         }
-
         var asunto = Uri.EscapeDataString("Recordatorio de Saldo Vencido - UPASER");
         var cuerpo = Uri.EscapeDataString($"Estimado(a) {deudor.GuardianName},\n\nPor este medio le informamos el estado financiero actual del alumno {deudor.StudentName} en el curso {deudor.CourseName}:\n\n- Costo total: {deudor.TotalCost.ToString("C")}\n- Total cubierto a la fecha: {deudor.TotalPaid.ToString("C")}\n- Saldo Atrasado Vencido: {deudor.PendingBalance.ToString("C")}\n\nLe invitamos a ponerse al corriente a la brevedad.\n\nSaludos cordiales,\nAdministración - {configuracionEscuela.NombreEscuela}");
-        
         var mailtoUrl = $"mailto:{deudor.GuardianEmail}?subject={asunto}&body={cuerpo}";
         await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
     }
@@ -273,7 +255,6 @@
                     page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
                     {
                         x.Spacing(12);
-
                         x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Información de la Cuenta").SemiBold();
                         x.Item().Text($"Alumno: {deudor.StudentName}");
                         x.Item().Text($"Tutor responsable: {deudor.GuardianName}");
@@ -285,25 +266,12 @@
                         x.Item().Text($"SALDO CRÍTICO VENCIDO: {deudor.PendingBalance.ToString("C")}").Bold().FontColor(QuestPDF.Helpers.Colors.Red.Medium);
 
                         x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("Historial Cronológico de Abonos Recibidos").SemiBold();
-                        
                         if (deudor.PaymentsHistory.Any())
                         {
                             x.Item().Table(table =>
                             {
-                                table.ColumnsDefinition(columns =>
-                                {
-                                    columns.RelativeColumn();
-                                    columns.RelativeColumn();
-                                    columns.ConstantColumn(100);
-                                });
-
-                                table.Header(header =>
-                                {
-                                    header.Cell().Text("Fecha").Bold();
-                                    header.Cell().Text("Concepto").Bold();
-                                    header.Cell().Text("Monto").Bold().AlignRight();
-                                });
-
+                                table.ColumnsDefinition(columns => { columns.RelativeColumn(); columns.RelativeColumn(); columns.ConstantColumn(100); });
+                                table.Header(header => { header.Cell().Text("Fecha").Bold(); header.Cell().Text("Concepto").Bold(); header.Cell().Text("Monto").Bold().AlignRight(); });
                                 foreach (var pago in deudor.PaymentsHistory.OrderBy(p => p.PaymentDate))
                                 {
                                     table.Cell().Text(pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy"));
@@ -312,12 +280,7 @@
                                 }
                             });
                         }
-                        else
-                        {
-                            x.Item().Text("No se registran transacciones previas asociadas a este ciclo.").Italic();
-                        }
                     });
-
                     page.Footer().AlignCenter().Text("Control Escolar y Finanzas UPASER").FontSize(9).Italic();
                 });
             }).GeneratePdf();
@@ -326,7 +289,6 @@
             var base64 = Convert.ToBase64String(pdfBytes);
             var js = $"var a = document.createElement('a'); a.href = 'data:application/pdf;base64,{base64}'; a.download = 'EstadoCuenta_{safeName}.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
             await JSRuntime.InvokeVoidAsync("eval", js);
-            
             Snackbar.Add("Estado de cuenta generado correctamente.", Severity.Success);
         }
         catch (Exception ex)

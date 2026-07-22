@@ -12,39 +12,43 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Ficha de Inscripción</MudText>
 
-    <MudCard Elevation="2" Class="mb-4 pa-4" Style="background-color: #f9f9f9;">
-        <MudGrid Class="d-flex align-center">
-            <MudItem xs="12" md="7">
-                <MudAutocomplete T="Student" 
-                                 Label="Buscar Alumno Inscrito previamente (Nombre o Apellido)" 
-                                 Value="selectedStudent" 
-                                 ValueChanged="OnStudentSelected"
-                                 SearchFunc="@SearchStudents" 
-                                 ToStringFunc="@DisplayAlumno"
-                                 Variant="Variant.Outlined" 
-                                 AdornmentIcon="@Icons.Material.Filled.Search" 
-                                 AdornmentColor="Color.Primary" 
-                                 Clearable="true" 
-                                 Placeholder="Escribe para buscar..."/>
-            </MudItem>
-            <MudItem xs="12" md="5">
-                @if (isExistingStudent)
-                {
-                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="w-100">
-                        Alumno existente: Se creará un nuevo historial de curso para este ID.
-                    </MudAlert>
-                }
-                else
-                {
-                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="w-100">
-                        Modo: Nuevo Registro de Alumno.
-                    </MudAlert>
-                }
-            </MudItem>
-        </MudGrid>
-    </MudCard>
+    @* Le damos animación de aparición suave al buscador inicial *@
+    <div class="fade-in-suave">
+        <MudCard Elevation="2" Class="mb-4 pa-4" Style="background-color: #f9f9f9;">
+            <MudGrid Class="d-flex align-center">
+                <MudItem xs="12" md="7">
+                    <MudAutocomplete T="Student" 
+                                     Label="Buscar Alumno Inscrito previamente (Nombre o Apellido)" 
+                                     Value="selectedStudent" 
+                                     ValueChanged="OnStudentSelected"
+                                     SearchFunc="@SearchStudents" 
+                                     ToStringFunc="@DisplayAlumno"
+                                     Variant="Variant.Outlined" 
+                                     AdornmentIcon="@Icons.Material.Filled.Search" 
+                                     AdornmentColor="Color.Primary" 
+                                     Clearable="true" 
+                                     Placeholder="Escribe para buscar..."/>
+                </MudItem>
+                <MudItem xs="12" md="5">
+                    @if (isExistingStudent)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="w-100">
+                            Alumno existente: Se creará un nuevo historial de curso para este ID.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="w-100">
+                            Modo: Nuevo Registro de Alumno.
+                        </MudAlert>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    </div>
 
-    <MudForm @ref="form" @bind-IsValid="@success">
+    @* Y agregamos la animación de aparición elegante (hacia arriba) al cuerpo del formulario *@
+    <MudForm @ref="form" @bind-IsValid="@success" Class="fade-in-up">
         <MudCard Elevation="3">
             <MudCardContent>
                 
@@ -71,23 +75,25 @@
                     <MudItem xs="12" Class="d-flex flex-column align-center justify-center">
                         @if (isCameraOpen)
                         {
-                            <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3" Style="background-color: #f5f5f5;">
-                                <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
-                                <div class="mt-3 d-flex gap-4">
-                                    <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
-                                    <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text">Cancelar</MudButton>
-                                </div>
-                            </MudPaper>
+                            <div class="fade-in-suave">
+                                <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3" Style="background-color: #f5f5f5;">
+                                    <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
+                                    <div class="mt-3 d-flex gap-4">
+                                        <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
+                                        <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text">Cancelar</MudButton>
+                                    </div>
+                                </MudPaper>
+                            </div>
                         }
                         else
                         {
                             @if (!string.IsNullOrEmpty(student.PhotoBase64))
                             {
-                                <MudImage Src="@student.PhotoBase64" Width="150" Height="150" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-lg mb-3" />
+                                <MudImage Src="@student.PhotoBase64" Width="150" Height="150" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-lg mb-3 fade-in-suave" />
                             }
                             else
                             {
-                                <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3" Elevation="0" Style="background-color: #e0e0e0;">
+                                <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3 fade-in-suave" Elevation="0" Style="background-color: #e0e0e0;">
                                     <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 5rem;" Color="Color.Default" />
                                 </MudPaper>
                             }
@@ -199,7 +205,7 @@
 
                     @if (turnoSeleccionado == "OTRO")
                     {
-                        <MudItem xs="12" md="4">
+                        <MudItem xs="12" md="4" Class="fade-in-suave">
                             <MudTextField T="string" Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
                         </MudItem>
                     }
@@ -219,10 +225,10 @@
 
                     @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
                     {
-                        <MudItem xs="6" md="4">
+                        <MudItem xs="6" md="4" Class="fade-in-suave">
                             <MudNumericField T="int" Label="Cantidad de Plazos*" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" />
                         </MudItem>
-                        <MudItem xs="6" md="4">
+                        <MudItem xs="6" md="4" Class="fade-in-suave">
                             <MudNumericField T="double" Label="Monto por Plazo ($)*" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" ReadOnly="true" />
                         </MudItem>
                     }
@@ -243,7 +249,7 @@
             <MudCardActions Class="pb-4 pr-4 flex-column align-end">
                 @if (!registroCompletado)
                 {
-                    <div class="d-flex gap-4">
+                    <div class="d-flex gap-4 fade-in-suave">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo">
                             @if (enviandoCorreo)
                             {
@@ -263,11 +269,11 @@
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3 w-100">
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3 w-100 fade-in-suave">
                         ¡Operación completada exitosamente!
                     </MudAlert>
                     
-                    <div class="d-flex gap-3">
+                    <div class="d-flex gap-3 fade-in-suave">
                         <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
                             Notificar WhatsApp
                         </MudButton>
@@ -366,18 +372,18 @@
     private void OnDiscountChanged(double value)
     {
         enrollment.DiscountAmount = value;
-        CalcularEsquemaFinanciero();
+        CalcalcularEsquemaFinanciero();
     }
 
     // --- CEREBRO FINANCIERO: SELECCIÓN DE TIPO DE PLAZO ---
     private void OnTipoPlazoSelected(string tipoPlazo)
     {
         enrollment.TipoPlazo = tipoPlazo;
-        CalcularEsquemaFinanciero();
+        CalcalcularEsquemaFinanciero();
     }
 
     // --- CEREBRO FINANCIERO: EL CÁLCULO MÁGICO ---
-    private void CalcularEsquemaFinanciero()
+    private void CalcalcularEsquemaFinanciero()
     {
         if (currentCourse == null || string.IsNullOrEmpty(enrollment.TipoPlazo)) return;
 

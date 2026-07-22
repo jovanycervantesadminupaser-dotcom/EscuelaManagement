@@ -16,93 +16,97 @@
     <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary">
         
         <MudTabPanel Text="Listas de Asistencia" Icon="@Icons.Material.Filled.FormatListNumbered" Class="pa-6">
-            <MudGrid>
-                <MudItem xs="12" md="4">
-                    <MudSelect T="string" Label="Selecciona el Curso" ValueChanged="OnCursoListaChanged" Value="selectedCursoListaId" Variant="Variant.Outlined">
-                        @foreach (var c in listaCursos)
-                        {
-                            <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="8" Class="d-flex align-center">
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PictureAsPdf" 
-                               OnClick="ImprimirLista">
-                        GENERAR FORMATO PDF
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
+            <div class="fade-in-suave">
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="Selecciona el Curso" ValueChanged="OnCursoListaChanged" Value="selectedCursoListaId" Variant="Variant.Outlined">
+                            @foreach (var c in listaCursos)
+                            {
+                                <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="8" Class="d-flex align-center">
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PictureAsPdf" 
+                                   OnClick="ImprimirLista">
+                            GENERAR FORMATO PDF
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
 
-            @if (alumnosLista.Any())
-            {
-                <MudTable Items="@alumnosLista" Hover="true" Striped="true" Elevation="1" Class="mt-6 border-solid mud-border-lines-default border-2">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.h6">Vista Previa: Alumnos en el Curso</MudText>
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>#</MudTh>
-                        <MudTh>Nombre del Alumno</MudTh>
-                        <MudTh>Matrícula / ID</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>@(alumnosLista.IndexOf(context) + 1)</MudTd>
-                        <MudTd><b>@context.Name</b></MudTd>
-                        <MudTd>@context.Id.Substring(0, 8).ToUpper()</MudTd>
-                    </RowTemplate>
-                </MudTable>
-            }
+                @if (alumnosLista.Any())
+                {
+                    <MudTable Items="@alumnosLista" Hover="true" Striped="true" Elevation="1" Class="mt-6 border-solid mud-border-lines-default border-2">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Vista Previa: Alumnos en el Curso</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>#</MudTh>
+                            <MudTh>Nombre del Alumno</MudTh>
+                            <MudTh>Matrícula / ID</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@(alumnosLista.IndexOf(context) + 1)</MudTd>
+                            <MudTd><b>@context.Name</b></MudTd>
+                            <MudTd>@context.Id.Substring(0, 8).ToUpper()</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </div>
         </MudTabPanel>
 
         <MudTabPanel Text="Boletas de Calificaciones" Icon="@Icons.Material.Filled.WorkspacePremium" Class="pa-6">
-            <MudGrid>
-                <MudItem xs="12" md="4">
-                    <MudSelect T="string" Label="1. Selecciona el Curso" ValueChanged="OnCursoBoletaChangedAsync" Value="selectedCursoBoletaId" Variant="Variant.Outlined">
-                        @foreach (var c in listaCursos)
-                        {
-                            <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudSelect T="string" Label="2. Selecciona el Alumno" ValueChanged="OnAlumnoBoletaChangedAsync" Value="selectedAlumnoBoletaId" Variant="Variant.Outlined" Disabled="@(!alumnosBoleta.Any())">
-                        @foreach (var a in alumnosBoleta)
-                        {
-                            <MudSelectItem Value="@a.Id">@a.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="4" Class="d-flex align-center">
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" 
-                               OnClick="ImprimirBoleta">
-                        IMPRIMIR BOLETA
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
+            <div class="fade-in-suave">
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="1. Selecciona el Curso" ValueChanged="OnCursoBoletaChangedAsync" Value="selectedCursoBoletaId" Variant="Variant.Outlined">
+                            @foreach (var c in listaCursos)
+                            {
+                                <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="string" Label="2. Selecciona el Alumno" ValueChanged="OnAlumnoBoletaChangedAsync" Value="selectedAlumnoBoletaId" Variant="Variant.Outlined" Disabled="@(!alumnosBoleta.Any())">
+                            @foreach (var a in alumnosBoleta)
+                            {
+                                <MudSelectItem Value="@a.Id">@a.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="4" Class="d-flex align-center">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" 
+                                   OnClick="ImprimirBoleta">
+                            IMPRIMIR BOLETA
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
 
-            @if (boletaPreview.Any())
-            {
-                <MudTable Items="@boletaPreview" Hover="true" Striped="true" Elevation="1" Class="mt-6 border-solid mud-border-lines-default border-2">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.h6">Vista Previa de Boleta</MudText>
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>Materia</MudTh>
-                        <MudTh>Profesor</MudTh>
-                        <MudTh>Periodo</MudTh>
-                        <MudTh Style="text-align:center;">Calificación</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd><b>@context.NombreMateria</b></MudTd>
-                        <MudTd>@context.Profesor</MudTd>
-                        <MudTd>@context.Periodo</MudTd>
-                        <MudTd Style="text-align:center;">
-                            <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small">
-                                @context.Nota.ToString("0.0")
-                            </MudChip>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            }
+                @if (boletaPreview.Any())
+                {
+                    <MudTable Items="@boletaPreview" Hover="true" Striped="true" Elevation="1" Class="mt-6 border-solid mud-border-lines-default border-2">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Vista Previa de Boleta</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Materia</MudTh>
+                            <MudTh>Profesor</MudTh>
+                            <MudTh>Periodo</MudTh>
+                            <MudTh Style="text-align:center;">Calificación</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd><b>@context.NombreMateria</b></MudTd>
+                            <MudTd>@context.Profesor</MudTd>
+                            <MudTd>@context.Periodo</MudTd>
+                            <MudTd Style="text-align:center;">
+                                <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small">
+                                    @context.Nota.ToString("0.0")
+                                </MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </div>
         </MudTabPanel>
         
     </MudTabs> 
@@ -158,7 +162,6 @@
         var curso = listaCursos.FirstOrDefault(c => c.Id == selectedCursoListaId);
         string nombreCurso = curso?.Name ?? "Curso";
 
-        // Pasamos el Nombre de la Escuela y el Logotipo descargados de Firebase
         byte[] pdfBytes = Pdf.GenerarListaAsistencia(alumnosLista, nombreCurso, configuracionEscuela.NombreEscuela, configuracionEscuela.LogoBase64);
 
         using var stream = new MemoryStream(pdfBytes);
@@ -241,7 +244,6 @@
             Nota = b.Nota
         }).ToList();
 
-        // Pasamos el Nombre de la Escuela y el Logotipo descargados de Firebase
         byte[] pdfBytes = Pdf.GenerarBoleta(alumno, listaDto, nombreCurso, configuracionEscuela.NombreEscuela, configuracionEscuela.LogoBase64);
 
         using var stream = new MemoryStream(pdfBytes);

@@ -26,7 +26,10 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-4">
-            @Body
+            @* EL TRUCO: @key obliga a Blazor a reiniciar el div y la animación al cambiar de URL *@
+            <div @key="Navigation.Uri" class="@claseAnimacion">
+                @Body
+            </div>
         </MudContainer>
     </MudMainContent>
 </MudLayout>
@@ -34,24 +37,18 @@
 @code {
     private bool _drawerOpen = true;
     private string nombreEscuela = "Cargando...";
+    private string claseAnimacion = "fade-in-up"; // Estado inicial
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var configuracion = await Firebase.GetConfiguracionAsync();
-            if (!string.IsNullOrEmpty(configuracion.NombreEscuela))
-            {
-                nombreEscuela = configuracion.NombreEscuela;
-            }
-            else
-            {
-                nombreEscuela = "EscuelaManager"; // Valor por defecto
-            }
+            nombreEscuela = !string.IsNullOrEmpty(configuracion.NombreEscuela) ? configuracion.NombreEscuela : "EscuelaManager";
         }
         catch
         {
-            nombreEscuela = "EscuelaManager"; // Respaldo en caso de error de conexión
+            nombreEscuela = "EscuelaManager";
         }
     }
 
@@ -60,8 +57,19 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    private void CerrarSesion()
+    private async Task CerrarSesion()
     {
+        // 1. Aplicar animación de salida
+        claseAnimacion = "fade-out-down";
+        StateHasChanged(); 
+
+        // 2. Esperar a que termine la animación (400ms)
+        await Task.Delay(400);
+
+        // 3. Redirigir al inicio/login
         Navigation.NavigateTo("/");
+        
+        // Restaurar para futuras navegaciones
+        claseAnimacion = "fade-in-up"; 
     }
 }

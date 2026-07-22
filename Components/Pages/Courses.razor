@@ -83,9 +83,7 @@
                     <MudCardActions Class="pb-4 pr-4 d-flex gap-2 justify-end">
                         @if (isEditing)
                         {
-                            <MudButton OnClick="CancelarEdicion" Variant="Variant.Text" Color="Color.Default">
-                                Cancelar
-                            </MudButton>
+                            <MudButton OnClick="CancelarEdicion" Variant="Variant.Text" Color="Color.Default">Cancelar</MudButton>
                         }
                         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="@(isEditing ? Color.Warning : Color.Primary)" StartIcon="@(isEditing ? Icons.Material.Filled.Save : Icons.Material.Filled.Add)">
                             @(isEditing ? "Guardar Cambios" : "Agregar Curso")
@@ -96,57 +94,65 @@
         </MudItem>
 
         <MudItem xs="12" md="7">
-            <MudTable Items="@listaCursos" Loading="@isLoading" Elevation="3" Hover="true" Striped="true">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Lista de Cursos Activos</MudText>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Nombre / Horario</MudTh>
-                    <MudTh>Una Exhibición</MudTh>
-                    <MudTh>Esquemas a Plazos</MudTh>
-                    <MudTh Style="text-align: right;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Nombre / Horario">
-                        <MudText Typo="Typo.body1"><b>@context.Name</b></MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Schedule</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Una Exhibición">
-                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">
-                            @context.SinglePaymentCost.ToString("C")
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Esquemas a Plazos">
-                        @if (context.AllowInstallments && context.InstallmentOptions != null && context.InstallmentOptions.Any())
-                        {
-                            @foreach (var opcion in context.InstallmentOptions)
-                            {
-                                <MudText Typo="Typo.caption" Class="d-block mb-1">
-                                    • <b>@opcion.InstallmentCount</b> @opcion.InstallmentPeriod de <b>@opcion.InstallmentAmount.ToString("C")</b>
-                                </MudText>
-                            }
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Error"><i>No disponible</i></MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Acciones" Style="text-align: right;">
-                        <div class="d-flex justify-end gap-2">
-                            <MudTooltip Text="Editar Curso" Arrow="true" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="(() => IniciarEdicion(context))" />
-                            </MudTooltip>
-                            
-                            <MudTooltip Text="Eliminar Curso" Arrow="true" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="(() => ConfirmarEliminar(context))" />
-                            </MudTooltip>
-                        </div>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText Align="Align.Center" Class="pa-4">No se encontraron cursos registrados</MudText>
-                </NoRecordsContent>
-            </MudTable>
+            @if (isLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+            }
+            else
+            {
+                <div class="fade-in-suave">
+                    <MudTable Items="@listaCursos" Elevation="3" Hover="true" Striped="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Lista de Cursos Activos</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Nombre / Horario</MudTh>
+                            <MudTh>Una Exhibición</MudTh>
+                            <MudTh>Esquemas a Plazos</MudTh>
+                            <MudTh Style="text-align: right;">Acciones</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Nombre / Horario">
+                                <MudText Typo="Typo.body1"><b>@context.Name</b></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Schedule</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Una Exhibición">
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">
+                                    @context.SinglePaymentCost.ToString("C")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Esquemas a Plazos">
+                                @if (context.AllowInstallments && context.InstallmentOptions != null && context.InstallmentOptions.Any())
+                                {
+                                    @foreach (var opcion in context.InstallmentOptions)
+                                    {
+                                        <MudText Typo="Typo.caption" Class="d-block mb-1">
+                                            • <b>@opcion.InstallmentCount</b> @opcion.InstallmentPeriod de <b>@opcion.InstallmentAmount.ToString("C")</b>
+                                        </MudText>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Error"><i>No disponible</i></MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Acciones" Style="text-align: right;">
+                                <div class="d-flex justify-end gap-2">
+                                    <MudTooltip Text="Editar Curso" Arrow="true" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="(() => IniciarEdicion(context))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Eliminar Curso" Arrow="true" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="(() => ConfirmarEliminar(context))" />
+                                    </MudTooltip>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText Align="Align.Center" Class="pa-4">No se encontraron cursos registrados</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
+                </div>
+            }
         </MudItem>
     </MudGrid>
 
@@ -154,32 +160,23 @@
         <MessageContent>
             ¿Estás seguro de que deseas eliminar el curso "<b>@cursoAEliminar?.Name</b>"? Esta acción borrará de forma permanente el registro en Firebase.
         </MessageContent>
-        <YesButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete">ELIMINAR</MudButton>
-        </YesButton>
-        <CancelButton>
-            <MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton>
-        </CancelButton>
+        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete">ELIMINAR</MudButton></YesButton>
+        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton></CancelButton>
     </MudMessageBox>
 </MudContainer>
 
 @code {
     private MudMessageBox mbox = default!;
     private Course? cursoAEliminar;
-
     private Course newCourse = new();
     private List<Course> listaCursos = new();
     private bool isLoading = true;
     private bool isEditing = false;
-
     private int tempCount = 12;
     private string tempPeriod = "Semanas";
     private double tempAmount = 0;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await CargarCursos();
-    }
+    protected override async Task OnInitializedAsync() => await CargarCursos();
 
     private async Task CargarCursos()
     {
@@ -200,86 +197,31 @@
 
     private void AgregarPlazoALista()
     {
-        if (tempAmount <= 0)
-        {
-            Snackbar.Add("El monto por plazo debe ser mayor a 0", Severity.Warning);
-            return;
-        }
-
-        if (newCourse.InstallmentOptions == null)
-        {
-            newCourse.InstallmentOptions = new List<InstallmentOption>();
-        }
-
-        newCourse.InstallmentOptions.Add(new InstallmentOption
-        {
-            InstallmentCount = tempCount,
-            InstallmentPeriod = tempPeriod,
-            InstallmentAmount = tempAmount
-        });
-
+        if (tempAmount <= 0) { Snackbar.Add("El monto por plazo debe ser mayor a 0", Severity.Warning); return; }
+        if (newCourse.InstallmentOptions == null) newCourse.InstallmentOptions = new List<InstallmentOption>();
+        newCourse.InstallmentOptions.Add(new InstallmentOption { InstallmentCount = tempCount, InstallmentPeriod = tempPeriod, InstallmentAmount = tempAmount });
         tempAmount = 0;
         StateHasChanged();
     }
 
-    private void RemoverPlazo(InstallmentOption opcion)
-    {
-        newCourse.InstallmentOptions.Remove(opcion);
-        StateHasChanged();
-    }
+    private void RemoverPlazo(InstallmentOption opcion) { newCourse.InstallmentOptions.Remove(opcion); StateHasChanged(); }
 
     private void IniciarEdicion(Course cursoSeleccionado)
     {
         isEditing = true;
-        
-        newCourse = new Course
-        {
-            Id = cursoSeleccionado.Id,
-            Name = cursoSeleccionado.Name,
-            Schedule = cursoSeleccionado.Schedule,
-            SinglePaymentCost = cursoSeleccionado.SinglePaymentCost,
-            AllowInstallments = cursoSeleccionado.AllowInstallments,
-            InstallmentOptions = cursoSeleccionado.InstallmentOptions != null 
-                ? new List<InstallmentOption>(cursoSeleccionado.InstallmentOptions) 
-                : new List<InstallmentOption>()
-        };
-        
+        newCourse = new Course { Id = cursoSeleccionado.Id, Name = cursoSeleccionado.Name, Schedule = cursoSeleccionado.Schedule, SinglePaymentCost = cursoSeleccionado.SinglePaymentCost, AllowInstallments = cursoSeleccionado.AllowInstallments, InstallmentOptions = cursoSeleccionado.InstallmentOptions != null ? new List<InstallmentOption>(cursoSeleccionado.InstallmentOptions) : new List<InstallmentOption>() };
         StateHasChanged();
     }
 
-    private void CancelarEdicion()
-    {
-        isEditing = false;
-        newCourse = new Course();
-        tempAmount = 0;
-        StateHasChanged();
-    }
+    private void CancelarEdicion() { isEditing = false; newCourse = new Course(); tempAmount = 0; StateHasChanged(); }
 
     private async Task ConfirmarEliminar(Course curso)
     {
         cursoAEliminar = curso;
-        StateHasChanged(); 
-
-        bool? result = await mbox.ShowAsync();
-
-        if (result == true)
+        if (await mbox.ShowAsync() == true)
         {
-            try
-            {
-                await Firebase.DeleteCourseAsync(curso.Id);
-                Snackbar.Add("Curso eliminado con éxito", Severity.Success);
-                
-                if (isEditing && newCourse.Id == curso.Id)
-                {
-                    CancelarEdicion();
-                }
-
-                await CargarCursos();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error al eliminar el curso: {ex.Message}", Severity.Error);
-            }
+            try { await Firebase.DeleteCourseAsync(curso.Id); Snackbar.Add("Curso eliminado con éxito", Severity.Success); if (isEditing && newCourse.Id == curso.Id) CancelarEdicion(); await CargarCursos(); }
+            catch (Exception ex) { Snackbar.Add($"Error al eliminar el curso: {ex.Message}", Severity.Error); }
         }
     }
 
@@ -287,27 +229,12 @@
     {
         try
         {
-            if (!newCourse.AllowInstallments)
-            {
-                newCourse.InstallmentOptions.Clear();
-            }
-            else if (newCourse.InstallmentOptions == null || !newCourse.InstallmentOptions.Any())
-            {
-                Snackbar.Add("Habilitaste los plazos pero no añadiste ninguno a la lista.", Severity.Warning);
-                return;
-            }
-
+            if (!newCourse.AllowInstallments) newCourse.InstallmentOptions.Clear();
+            else if (newCourse.InstallmentOptions == null || !newCourse.InstallmentOptions.Any()) { Snackbar.Add("Habilitaste los plazos pero no añadiste ninguno a la lista.", Severity.Warning); return; }
             await Firebase.AddCourseAsync(newCourse);
-            
             Snackbar.Add(isEditing ? "Curso actualizado con éxito" : "Curso registrado con éxito", Severity.Success);
-
-            isEditing = false;
-            newCourse = new Course();
-            await CargarCursos();
+            isEditing = false; newCourse = new Course(); await CargarCursos();
         }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error al procesar curso: {ex.Message}", Severity.Error);
-        }
+        catch (Exception ex) { Snackbar.Add($"Error al procesar curso: {ex.Message}", Severity.Error); }
     }
 }

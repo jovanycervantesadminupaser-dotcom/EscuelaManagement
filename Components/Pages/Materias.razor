@@ -47,31 +47,43 @@
         </MudItem>
 
         <MudItem xs="12" md="8">
-            <MudTable Items="@MateriasFiltradas" Hover="true" Striped="true" Elevation="3" Class="rounded-lg" Loading="@isLoading" LoadingProgressColor="Color.Info">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Catálogo Activo</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Buscar por materia o profesor..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Immediate="true"></MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Curso</MudTh>
-                    <MudTh>Materia</MudTh>
-                    <MudTh>Profesor Asignado</MudTh>
-                    <MudTh Style="text-align:center;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        <MudChip T="string" Color="Color.Info" Size="Size.Small">
-                            @(ObtenerNombreCurso(context.CursoId))
-                        </MudChip>
-                    </MudTd>
-                    <MudTd><b>@context.Nombre</b></MudTd>
-                    <MudTd>@context.Profesor</MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => BorrarMateria(context))" />
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            @if (isLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+            }
+            else
+            {
+                <div class="fade-in-suave">
+                    <MudTable Items="@MateriasFiltradas" Hover="true" Striped="true" Elevation="3" Class="rounded-lg">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Catálogo Activo</MudText>
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder="Buscar por materia o profesor..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Immediate="true"></MudTextField>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Curso</MudTh>
+                            <MudTh>Materia</MudTh>
+                            <MudTh>Profesor Asignado</MudTh>
+                            <MudTh Style="text-align:center;">Acciones</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                                    @(ObtenerNombreCurso(context.CursoId))
+                                </MudChip>
+                            </MudTd>
+                            <MudTd><b>@context.Nombre</b></MudTd>
+                            <MudTd>@context.Profesor</MudTd>
+                            <MudTd Style="text-align:center;">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => BorrarMateria(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText Align="Align.Center" Class="pa-4">No se encontraron materias registradas.</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
+                </div>
+            }
         </MudItem>
     </MudGrid>
 </MudContainer>
@@ -80,7 +92,7 @@
     private MudForm form = default!;
     private bool success;
     private string searchString = "";
-    private bool isLoading;
+    private bool isLoading = true;
     
     private Materia nuevaMateria = new();
     private List<Materia> listaMaterias = new();
