@@ -5,7 +5,7 @@
 @inject NavigationManager Navigation
 @inject FirebaseService Firebase
 
-<MudThemeProvider />
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="_themeCustom" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
@@ -14,7 +14,15 @@
     <MudAppBar Elevation="1" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">@nombreEscuela</MudText>
+        
         <MudSpacer />
+        
+        <!-- BOTÓN INTERRUPTOR PARA MODO OSCURO -->
+        <MudToggleIconButton @bind-Toggled="@_isDarkMode"
+                             Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" Title="Activar Modo Oscuro"
+                             ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Inherit" ToggledTitle="Activar Modo Claro" 
+                             Class="mr-2" />
+
         <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="CerrarSesion">
             Cerrar Sesión
         </MudButton>
@@ -38,6 +46,36 @@
     private bool _drawerOpen = true;
     private string nombreEscuela = "Cargando...";
     private string claseAnimacion = "fade-in-up"; // Estado inicial
+
+    // Variables para Modo Oscuro
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider = default!;
+
+    // CONFIGURACIÓN DE LA PALETA DE COLORES OFICIAL DE UPASER
+    private readonly MudTheme _themeCustom = new()
+    {
+        // CORRECCIÓN: Se restauró a PaletteLight
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#003366",       // Azul Institucional Profundo
+            Secondary = "#0099B8",     // Turquesa del logotipo
+            Success = "#76C043",       // Verde brillante del logotipo
+            Background = "#F4F6F9",    // Gris claro limpio para el fondo
+            Surface = "#FFFFFF",       // Blanco para las tarjetas
+            AppbarBackground = "#003366"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#0099B8",       // El turquesa resalta mejor como primario en modo oscuro
+            Secondary = "#76C043",     // El verde resalta como secundario
+            Success = "#76C043",
+            Background = "#121824",    // Azul/Gris oscuro (reduce la fatiga visual, no es negro puro)
+            Surface = "#1A2332",       // Tarjetas ligeramente más claras que el fondo
+            AppbarBackground = "#1A2332",
+            TextPrimary = "#ECEFF1",   // Texto blanco suave
+            TextSecondary = "#B0BEC5"  // Texto secundario grisáceo
+        }
+    };
 
     protected override async Task OnInitializedAsync()
     {

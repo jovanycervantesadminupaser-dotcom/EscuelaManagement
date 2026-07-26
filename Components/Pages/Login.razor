@@ -20,7 +20,6 @@
         align-items: center;
         justify-content: center;
         background-color: #003366; 
-        /* La imagen de fondo ahora se inyecta directamente en el div para evitar que Blazor se confunda */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -78,27 +77,28 @@
 
         <MudCardContent Class="pt-0">
             <MudForm @ref="form" @bind-IsValid="@success">
+                
                 <MudTextField @bind-Value="email" 
                               Label="Usuario o Correo Electrónico" 
-                              Variant="Variant.Filled" 
+                              Variant="@Variant.Filled" 
                               DisableUnderLine="true"
                               Required="true" 
                               RequiredError="El correo es obligatorio" 
-                              InputType="InputType.Email" 
-                              Adornment="Adornment.Start" 
+                              InputType="@InputType.Email" 
+                              Adornment="@Adornment.Start" 
                               AdornmentIcon="@Icons.Material.Filled.Email" 
                               Class="mb-4 glass-input" />
 
                 <MudTextField @bind-Value="password" 
                               Label="Contraseña" 
-                              Variant="Variant.Filled" 
+                              Variant="@Variant.Filled" 
                               DisableUnderLine="true"
                               Required="true" 
                               RequiredError="La contraseña es obligatoria" 
                               InputType="@passwordInput" 
-                              Adornment="Adornment.End" 
+                              Adornment="@Adornment.End" 
                               AdornmentIcon="@passwordInputIcon" 
-                              OnAdornmentClick="TogglePasswordVisibility" 
+                              OnAdornmentClick="@TogglePasswordVisibility" 
                               AdornmentAriaLabel="Mostrar contraseña"
                               Class="mb-4 glass-input" />
             </MudForm>
@@ -242,7 +242,6 @@
         }
     }
 
-    // --- MÉTODO PARA RECUPERAR CONTRASEÑA ---
     private async Task RecuperarContrasena()
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -261,7 +260,6 @@
 
             if (usuarioExiste != null)
             {
-                // Notificación local segura basada en tu modelo de datos
                 Snackbar.Add($"Cuenta localizada. Por seguridad, solicita a Administración el restablecimiento de contraseña para el usuario {usuarioExiste.Nombre}.", Severity.Info);
             }
             else
