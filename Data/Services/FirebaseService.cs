@@ -1,35 +1,43 @@
 using Google.Cloud.Firestore;
+using Google.Apis.Auth.OAuth2;
 using EscuelaManagement.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using System.IO;
+using System.Text;
 
 namespace EscuelaManagement.Data.Services;
 
 public class FirebaseService
 {
+    private const string ProjectId = "escuelamanager-d1fba";
     private readonly FirestoreDb _db;
 
     public FirebaseService()
     {
-        // Intentamos leer la variable de entorno secreta configurada en Render
-        string base64Env = Environment.GetEnvironmentVariable("FIREBASE_CONFIG_BASE64");
+        string? base64Env = Environment.GetEnvironmentVariable("FIREBASE_CONFIG_BASE64");
+        GoogleCredential credential;
 
         if (!string.IsNullOrEmpty(base64Env))
         {
             // ==========================================
             // --- MODO PRODUCCIÓN (NUBE / RENDER) ---
             // ==========================================
-            // 1. Decodificar la cadena Base64 a texto JSON normal
             byte[] data = Convert.FromBase64String(base64Env);
-            string jsonCreds = System.Text.Encoding.UTF8.GetString(data);
+            string jsonCreds = Encoding.UTF8.GetString(data);
 
-            // 2. Construir la conexión inyectando el texto JSON directamente en memoria
-            FirestoreDbBuilder builder = new FirestoreDbBuilder
+            // Forma moderna y segura de cargar credenciales sin advertencias de obsolescencia
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(jsonCreds)))
             {
-                ProjectId = "escuelamanager-d1fba",
-                JsonCredentials = jsonCreds
+                credential = GoogleCredential.FromStream(stream);
+            }
+
+            FirestoreDbBuilder builder = new()
+            {
+                ProjectId = ProjectId,
+                Credential = credential
             };
             _db = builder.Build(); 
         }
@@ -38,10 +46,20 @@ public class FirebaseService
             // ==========================================
             // --- MODO DESARROLLO (TU COMPUTADORA) ---
             // ==========================================
-            // Seguimos usando el archivo físico local bloqueado por .gitignore
-            string path = "firebase-credentials.json.json";
+            const string path = "firebase-credentials.json.json";
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
-            _db = FirestoreDb.Create("escuelamanager-d1fba");
+            
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                credential = GoogleCredential.FromStream(stream);
+            }
+
+            FirestoreDbBuilder builder = new()
+            {
+                ProjectId = ProjectId,
+                Credential = credential
+            };
+            _db = builder.Build();
         }
     }
 
@@ -57,7 +75,7 @@ public class FirebaseService
     public async Task UpdateStudentAsync(Student student)
     {
         DocumentReference docRef = _db.Collection("students").Document(student.Id);
-        await docRef.SetAsync(student); // SetAsync sobrescribe con los nuevos datos
+        await docRef.SetAsync(student);
     }
 
     public async Task<List<Student>> GetAllStudentsAsync()
@@ -150,7 +168,6 @@ public class FirebaseService
             .ToList();
     }
 
-    // NUEVO MÉTODO AGREGADO: Obtener todos los pagos (Para Panel de Ventas)
     public async Task<List<Payment>> GetAllPaymentsAsync()
     {
         try
@@ -163,7 +180,7 @@ public class FirebaseService
         }
         catch
         {
-            return new List<Payment>();
+            return [];
         }
     }
 
@@ -232,14 +249,12 @@ public class FirebaseService
         {
             return snapshot.ConvertTo<ConfiguracionEscuela>();
         }
-        
-        // Retorna valores por defecto si aún no se ha configurado nada
         return new ConfiguracionEscuela();
     }
 
     public async Task SaveConfiguracionAsync(ConfiguracionEscuela config)
     {
-        config.Id = "global"; // Forzamos a que siempre sea el mismo documento
+        config.Id = "global"; 
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
         await docRef.SetAsync(config);
     }
@@ -287,6 +302,6 @@ public class FirebaseService
         {
             return snapshot.ConvertTo<CredencialDiseno>();
         }
-        return new CredencialDiseno(); // Devuelve valores por defecto si no existe
+        return new CredencialDiseno(); 
     }
 }

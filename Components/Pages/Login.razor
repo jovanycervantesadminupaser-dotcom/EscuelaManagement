@@ -20,6 +20,7 @@
         align-items: center;
         justify-content: center;
         background-color: #003366; 
+        /* La imagen de fondo ahora se inyecta directamente en el div para evitar que Blazor se confunda */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -241,7 +242,7 @@
         }
     }
 
-    // --- NUEVO MÉTODO PARA RECUPERAR CONTRASEÑA ---
+    // --- MÉTODO PARA RECUPERAR CONTRASEÑA ---
     private async Task RecuperarContrasena()
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -255,13 +256,12 @@
 
         try
         {
-            // Busca en tu tabla personalizada de usuarios
             var usuariosDB = await Firebase.GetUsuariosAsync();
             var usuarioExiste = usuariosDB.FirstOrDefault(u => u.Correo == email);
 
             if (usuarioExiste != null)
             {
-                // Almacenas contraseñas en una tabla personalizada, por lo que se notifica al administrador de forma segura
+                // Notificación local segura basada en tu modelo de datos
                 Snackbar.Add($"Cuenta localizada. Por seguridad, solicita a Administración el restablecimiento de contraseña para el usuario {usuarioExiste.Nombre}.", Severity.Info);
             }
             else
