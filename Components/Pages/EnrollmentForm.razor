@@ -15,7 +15,8 @@
 
     @* Le damos animación de aparición suave al buscador inicial *@
     <div class="fade-in-suave">
-        <MudCard Elevation="2" Class="mb-4 pa-4" Style="background-color: #f9f9f9;">
+        <!-- CORRECCIÓN: Se eliminó el background-color fijo para que adopte el Modo Oscuro -->
+        <MudCard Elevation="2" Class="mb-4 pa-4">
             <MudGrid Class="d-flex align-center">
                 <MudItem xs="12" md="7">
                     <MudAutocomplete T="Student" 
@@ -77,7 +78,8 @@
                         @if (isCameraOpen)
                         {
                             <div class="fade-in-suave">
-                                <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3" Style="background-color: #f5f5f5;">
+                                <!-- CORRECCIÓN: Se eliminó el color fijo del contenedor de la cámara -->
+                                <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3">
                                     <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
                                     <div class="mt-3 d-flex gap-4">
                                         <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
@@ -94,7 +96,8 @@
                             }
                             else
                             {
-                                <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3 fade-in-suave" Elevation="0" Style="background-color: #e0e0e0;">
+                                <!-- CORRECCIÓN: Se reemplazó el color fijo por un Outlined para que el cuadro respete la paleta -->
+                                <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3 fade-in-suave" Elevation="0" Outlined="true">
                                     <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 5rem;" Color="Color.Default" />
                                 </MudPaper>
                             }
