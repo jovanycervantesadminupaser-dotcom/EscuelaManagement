@@ -25,7 +25,8 @@
                     <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
                         <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
                         <div>
-                            <MudText Typo="Typo.body2" Class="text-muted">Total por Cobrar (Morosidad)</MudText>
+                            <!-- CORRECCIÓN: Se cambió text-muted por opacity para adaptación a Modo Oscuro -->
+                            <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total por Cobrar (Morosidad)</MudText>
                             <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
                         </div>
                     </MudPaper>
@@ -34,7 +35,8 @@
                     <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
                         <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
                         <div>
-                            <MudText Typo="Typo.body2" Class="text-muted">Alumnos con Adeudos</MudText>
+                            <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
+                            <MudText Typo="Typo.body2" Style="opacity: 0.7;">Alumnos con Adeudos</MudText>
                             <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
                         </div>
                     </MudPaper>
@@ -59,7 +61,8 @@
                 <RowTemplate>
                     <MudTd DataLabel="Alumno">
                         <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
+                        <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
+                        <MudText Typo="Typo.caption" Style="opacity: 0.7;">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
                     </MudTd>
                     <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
                     <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
@@ -179,7 +182,7 @@
                                 GuardianPhone = alumno.Guardian.Phone ?? "",
                                 GuardianEmail = alumno.Guardian.Email ?? "",
                                 CourseId = curso.Id,
-                                CourseName = curso.Name,
+                                CourseName = curso.Name ?? "Sin nombre",
                                 TotalCost = costoConDescuento,
                                 TotalPaid = abonadoAFecha,
                                 PendingBalance = montoVencidoReal,
