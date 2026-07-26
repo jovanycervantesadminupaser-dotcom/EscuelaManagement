@@ -28,12 +28,13 @@
 
         @if (filtroTiempo == "Personalizado")
         {
-            <!-- CORRECCIÓN: Se envolvió en un div para darle tamaño sin ahorcar el pop-up del calendario -->
             <div style="width: 260px;">
                 <MudDateRangePicker DateRange="rangoFechasCustom" 
                                     DateRangeChanged="OnRangoFechasCambiado" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
+                                    AnchorOrigin="Origin.BottomRight" 
+                                    TransformOrigin="Origin.TopRight"
                                     Clearable="true" 
                                     PlaceholderStart="Fecha Inicio" 
                                     PlaceholderEnd="Fecha Fin"
@@ -41,9 +42,8 @@
             </div>
         }
 
-        <!-- CORRECCIÓN: Envoltorio div para el selector de tiempo -->
         <div style="width: 180px;">
-            <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense">
+            <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                 <MudSelectItem T="string" Value="@("Este Mes")">Este Mes</MudSelectItem>
                 <MudSelectItem T="string" Value="@("Este Año")">Este Año</MudSelectItem>
                 <MudSelectItem T="string" Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
@@ -51,9 +51,8 @@
             </MudSelect>
         </div>
 
-        <!-- CORRECCIÓN: Envoltorio div para el selector de asesores -->
         <div style="width: 220px;">
-            <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Todos los Asesores">
+            <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Placeholder="Todos los Asesores">
                 <MudSelectItem T="string" Value="@("Todos")">Todos los Asesores</MudSelectItem>
                 @foreach(var asesor in listaAsesoresDisponibles)
                 {
@@ -65,7 +64,45 @@
 
     @if (cargando)
     {
-        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+        @* EFECTO ESQUELETO MÚLTIPLE PARA EL DASHBOARD *@
+        <div class="fade-in-suave">
+            @* Tarjetas de Salud Financiera *@
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" />
+                </MudItem>
+            </MudGrid>
+
+            @* Tarjetas de KPIs *@
+            <MudGrid Class="mb-6">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" Class="rounded-lg" />
+                    </MudItem>
+                }
+            </MudGrid>
+
+            @* Cuadros para las Gráficas *@
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" />
+                </MudItem>
+            </MudGrid>
+
+            @* Cuadro para la Tabla Inferior *@
+            <MudGrid Class="mt-4">
+                <MudItem xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" Class="rounded-lg" />
+                </MudItem>
+            </MudGrid>
+        </div>
     }
     else
     {
@@ -374,7 +411,6 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White); 
                 page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                // --- MARCA DE AGUA CENTRADA (CORREGIDA) ---
                 if (!string.IsNullOrEmpty(configuracion.LogoBase64))
                 {
                     try
@@ -398,7 +434,7 @@
                             : configuracion.LogoBase64; 
                         var logoBytes = Convert.FromBase64String(base64Logo); 
                         
-                        row.ConstantItem(100).Image(logoBytes); // Logo Agrandado (Antes 60)
+                        row.ConstantItem(100).Image(logoBytes);
                         row.ConstantItem(15); 
                     }
                     row.RelativeItem().Column(col => 
