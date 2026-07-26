@@ -10,15 +10,20 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión y Directorio de Alumnos</MudText>
 
-    <!-- SECCIÓN DE FILTROS -->
-    <MudCard Elevation="2" Class="mb-6 pa-4" Style="background-color: #f9f9f9;">
+    <!-- CORRECCIÓN: Se quitó el background-color fijo de la tarjeta de filtros -->
+    <MudCard Elevation="2" Class="mb-6 pa-4">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..."/>
+                <!-- PREVENCIÓN DE ERROR: Se añadió T="string" -->
+                <MudTextField T="string" @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..."/>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudSelect T="string" Label="Filtrar por Curso Inscrito" @bind-Value="filterCourseId" Variant="Variant.Outlined" Clearable="true">
-                    @foreach (var curso in listaCursos) { <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem> }
+                    @foreach (var curso in listaCursos) 
+                    { 
+                        <!-- PREVENCIÓN DE ERROR: Se añadió T="string" -->
+                        <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
+                    }
                 </MudSelect>
             </MudItem>
         </MudGrid>
@@ -31,12 +36,13 @@
     else
     {
         <div class="fade-in-suave">
-            <!-- TABLA PRINCIPAL CON EXPEDIENTES DESPLEGABLES -->
-            <MudTable Items="@AlumnosFiltrados" @bind-SelectedItem="selectedStudent" Hover="true" Striped="true" Elevation="3">
+            <!-- PREVENCIÓN DE ERROR: Se añadió T="Student" a la tabla principal -->
+            <MudTable T="Student" Items="@AlumnosFiltrados" @bind-SelectedItem="selectedStudent" Hover="true" Striped="true" Elevation="3">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Registros Encontrados (@AlumnosFiltrados.Count())</MudText>
                     <MudSpacer />
-                    <MudText Typo="Typo.caption" Class="text-muted"><i>*Haz clic en cualquier fila para ver el expediente completo.</i></MudText>
+                    <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
+                    <MudText Typo="Typo.caption" Style="opacity: 0.7;"><i>*Haz clic en cualquier fila para ver el expediente completo.</i></MudText>
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh Style="width: 50px; text-align:center;"></MudTh>
@@ -60,7 +66,8 @@
                 
                 <ChildRowContent Context="alumnoRow">
                     <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
-                        <td colspan="4" style="background-color: #fafafa; padding: 16px;">
+                        <!-- CORRECCIÓN: Se eliminó el background-color: #fafafa para que el expediente se adapte a la tabla -->
+                        <td colspan="4" style="padding: 16px;">
                             <MudCard Outlined="true" Elevation="0" Class="pa-4">
                                 <MudGrid>
                                     <MudItem xs="12" sm="3" Class="d-flex justify-center align-center">
@@ -70,7 +77,8 @@
                                         }
                                         else
                                         {
-                                            <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Style="background-color: #e0e0e0;">
+                                            <!-- CORRECCIÓN: Se reemplazó el color gris #e0e0e0 por Outlined para el cuadro de la foto -->
+                                            <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Outlined="true" Elevation="0">
                                                 <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 4.5rem;" Color="Color.Default" />
                                             </MudPaper>
                                         }
@@ -89,7 +97,8 @@
                                         <MudDivider Class="my-2"/>
                                         <MudText Typo="Typo.body2" Class="mb-1">
                                             <b>Contacto de Emergencia:</b> @(alumnoRow?.Guardian?.Name ?? "") @(alumnoRow?.Guardian?.PaternalLastName ?? "") 
-                                            <span class="text-muted">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
+                                            <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
+                                            <span style="opacity: 0.7;">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
                                         </MudText>
                                         <MudText Typo="Typo.body2"><b>Teléfono Tutor:</b> @(alumnoRow?.Guardian?.Phone ?? "No registrado")</MudText>
                                     </MudItem>
