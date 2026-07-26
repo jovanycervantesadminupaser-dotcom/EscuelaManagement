@@ -12,7 +12,8 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Pagos e Ingresos</MudText>
 
-    <MudCard Elevation="2" Class="mb-4 pa-4" Style="background-color: #f9f9f9;">
+    <!-- CORRECCIÓN: Se eliminó el background-color fijo de la tarjeta principal -->
+    <MudCard Elevation="2" Class="mb-4 pa-4">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="Student" 
@@ -34,7 +35,8 @@
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2" Class="text-muted"><i>Por favor, selecciona un alumno para operar.</i></MudText>
+                    <!-- CORRECCIÓN: Se reemplazó text-muted por opacity para Modo Oscuro -->
+                    <MudText Typo="Typo.subtitle2" Style="opacity: 0.7;"><i>Por favor, selecciona un alumno para operar.</i></MudText>
                 }
             </MudItem>
         </MudGrid>
@@ -64,13 +66,16 @@
                                 @if (!string.IsNullOrEmpty(newPayment.CourseId) && selectedStudent != null)
                                 {
                                     <MudItem xs="12">
-                                        <MudPaper Outlined="true" Elevation="0" Class="pa-3" Style="background-color: #fafafa; border-left: 6px solid #1ec8a5;">
+                                        <!-- CORRECCIÓN: Se quitó el #fafafa del estilo para que se adapte al Modo Oscuro -->
+                                        <MudPaper Outlined="true" Elevation="0" Class="pa-3" Style="border-left: 6px solid #1ec8a5;">
                                             <div class="d-flex justify-space-between mb-1">
-                                                <MudText Typo="Typo.body2" Class="text-muted">Costo total (con desc.):</MudText>
+                                                <!-- CORRECCIÓN: Se reemplazó text-muted por opacity -->
+                                                <MudText Typo="Typo.body2" Style="opacity: 0.7;">Costo total (con desc.):</MudText>
                                                 <MudText Typo="Typo.body2"><b>@costoTotalCurso.ToString("C")</b></MudText>
                                             </div>
                                             <div class="d-flex justify-space-between mb-1">
-                                                <MudText Typo="Typo.body2" Class="text-muted">Total abonado a la fecha:</MudText>
+                                                <!-- CORRECCIÓN: Se reemplazó text-muted por opacity -->
+                                                <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total abonado a la fecha:</MudText>
                                                 <MudText Typo="Typo.body2" Color="Color.Success"><b>@totalPagadoCurso.ToString("C")</b></MudText>
                                             </div>
                                             <MudDivider Class="my-2" />
