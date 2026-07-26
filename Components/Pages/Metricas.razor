@@ -28,36 +28,39 @@
 
         @if (filtroTiempo == "Personalizado")
         {
-            <!-- CORRECCIÓN: Se quitó background-color: white y se ajustó el anclaje para evitar recortes -->
-            <MudDateRangePicker DateRange="rangoFechasCustom" 
-                                DateRangeChanged="OnRangoFechasCambiado" 
-                                Variant="Variant.Outlined" 
-                                Margin="Margin.Dense" 
-                                Style="max-width: 240px;" 
-                                AnchorOrigin="Origin.BottomRight" 
-                                TransformOrigin="Origin.TopRight"
-                                Clearable="true" 
-                                PlaceholderStart="Fecha Inicio" 
-                                PlaceholderEnd="Fecha Fin"
-                                DisableToolbar="true" />
+            <!-- CORRECCIÓN: Se envolvió en un div para darle tamaño sin ahorcar el pop-up del calendario -->
+            <div style="width: 260px;">
+                <MudDateRangePicker DateRange="rangoFechasCustom" 
+                                    DateRangeChanged="OnRangoFechasCambiado" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Clearable="true" 
+                                    PlaceholderStart="Fecha Inicio" 
+                                    PlaceholderEnd="Fecha Fin"
+                                    DisableToolbar="true" />
+            </div>
         }
 
-        <!-- CORRECCIÓN: Se quitó background-color: white y se ajustó el anclaje para evitar recortes -->
-        <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 180px;" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-            <MudSelectItem T="string" Value="@("Este Mes")">Este Mes</MudSelectItem>
-            <MudSelectItem T="string" Value="@("Este Año")">Este Año</MudSelectItem>
-            <MudSelectItem T="string" Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
-            <MudSelectItem T="string" Value="@("Personalizado")">Personalizado...</MudSelectItem>
-        </MudSelect>
+        <!-- CORRECCIÓN: Envoltorio div para el selector de tiempo -->
+        <div style="width: 180px;">
+            <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem T="string" Value="@("Este Mes")">Este Mes</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Este Año")">Este Año</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Personalizado")">Personalizado...</MudSelectItem>
+            </MudSelect>
+        </div>
 
-        <!-- CORRECCIÓN: Se quitó background-color: white y se ajustó el anclaje para evitar recortes -->
-        <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 220px;" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Placeholder="Todos los Asesores">
-            <MudSelectItem T="string" Value="@("Todos")">Todos los Asesores</MudSelectItem>
-            @foreach(var asesor in listaAsesoresDisponibles)
-            {
-                <MudSelectItem T="string" Value="@asesor">@asesor</MudSelectItem>
-            }
-        </MudSelect>
+        <!-- CORRECCIÓN: Envoltorio div para el selector de asesores -->
+        <div style="width: 220px;">
+            <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Todos los Asesores">
+                <MudSelectItem T="string" Value="@("Todos")">Todos los Asesores</MudSelectItem>
+                @foreach(var asesor in listaAsesoresDisponibles)
+                {
+                    <MudSelectItem T="string" Value="@asesor">@asesor</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
     </MudToolBar>
 
     @if (cargando)
