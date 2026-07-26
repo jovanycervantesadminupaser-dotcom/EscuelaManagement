@@ -14,7 +14,36 @@
 
     @if (isLoading)
     {
-        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+        @* EFECTO ESQUELETO MIENTRAS CARGA (SKELETON LOADER) *@
+        <div class="fade-in-suave">
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded-lg" />
+                </MudItem>
+            </MudGrid>
+
+            <MudCard Elevation="3" Class="pa-4">
+                <div class="d-flex justify-space-between mb-4">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="250px" Height="40px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="40px" Class="rounded" />
+                </div>
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-2" />
+                @for (int i = 0; i < 5; i++)
+                {
+                    <div class="d-flex gap-4 mt-3 mb-3">
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="25%" Height="30px" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="20%" Height="30px" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="15%" Height="30px" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="15%" Height="30px" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="15%" Height="30px" />
+                    </div>
+                    <MudDivider />
+                }
+            </MudCard>
+        </div>
     }
     else
     {
@@ -25,7 +54,6 @@
                     <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
                         <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
                         <div>
-                            <!-- CORRECCIÓN: Se cambió text-muted por opacity para adaptación a Modo Oscuro -->
                             <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total por Cobrar (Morosidad)</MudText>
                             <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
                         </div>
@@ -35,7 +63,6 @@
                     <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
                         <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
                         <div>
-                            <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
                             <MudText Typo="Typo.body2" Style="opacity: 0.7;">Alumnos con Adeudos</MudText>
                             <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
                         </div>
@@ -61,7 +88,6 @@
                 <RowTemplate>
                     <MudTd DataLabel="Alumno">
                         <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
-                        <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
                         <MudText Typo="Typo.caption" Style="opacity: 0.7;">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
                     </MudTd>
                     <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
@@ -86,9 +112,20 @@
                         </div>
                     </MudTd>
                 </RowTemplate>
+                
+                @* DISEÑO DE ESTADO VACÍO (EMPTY STATE) *@
                 <NoRecordsContent>
-                    <MudText Align="Align.Center" Class="pa-4">No se encontraron alumnos con adeudos vencidos en este momento.</MudText>
+                    <div class="d-flex flex-column align-center justify-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Style="font-size: 4rem;" Class="mb-3" />
+                        <MudText Typo="Typo.h5" Color="Color.Success" Class="mb-1"><b>¡Todo al corriente!</b></MudText>
+                        <MudText Typo="Typo.body1" Style="opacity: 0.7;">No se encontraron alumnos con adeudos vencidos en este momento.</MudText>
+                    </div>
                 </NoRecordsContent>
+
+                @* PAGINACIÓN AGREGADA *@
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Deudores por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                </PagerContent>
             </MudTable>
         </div>
     }
@@ -146,7 +183,6 @@
                         int totalPeriodos = inscripcion.NumeroPlazos > 0 ? inscripcion.NumeroPlazos : 12;
                         double costoPorPeriodo = inscripcion.MontoPlazo > 0 ? inscripcion.MontoPlazo : (costoConDescuento / totalPeriodos);
 
-                        // Validación robusta para ignorar acentos, mayúsculas o variantes de texto
                         if (tipoPeriodo.Contains("exhibición", StringComparison.OrdinalIgnoreCase) || 
                             tipoPeriodo.Contains("exhibicion", StringComparison.OrdinalIgnoreCase) || 
                             tipoPeriodo.Contains("único", StringComparison.OrdinalIgnoreCase) || 
@@ -250,7 +286,6 @@
                     page.PageColor(QuestPDF.Helpers.Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
 
-                    // --- MARCA DE AGUA CENTRADA ---
                     page.Background().Layers(layers =>
                     {
                         if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
@@ -274,7 +309,7 @@
                         {
                             var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
                             var logoBytes = Convert.FromBase64String(base64Logo);
-                            row.ConstantItem(100).Image(logoBytes); // LOGO GRANDE
+                            row.ConstantItem(100).Image(logoBytes);
                             row.ConstantItem(15);
                         }
 
@@ -321,7 +356,6 @@
 
             var safeName = deudor.StudentName.Replace(" ", "_");
             
-            // --- DESCARGA MODERNA COMPATIBLE CON IPAD/SAFARI/ANDROID ---
             using var stream = new MemoryStream(pdfBytes);
             using var streamRef = new DotNetStreamReference(stream);
             await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", $"EstadoCuenta_{safeName}.pdf", streamRef);

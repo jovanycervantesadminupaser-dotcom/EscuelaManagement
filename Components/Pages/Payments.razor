@@ -12,7 +12,6 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Pagos e Ingresos</MudText>
 
-    <!-- CORRECCIÓN: Se eliminó el background-color fijo de la tarjeta principal -->
     <MudCard Elevation="2" Class="mb-4 pa-4">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="8">
@@ -35,7 +34,6 @@
                 }
                 else
                 {
-                    <!-- CORRECCIÓN: Se reemplazó text-muted por opacity para Modo Oscuro -->
                     <MudText Typo="Typo.subtitle2" Style="opacity: 0.7;"><i>Por favor, selecciona un alumno para operar.</i></MudText>
                 }
             </MudItem>
@@ -66,15 +64,12 @@
                                 @if (!string.IsNullOrEmpty(newPayment.CourseId) && selectedStudent != null)
                                 {
                                     <MudItem xs="12">
-                                        <!-- CORRECCIÓN: Se quitó el #fafafa del estilo para que se adapte al Modo Oscuro -->
                                         <MudPaper Outlined="true" Elevation="0" Class="pa-3" Style="border-left: 6px solid #1ec8a5;">
                                             <div class="d-flex justify-space-between mb-1">
-                                                <!-- CORRECCIÓN: Se reemplazó text-muted por opacity -->
                                                 <MudText Typo="Typo.body2" Style="opacity: 0.7;">Costo total (con desc.):</MudText>
                                                 <MudText Typo="Typo.body2"><b>@costoTotalCurso.ToString("C")</b></MudText>
                                             </div>
                                             <div class="d-flex justify-space-between mb-1">
-                                                <!-- CORRECCIÓN: Se reemplazó text-muted por opacity -->
                                                 <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total abonado a la fecha:</MudText>
                                                 <MudText Typo="Typo.body2" Color="Color.Success"><b>@totalPagadoCurso.ToString("C")</b></MudText>
                                             </div>
@@ -120,39 +115,64 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <MudTable T="Payment" Items="@historialPagos" Loading="@isLoading" Elevation="3" Hover="true" Striped="true">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.h6">Historial de Transacciones</MudText>
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>Fecha</MudTh>
-                        <MudTh>Curso / Concepto</MudTh>
-                        <MudTh Style="text-align: right;">Monto</MudTh>
-                        <MudTh Style="text-align: right;">Acciones</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Fecha">@context.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</MudTd>
-                        <MudTd DataLabel="Curso / Concepto">
-                            <MudText Typo="Typo.body2"><b>@ObtenerNombreCurso(context.CourseId)</b></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Concept</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Monto" Style="text-align: right;">
-                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">
-                                <b>@context.Amount.ToString("C")</b>
-                            </MudChip>
-                        </MudTd>
-                        <MudTd DataLabel="Acciones" Style="text-align: right;">
-                            <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Success" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
-                            </MudTooltip>
-                        </MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Align="Align.Center" Class="pa-4">
-                            @(selectedStudent == null ? "Selecciona un alumno para ver su historial." : "No se encontraron pagos registrados para este alumno.")
-                        </MudText>
-                    </NoRecordsContent>
-                </MudTable>
+                @if (isLoading)
+                {
+                    @* SKELETON LOADER PARA LA TABLA DE PAGOS *@
+                    <MudCard Elevation="3" Class="pa-4">
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="200px" Height="40px" Class="mb-4" />
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-2" />
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            <div class="d-flex gap-4 mt-3 mb-3">
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="20%" Height="30px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="40%" Height="30px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="20%" Height="30px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Circle" Width="30px" Height="30px" />
+                            </div>
+                            <MudDivider />
+                        }
+                    </MudCard>
+                }
+                else
+                {
+                    <MudTable T="Payment" Items="@historialPagos" Elevation="3" Hover="true" Striped="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Historial de Transacciones</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Fecha</MudTh>
+                            <MudTh>Curso / Concepto</MudTh>
+                            <MudTh Style="text-align: right;">Monto</MudTh>
+                            <MudTh Style="text-align: right;">Acciones</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Fecha">@context.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                            <MudTd DataLabel="Curso / Concepto">
+                                <MudText Typo="Typo.body2"><b>@ObtenerNombreCurso(context.CourseId)</b></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Concept</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Monto" Style="text-align: right;">
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">
+                                    <b>@context.Amount.ToString("C")</b>
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Acciones" Style="text-align: right;">
+                                <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Success" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
+                                </MudTooltip>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText Align="Align.Center" Class="pa-4">
+                                @(selectedStudent == null ? "Selecciona un alumno para ver su historial." : "No se encontraron pagos registrados para este alumno.")
+                            </MudText>
+                        </NoRecordsContent>
+                        @* PAGINACIÓN AGREGADA *@
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 5, 10, 20 }" RowsPerPageString="Pagos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
             </MudItem>
         </MudGrid>
     </div>
@@ -231,6 +251,8 @@
         if (alumnoSelected != null)
         {
             isLoading = true;
+            StateHasChanged();
+            
             try
             {
                 historialPagos = await Firebase.GetPaymentsByStudentAsync(alumnoSelected.Id);
@@ -244,9 +266,13 @@
             finally
             {
                 isLoading = false;
+                StateHasChanged();
             }
         }
-        StateHasChanged();
+        else 
+        {
+            StateHasChanged();
+        }
     }
 
     private void OnCourseSelected(string courseId)
@@ -399,7 +425,6 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(12));
 
-                // --- MARCA DE AGUA CENTRADA CORREGIDA ---
                 if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                 {
                     try
@@ -420,7 +445,7 @@
                     {
                         var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
                         var logoBytes = Convert.FromBase64String(base64Logo);
-                        row.ConstantItem(100).Image(logoBytes); // LOGO GRANDE
+                        row.ConstantItem(100).Image(logoBytes);
                         row.ConstantItem(15);
                     }
 
@@ -465,7 +490,6 @@
 
     private async Task DescargarPdf(byte[] bytes, string fileName)
     {
-        // --- DESCARGA MODERNA COMPATIBLE CON IPAD/SAFARI/ANDROID ---
         using var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream);
         await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);

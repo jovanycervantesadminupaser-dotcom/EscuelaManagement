@@ -10,18 +10,15 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión y Directorio de Alumnos</MudText>
 
-    <!-- CORRECCIÓN: Se quitó el background-color fijo de la tarjeta de filtros -->
     <MudCard Elevation="2" Class="mb-6 pa-4">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="6">
-                <!-- PREVENCIÓN DE ERROR: Se añadió T="string" -->
                 <MudTextField T="string" @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..."/>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudSelect T="string" Label="Filtrar por Curso Inscrito" @bind-Value="filterCourseId" Variant="Variant.Outlined" Clearable="true">
                     @foreach (var curso in listaCursos) 
                     { 
-                        <!-- PREVENCIÓN DE ERROR: Se añadió T="string" -->
                         <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
                     }
                 </MudSelect>
@@ -31,18 +28,32 @@
 
     @if (isLoading)
     {
-        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+        @* EFECTO ESQUELETO MIENTRAS CARGA (SKELETON LOADER) *@
+        <MudCard Elevation="3" Class="pa-4 fade-in-suave">
+            <div class="d-flex justify-space-between mb-4">
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="250px" Height="40px" />
+            </div>
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="mb-2 rounded" />
+            @for (int i = 0; i < 5; i++)
+            {
+                <div class="d-flex align-center gap-4 mb-3 mt-3">
+                    <MudSkeleton SkeletonType="SkeletonType.Circle" Width="30px" Height="30px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="30%" Height="30px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="25%" Height="30px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="20%" Height="25px" Class="rounded-xl" />
+                </div>
+                <MudDivider />
+            }
+        </MudCard>
     }
     else
     {
         <div class="fade-in-suave">
-            <!-- PREVENCIÓN DE ERROR: Se añadió T="Student" a la tabla principal -->
             <MudTable T="Student" Items="@AlumnosFiltrados" @bind-SelectedItem="selectedStudent" Hover="true" Striped="true" Elevation="3">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Registros Encontrados (@AlumnosFiltrados.Count())</MudText>
                     <MudSpacer />
-                    <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
-                    <MudText Typo="Typo.caption" Style="opacity: 0.7;"><i>*Haz clic en cualquier fila para ver el expediente completo.</i></MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.7;"><i>*Haz clic en cualquier fila para ver el expediente.</i></MudText>
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh Style="width: 50px; text-align:center;"></MudTh>
@@ -66,7 +77,6 @@
                 
                 <ChildRowContent Context="alumnoRow">
                     <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
-                        <!-- CORRECCIÓN: Se eliminó el background-color: #fafafa para que el expediente se adapte a la tabla -->
                         <td colspan="4" style="padding: 16px;">
                             <MudCard Outlined="true" Elevation="0" Class="pa-4">
                                 <MudGrid>
@@ -77,7 +87,6 @@
                                         }
                                         else
                                         {
-                                            <!-- CORRECCIÓN: Se reemplazó el color gris #e0e0e0 por Outlined para el cuadro de la foto -->
                                             <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Outlined="true" Elevation="0">
                                                 <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 4.5rem;" Color="Color.Default" />
                                             </MudPaper>
@@ -97,7 +106,6 @@
                                         <MudDivider Class="my-2"/>
                                         <MudText Typo="Typo.body2" Class="mb-1">
                                             <b>Contacto de Emergencia:</b> @(alumnoRow?.Guardian?.Name ?? "") @(alumnoRow?.Guardian?.PaternalLastName ?? "") 
-                                            <!-- CORRECCIÓN: Se cambió text-muted por opacity -->
                                             <span style="opacity: 0.7;">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
                                         </MudText>
                                         <MudText Typo="Typo.body2"><b>Teléfono Tutor:</b> @(alumnoRow?.Guardian?.Phone ?? "No registrado")</MudText>
@@ -112,12 +120,17 @@
                         </td>
                     </MudTr>
                 </ChildRowContent>
+
+                @* PAGINACIÓN AGREGADA *@
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Alumnos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                </PagerContent>
             </MudTable>
         </div>
     }
 
     <MudMessageBox @ref="mbox" Title="Confirmar Baja del Alumno">
-        <MessageContent>¿Estás completamente seguro de que deseas dar de baja a "<b>@(alumnoABorrar?.Name) @(alumnoABorrar?.PaternalLastName)</b>"? <br /> Esta acción eliminará su expediente de los servidores.</MessageContent>
+        <MessageContent>¿Estás seguro de que deseas dar de baja a "<b>@(alumnoABorrar?.Name) @(alumnoABorrar?.PaternalLastName)</b>"? <br /> Esta acción eliminará su expediente de los servidores.</MessageContent>
         <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">ELIMINAR</MudButton></YesButton>
         <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton></CancelButton>
     </MudMessageBox>
@@ -139,10 +152,14 @@
     private async Task RecargarDatosDirectorio()
     {
         isLoading = true;
+        StateHasChanged();
+        
         listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
         listaCursos = await Firebase.GetCoursesAsync() ?? new();
         listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
+        
         isLoading = false;
+        StateHasChanged();
     }
 
     private IEnumerable<Student> AlumnosFiltrados => listaAlumnos.Where(s => 
