@@ -162,11 +162,17 @@
                                 </MudTooltip>
                             </MudTd>
                         </RowTemplate>
+                        
+                        @* DISEÑO DE ESTADO VACÍO INTERACTIVO *@
                         <NoRecordsContent>
-                            <MudText Align="Align.Center" Class="pa-4">
-                                @(selectedStudent == null ? "Selecciona un alumno para ver su historial." : "No se encontraron pagos registrados para este alumno.")
-                            </MudText>
+                            <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                                <MudIcon Icon="@(selectedStudent == null ? Icons.Material.Filled.PersonSearch : Icons.Material.Filled.ReceiptLong)" Color="Color.Default" Style="font-size: 4.5rem; opacity: 0.4;" Class="mb-3" />
+                                <MudText Typo="Typo.h6" Style="opacity: 0.7;">
+                                    @(selectedStudent == null ? "Busca y selecciona un alumno arriba para operar." : "Este alumno aún no tiene pagos registrados.")
+                                </MudText>
+                            </div>
                         </NoRecordsContent>
+
                         @* PAGINACIÓN AGREGADA *@
                         <PagerContent>
                             <MudTablePager PageSizeOptions="new int[] { 5, 10, 20 }" RowsPerPageString="Pagos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />

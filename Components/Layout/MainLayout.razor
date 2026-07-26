@@ -40,6 +40,21 @@
             </div>
         </MudContainer>
     </MudMainContent>
+
+    <!-- BOTÓN FLOTANTE DE ACCIÓN RÁPIDA (FAB) -->
+    <div style="position: fixed; bottom: 30px; right: 30px; z-index: 9999;">
+        <MudMenu AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+            <ActivatorContent>
+                <!-- El botón circular principal con un icono de rayo -->
+                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.FlashOn" Size="Size.Large" Elevation="4" />
+            </ActivatorContent>
+            <ChildContent>
+                <!-- Las opciones rápidas que se despliegan al hacer clic -->
+                <MudMenuItem Href="/pagos" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success">Cobro Rápido</MudMenuItem>
+                <MudMenuItem Href="/alumnos" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Info">Inscribir Alumno</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </div>
 </MudLayout>
 
 @code {
@@ -54,23 +69,22 @@
     // CONFIGURACIÓN DE LA PALETA DE COLORES OFICIAL DE UPASER
     private readonly MudTheme _themeCustom = new()
     {
-        // CORRECCIÓN: Se restauró a PaletteLight
         PaletteLight = new PaletteLight()
         {
-            Primary = "#003366",       // Azul Institucional Profundo
-            Secondary = "#0099B8",     // Turquesa del logotipo
-            Success = "#76C043",       // Verde brillante del logotipo
+            Primary = "#003366",      // Azul Institucional Profundo
+            Secondary = "#0099B8",    // Turquesa del logotipo
+            Success = "#76C043",      // Verde brillante del logotipo
             Background = "#F4F6F9",    // Gris claro limpio para el fondo
-            Surface = "#FFFFFF",       // Blanco para las tarjetas
+            Surface = "#FFFFFF",      // Blanco para las tarjetas
             AppbarBackground = "#003366"
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#0099B8",       // El turquesa resalta mejor como primario en modo oscuro
-            Secondary = "#76C043",     // El verde resalta como secundario
+            Primary = "#0099B8",      // El turquesa resalta mejor como primario en modo oscuro
+            Secondary = "#76C043",    // El verde resalta como secundario
             Success = "#76C043",
             Background = "#121824",    // Azul/Gris oscuro (reduce la fatiga visual, no es negro puro)
-            Surface = "#1A2332",       // Tarjetas ligeramente más claras que el fondo
+            Surface = "#1A2332",      // Tarjetas ligeramente más claras que el fondo
             AppbarBackground = "#1A2332",
             TextPrimary = "#ECEFF1",   // Texto blanco suave
             TextSecondary = "#B0BEC5"  // Texto secundario grisáceo

@@ -121,6 +121,15 @@
                     </MudTr>
                 </ChildRowContent>
 
+                @* ESTADO VACÍO (EMPTY STATE) *@
+                <NoRecordsContent>
+                    <div class="d-flex flex-column align-center justify-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Style="font-size: 4rem; opacity: 0.6;" Class="mb-3" />
+                        <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-1"><b>Aún no hay registros</b></MudText>
+                        <MudText Typo="Typo.body1" Style="opacity: 0.7;">No encontramos alumnos que coincidan con tu búsqueda.</MudText>
+                    </div>
+                </NoRecordsContent>
+
                 @* PAGINACIÓN AGREGADA *@
                 <PagerContent>
                     <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Alumnos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
