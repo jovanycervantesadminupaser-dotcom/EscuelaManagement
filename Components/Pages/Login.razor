@@ -20,7 +20,6 @@
         align-items: center;
         justify-content: center;
         background-color: #003366; 
-        /* La imagen de fondo ahora se inyecta directamente en el div para evitar que Blazor se confunda */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -63,7 +62,6 @@
     }
 </style>
 
-@* --- AQUÍ ESTÁ LA CORRECCIÓN: El background-image va en línea --- *@
 <div class="login-container" style="background-image: url('@(string.IsNullOrEmpty(backgroundLoginBase64) ? "" : backgroundLoginBase64)');">
     <MudCard Elevation="0" Class="pa-8 glass-card">
         <MudCardHeader Class="d-flex justify-center pb-0">
@@ -71,8 +69,7 @@
                 <div class="d-flex flex-column align-center">
                     <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 4rem; color: white; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));" Class="mb-2" />
                     
-                    <MudText Typo="Typo.h5" Class="glass-text" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">SISTEMAS VENEGAS</MudText>
+                    <MudText Typo="Typo.h5" Class="glass-text mb-4" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
                     <MudText Typo="Typo.subtitle1" Class="glass-text mb-4">Inicia sesión en tu cuenta</MudText>
                 </div>
             </CardHeaderContent>
@@ -106,7 +103,9 @@
             </MudForm>
             
             <div class="d-flex justify-center mt-2">
-                <MudLink Href="#" Style="color: white; text-decoration: underline; opacity: 0.8; font-size: 13px;">¿Olvidaste tu contraseña?</MudLink>
+                <MudLink OnClick="RecuperarContrasena" Style="cursor: pointer; color: white; text-decoration: underline; opacity: 0.8; font-size: 13px;">
+                    ¿Olvidaste tu contraseña?
+                </MudLink>
             </div>
         </MudCardContent>
 
@@ -162,7 +161,6 @@
                     nombreEscuela = "EscuelaManager";
                 }
 
-                // Cargar la imagen de fondo desde Firebase
                 if (!string.IsNullOrEmpty(configuracion.BackgroundLoginBase64))
                 {
                     backgroundLoginBase64 = configuracion.BackgroundLoginBase64;
@@ -240,6 +238,45 @@
                 cargando = false;
                 StateHasChanged();
             }
+        }
+    }
+
+    // --- NUEVO MÉTODO PARA RECUPERAR CONTRASEÑA ---
+    private async Task RecuperarContrasena()
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            Snackbar.Add("Por favor, ingresa tu correo electrónico para buscar tu cuenta.", Severity.Warning);
+            return;
+        }
+
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            // Busca en tu tabla personalizada de usuarios
+            var usuariosDB = await Firebase.GetUsuariosAsync();
+            var usuarioExiste = usuariosDB.FirstOrDefault(u => u.Correo == email);
+
+            if (usuarioExiste != null)
+            {
+                // Almacenas contraseñas en una tabla personalizada, por lo que se notifica al administrador de forma segura
+                Snackbar.Add($"Cuenta localizada. Por seguridad, solicita a Administración el restablecimiento de contraseña para el usuario {usuarioExiste.Nombre}.", Severity.Info);
+            }
+            else
+            {
+                Snackbar.Add("No encontramos ninguna cuenta asociada a este correo.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al buscar la cuenta: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
         }
     }
 }
