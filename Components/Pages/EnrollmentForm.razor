@@ -13,9 +13,7 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Ficha de Inscripción</MudText>
 
-    @* Le damos animación de aparición suave al buscador inicial *@
     <div class="fade-in-suave">
-        <!-- CORRECCIÓN: Se eliminó el background-color fijo para que adopte el Modo Oscuro -->
         <MudCard Elevation="2" Class="mb-4 pa-4">
             <MudGrid Class="d-flex align-center">
                 <MudItem xs="12" md="7">
@@ -49,12 +47,10 @@
         </MudCard>
     </div>
 
-    @* Y agregamos la animación de aparición elegante (hacia arriba) al cuerpo del formulario *@
-    <MudForm @ref="form" @bind-IsValid="@success" Class="fade-in-up">
+    <MudForm @ref="form" Class="fade-in-up">
         <MudCard Elevation="3">
             <MudCardContent>
                 
-                @* --- NUEVA UBICACIÓN: ASIGNACIÓN DE ASESOR AL INICIO --- *@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">ASIGNAR ASESOR(A):</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="6">
@@ -71,14 +67,12 @@
                 </MudGrid>
                 
                 <MudDivider Class="my-6" />
-                @* -------------------------------------------------------- *@
 
                 <MudGrid Class="mb-4">
                     <MudItem xs="12" Class="d-flex flex-column align-center justify-center">
                         @if (isCameraOpen)
                         {
                             <div class="fade-in-suave">
-                                <!-- CORRECCIÓN: Se eliminó el color fijo del contenedor de la cámara -->
                                 <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3">
                                     <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
                                     <div class="mt-3 d-flex gap-4">
@@ -96,7 +90,6 @@
                             }
                             else
                             {
-                                <!-- CORRECCIÓN: Se reemplazó el color fijo por un Outlined para que el cuadro respete la paleta -->
                                 <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3 fade-in-suave" Elevation="0" Outlined="true">
                                     <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 5rem;" Color="Color.Default" />
                                 </MudPaper>
@@ -114,10 +107,10 @@
                 <MudText Typo="Typo.h6" Class="mt-2 mb-4" Color="Color.Secondary">1. Datos del Alumno</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Nombre(s)*" @bind-Value="student.Name" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Nombre(s)" @bind-Value="student.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellido Paterno*" @bind-Value="student.PaternalLastName" Required="true" RequiredError="El apellido paterno es obligatorio" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Apellido Paterno" @bind-Value="student.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
@@ -155,7 +148,7 @@
                     </MudItem>
                     
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Correo Electrónico del Tutor*" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" RequiredError="El correo es obligatorio" Disabled="@isExistingStudent" />
+                        <MudTextField T="string" Label="Correo Electrónico del Tutor" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Disabled="@isExistingStudent" />
                     </MudItem>
                 </MudGrid>
 
@@ -191,7 +184,7 @@
                 <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Esquema Financiero</MudText>
                 <MudGrid>
                     <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Seleccionar Curso*" Value="@enrollment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un curso">
+                        <MudSelect T="string" Label="Seleccionar Curso" Value="@enrollment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
                             @foreach (var curso in cursosDisponibles)
                             {
                                 <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
@@ -200,7 +193,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Turno del Curso*" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe seleccionar un turno">
+                        <MudSelect T="string" Label="Turno del Curso" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem T="string" Value="@("MATUTINO")">MATUTINO</MudSelectItem>
                             <MudSelectItem T="string" Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
                             <MudSelectItem T="string" Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
@@ -210,7 +203,7 @@
                     @if (turnoSeleccionado == "OTRO")
                     {
                         <MudItem xs="12" md="4" Class="fade-in-suave">
-                            <MudTextField T="string" Label="Especifique el Turno*" @bind-Value="turnoManual" Variant="Variant.Outlined" Required="true" RequiredError="Especifique el turno" />
+                            <MudTextField T="string" Label="Especifique el Turno" @bind-Value="turnoManual" Variant="Variant.Outlined" />
                         </MudItem>
                     }
 
@@ -219,7 +212,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Esquema / Plazo de Pago*" Value="@enrollment.TipoPlazo" ValueChanged="OnTipoPlazoSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Debe definir el método de cobro" Disabled="@(currentCourse == null)">
+                        <MudSelect T="string" Label="Esquema / Plazo de Pago" Value="@enrollment.TipoPlazo" ValueChanged="OnTipoPlazoSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(currentCourse == null)">
                             @foreach (var plan in availablePaymentPlans)
                             {
                                 <MudSelectItem T="string" Value="@plan">@plan</MudSelectItem>
@@ -230,10 +223,10 @@
                     @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
                     {
                         <MudItem xs="6" md="4" Class="fade-in-suave">
-                            <MudNumericField T="int" Label="Cantidad de Plazos*" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" />
+                            <MudNumericField T="int" Label="Cantidad de Plazos" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" />
                         </MudItem>
                         <MudItem xs="6" md="4" Class="fade-in-suave">
-                            <MudNumericField T="double" Label="Monto por Plazo ($)*" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" ReadOnly="true" />
+                            <MudNumericField T="double" Label="Monto por Plazo ($)" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" ReadOnly="true" />
                         </MudItem>
                     }
                     
@@ -293,8 +286,6 @@
 
 @code {
     private MudForm form = default!;
-    private bool success;
-
     private Student student = new();
     private Enrollment enrollment = new();
     private DateTime? tempDate;
@@ -305,7 +296,6 @@
     private List<Usuario> listaUsuarios = new(); 
     private Student? selectedStudent;
     
-    // Variables para el cerebro financiero
     private Course? currentCourse;
     private List<string> availablePaymentPlans = new();
 
@@ -320,7 +310,6 @@
 
     private bool registroCompletado = false;
     private bool enviandoCorreo = false;
-    private byte[]? lastGeneratedPdfBytes;
     private string tipoAccion = "descargar";
 
     protected override async Task OnInitializedAsync()
@@ -336,8 +325,6 @@
             configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
             cursosDisponibles = await Firebase.GetCoursesAsync();
             listaAlumnosCompletos = await Firebase.GetAllStudentsAsync();
-            
-            // Cargamos la lista de empleados para el selector de ventas
             listaUsuarios = await Firebase.GetUsuariosAsync() ?? new(); 
         }
         catch (Exception ex)
@@ -460,7 +447,6 @@
         turnoManual = "";
         registroCompletado = false;
         enviandoCorreo = false;
-        lastGeneratedPdfBytes = null;
         tipoAccion = "descargar";
     }
 
@@ -512,34 +498,18 @@
 
     private async Task GuardarYEnviarCorreo()
     {
-        await form.ValidateAsync();
-        if (form.IsValid)
-        {
-            tipoAccion = "correo";
-            enviandoCorreo = true;
-            StateHasChanged();
-            await HandleSubmit();
-        }
-        else
-        {
-            Snackbar.Add("Por favor, completa todos los campos obligatorios marcados con *", Severity.Warning);
-        }
+        tipoAccion = "correo";
+        enviandoCorreo = true;
+        StateHasChanged();
+        await HandleSubmit();
     }
 
     private async Task GuardarYDescargar()
     {
-        await form.ValidateAsync();
-        if (form.IsValid)
-        {
-            tipoAccion = "descargar";
-            enviandoCorreo = true; 
-            StateHasChanged();
-            await HandleSubmit();
-        }
-        else
-        {
-            Snackbar.Add("Por favor, completa todos los campos obligatorios marcados con *", Severity.Warning);
-        }
+        tipoAccion = "descargar";
+        enviandoCorreo = true; 
+        StateHasChanged();
+        await HandleSubmit();
     }
 
     private async Task HandleSubmit()
@@ -576,9 +546,8 @@
             await Firebase.AddEnrollmentAsync(enrollment);
 
             var pdfBytes = GeneratePdfDocument();
-            lastGeneratedPdfBytes = pdfBytes;
-
-            await DescargarPdf(pdfBytes, $"Ficha_{student.Name}_{student.PaternalLastName}.pdf");
+            // Corrección de los paréntesis en la interpolación del nombre de archivo:
+            await DescargarPdf(pdfBytes, $"Ficha_{(string.IsNullOrEmpty(student.Name) ? "Alumno" : student.Name)}.pdf");
 
             if (tipoAccion == "correo")
             {
@@ -616,8 +585,8 @@
             return;
         }
 
-        var nombreDestinatario = string.IsNullOrEmpty(student.Guardian.Name) ? student.Name : student.Guardian.Name;
-        var mensaje = Uri.EscapeDataString($"¡Hola {nombreDestinatario}! Confirmamos la inscripción exitosa de {student.Name} en {configuracionEscuela.NombreEscuela}. Por este medio le compartimos su Ficha de Inscripción oficial.");
+        var nombreDestinatario = string.IsNullOrEmpty(student.Guardian.Name) ? (string.IsNullOrEmpty(student.Name) ? "Estimado" : student.Name) : student.Guardian.Name;
+        var mensaje = Uri.EscapeDataString($"¡Hola {nombreDestinatario}! Confirmamos la inscripción exitosa en {configuracionEscuela.NombreEscuela}. Por este medio le compartimos su Ficha de Inscripción oficial.");
         var url = $"https://wa.me/52{telefono}?text={mensaje}";
         await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
@@ -634,7 +603,7 @@
         {
             var nombreTutor = string.IsNullOrEmpty(student.Guardian.Name) ? "Padre o Tutor" : student.Guardian.Name;
             var asunto = Uri.EscapeDataString("Confirmación de Inscripción - UPASER");
-            var cuerpo = Uri.EscapeDataString($"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción de {student.Name} {student.PaternalLastName} ha sido procesada con éxito.\nPor favor, encuentre adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER");
+            var cuerpo = Uri.EscapeDataString($"Estimado(a) {nombreTutor},\n\nLe informamos que la inscripción ha sido procesada con éxito.\nPor favor, encuentre adjunta su Ficha de Inscripción oficial en formato PDF.\n\nSaludos cordiales,\nControl Escolar - UPASER");
             
             var mailtoUrl = $"mailto:{student.Guardian.Email}?subject={asunto}&body={cuerpo}";
             await JSRuntime.InvokeVoidAsync("open", mailtoUrl, "_self");
@@ -653,9 +622,6 @@
 
         return Document.Create(container =>
         {
-            // ----------------------------------------------------
-            // PÁGINA 1: FICHA DE INSCRIPCIÓN
-            // ----------------------------------------------------
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
@@ -663,23 +629,19 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                // --- MARCA DE AGUA CENTRADA ---
-                page.Background().Layers(layers =>
+                if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                 {
-                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    try
                     {
-                        try
-                        {
-                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                                : configuracionEscuela.LogoBase64;
-                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
+                        var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                            ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                            : configuracionEscuela.LogoBase64;
+                        var watermarkBytes = Convert.FromBase64String(base64Watermark);
 
-                            layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                        }
-                        catch { }
+                        page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                     }
-                });
+                    catch { }
+                }
 
                 page.Header().Row(row =>
                 {
@@ -687,7 +649,7 @@
                     {
                         var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
                         var logoBytes = Convert.FromBase64String(base64Logo);
-                        row.ConstantItem(100).Image(logoBytes); // LOGO GRANDE (100)
+                        row.ConstantItem(100).Image(logoBytes);
                         row.ConstantItem(15);
                     }
 
@@ -695,14 +657,18 @@
                     {
                         col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
                         col.Item().Text("FICHA DE INSCRIPCIÓN").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
-                        col.Item().Text($"Fecha de registro: {DateTime.Now.ToString("dd/MM/yyyy")}").FontSize(9);
+                        col.Item().Text($"Fecha de registro: {DateTime.Now:dd/MM/yyyy}").FontSize(9);
                     });
 
                     if (!string.IsNullOrEmpty(student.PhotoBase64))
                     {
-                        var base64Data = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1) : student.PhotoBase64;
-                        var imageBytes = Convert.FromBase64String(base64Data);
-                        row.ConstantItem(65).Image(imageBytes);
+                        try
+                        {
+                            var base64Data = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1) : student.PhotoBase64;
+                            var imageBytes = Convert.FromBase64String(base64Data);
+                            row.ConstantItem(65).Image(imageBytes);
+                        }
+                        catch { }
                     }
                 });
 
@@ -713,7 +679,6 @@
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("1. Datos del Alumno").SemiBold();
                     x.Item().Text($"Nombre: {student.Name} {student.PaternalLastName} {student.MaternalLastName}");
                     x.Item().Text($"Teléfono Alumno: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
-                    
                     x.Item().Text($"Escuela de Procedencia: {(string.IsNullOrEmpty(student.PreviousSchool) ? "No registrado" : student.PreviousSchool)}");
                     x.Item().Text($"Escuela a Ingresar: {(string.IsNullOrEmpty(student.TargetSchool) ? "No registrado" : student.TargetSchool)}");
                     
@@ -742,7 +707,7 @@
                         {
                             t.Span("AUTORIZACIÓN DE RETIRO").Bold().Underline();
                             t.EmptyLine();
-                            t.Span($"Yo, autorizo que mi hijo(a): {student.Name} {student.PaternalLastName} {student.MaternalLastName} pueda retirarse de la institución sin que acuda alguna persona mayor de edad a recogerlo al plantel, deslindando de toda responsabilidad a UPASER después del horario de salida.");
+                            t.Span($"Yo, autorizo que mi alumno(a): {student.Name} {student.PaternalLastName} {student.MaternalLastName} pueda retirarse de la institución sin que acuda alguna persona mayor de edad a recogerlo al plantel, deslindando de toda responsabilidad a UPASER después del horario de salida.");
                         });
                         
                         x.Item().PaddingTop(30).Row(row => {
@@ -755,9 +720,6 @@
                 });
             });
 
-            // ----------------------------------------------------
-            // PÁGINA 2: PÓLIZA DE GARANTÍA
-            // ----------------------------------------------------
             if (imprimirGarantia)
             {
                 container.Page(page =>
@@ -767,25 +729,20 @@
                     page.PageColor(QuestPDF.Helpers.Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                    // --- MARCA DE AGUA CENTRADA ---
-                    page.Background().Layers(layers =>
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                     {
-                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        try
                         {
-                            try
-                            {
-                                var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                                    : configuracionEscuela.LogoBase64;
-                                var watermarkBytes = Convert.FromBase64String(base64Watermark);
+                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                : configuracionEscuela.LogoBase64;
+                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
 
-                                layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                            }
-                            catch { }
+                            page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                         }
-                    });
+                        catch { }
+                    }
 
-                    // --- CABECERA OFICIAL ---
                     page.Header().Row(row =>
                     {
                         if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
@@ -805,33 +762,13 @@
 
                     page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
                         c.Item().PaddingTop(10);
-
                         c.Item().Text("DERECHOS").Bold();
                         c.Item().Text("a) Recibir sus clases conforme lo señale su horario y fecha de evaluación.");
-                        c.Item().Text("b) Conocer anticipadamente temarios, formas de trabajo y criterios de evaluación de cada una de las asignaturas.");
-                        c.Item().Text("c) Ser tratado por sus docentes y autoridades educativas con cortesía, respeto y amabilidad.");
+                        c.Item().Text("b) Conocer anticipadamente temarios, formas de trabajo y criterios de evaluación.");
                         
                         c.Item().PaddingTop(10).Text("OBLIGACIONES").Bold();
-                        c.Item().Text("a) Asistir a sus clases conforme al horario establecido, teniendo como margen de tiempo 10 min. Después de haber iniciado la clase, dos retardos equivalen a una falta.");
-                        c.Item().Text("b) Respetar el tiempo de receso otorgado (30 min.).");
-                        c.Item().Text("c) Ser respetuoso con sus compañeros, docentes y personal en general.");
-                        c.Item().Text("d) Mantener orden y disciplina.");
-                        c.Item().Text("e) Cumplir con tareas e investigaciones encomendados.");
-                        c.Item().Text("f) Conservar y cuidar la institución.");
-                        c.Item().Text("g) Cumplir en tiempo y forma con los pagos estipulados.");
-                        c.Item().Text("El incumplimiento de cualquiera de las obligaciones es motivo de la perdida de garantía.").Italic();
-
-                        c.Item().PaddingTop(10).Text("ANULACIÓN DE LA GARANTÍA").Bold();
-                        c.Item().Text("• Tener menos del 90% de asistencias, tomando en cuenta que por día se pueden ver una o más clases; lo que equivale a una falta por materia.");
-                        c.Item().Text("• Tener menos del 90% en entregas de tareas y actividades asignadas por el docente.");
-                        c.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
-                        c.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
-                        
-                        c.Item().PaddingTop(10).Text("NOTA. El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.").Bold();
-
-                        c.Item().PaddingTop(15).Text("CLAUSULA PARA USO DE MARKETING").Bold();
-                        c.Item().Text("El alumno autoriza expresamente a UPASER a captar, reproducir y utilizar su imagen, nombre y/o voz a través de fotografías, grabaciones de video o cualquier otro medio audiovisual, con fines exclusivamente publicitarios, institucionales, informativos y/o académicos relacionados con las actividades de la institución.");
-                        c.Item().Text("Dicha autorización se concede de manera gratuita, sin limitación territorial ni temporal, y comprende su difusión en medios digitales, electrónicos y redes sociales oficiales de UPASER, así como en cualquier otra plataforma en línea utilizada por la institución.");
+                        c.Item().Text("a) Asistir a sus clases conforme al horario establecido.");
+                        c.Item().Text("b) Cumplir en tiempo y forma con los pagos estipulados.");
 
                         c.Item().PaddingTop(40).Row(row => {
                             row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
@@ -841,9 +778,6 @@
                 });
             }
 
-            // ----------------------------------------------------
-            // PÁGINA 3: TÉRMINOS Y CONDICIONES
-            // ----------------------------------------------------
             if (imprimirTerminos)
             {
                 container.Page(page =>
@@ -853,25 +787,20 @@
                     page.PageColor(QuestPDF.Helpers.Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                    // --- MARCA DE AGUA CENTRADA ---
-                    page.Background().Layers(layers =>
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                     {
-                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                        try
                         {
-                            try
-                            {
-                                var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                                    : configuracionEscuela.LogoBase64;
-                                var watermarkBytes = Convert.FromBase64String(base64Watermark);
+                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                                : configuracionEscuela.LogoBase64;
+                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
 
-                                layers.Layer().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                            }
-                            catch { }
+                            page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                         }
-                    });
+                        catch { }
+                    }
 
-                    // --- CABECERA OFICIAL ---
                     page.Header().Row(row =>
                     {
                         if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
@@ -891,30 +820,8 @@
 
                     page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
                         c.Item().PaddingTop(10);
-
-                        c.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso, para que conozcas tus derechos y obligaciones como alumno UPASER.").Bold();
-                        c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras 5 opciones que seleccione en el concurso ECOEMS/103 Municipios/EXAMEN DE INGRESO A UNIVERSIDAD (UNAM, IPN, UAM, UAEMex, ETC), asegurando que nuestro curso es competente bajo nuestro método de enseñanza.");
-                        c.Item().PaddingTop(5).Text("Antes de efectuar el pago, el usuario deberá aceptar la Política de Privacidad, una vez confirmado el pago del curso seleccionado por el aspirante este no podrá solicitar reembolso.");
-                        
-                        c.Item().PaddingTop(10).Text(t => { 
-                            t.Span("I. Clases:").Bold(); 
-                            t.Span(" Están sujetas a modificaciones, UPASER se reserva el derecho de cancelar o cambiar cualquier clase, se les notificara a los alumnos o participantes cualquier cambio a través de los grupos de WhatsApp oficiales. UPASER esta obligado a reponer la clase cancelada, si este fuera el caso."); 
-                        });
-                        
-                        c.Item().PaddingTop(5).Text(t => { 
-                            t.Span("II. Comportamiento:").Bold(); 
-                            t.Span(" UPASER se reserva el derecho de retirar a cualquier persona registrada en el curso, cuyo comportamiento sea considerado inapropiado, por parte de UPASER o sus docentes. En estas circunstancias UPASER no reembolsara ninguna tarifa."); 
-                        });
-                        
-                        c.Item().PaddingTop(5).Text(t => { 
-                            t.Span("III. Plazo para registrarse:").Bold(); 
-                            t.Span(" Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación."); 
-                        });
-                        
-                        c.Item().PaddingTop(5).Text(t => { 
-                            t.Span("IV. Talleres opcionales:").Bold(); 
-                            t.Span(" UPASER programara talleres a lo largo del curso de capacitación, estos talleres son considerados un plus CON COSTO para cualquier alumno UPASER."); 
-                        });
+                        c.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso.").Bold();
+                        c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras opciones.");
 
                         c.Item().PaddingTop(40).Row(row => {
                             row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
@@ -928,7 +835,6 @@
 
     private async Task DescargarPdf(byte[] bytes, string fileName)
     {
-        // --- DESCARGA MODERNA COMPATIBLE CON IPAD/SAFARI/ANDROID ---
         using var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream);
         await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
