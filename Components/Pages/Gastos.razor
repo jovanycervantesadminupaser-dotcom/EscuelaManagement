@@ -1,0 +1,197 @@
+@page "/gastos"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Gastos y Egresos</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Registra y monitorea las salidas de dinero (renta, nómina, servicios, etc.)</MudText>
+
+    @* --- TARJETA DE RESUMEN DEL MES --- *@
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="3" Class="pa-6 rounded-lg" Style="background: linear-gradient(135deg, #E53935 0%, #E35D5B 100%); color: white;">
+                <MudText Typo="Typo.subtitle2" Class="mb-2" Style="opacity: 0.9;">Total Gastos (Este Mes)</MudText>
+                <MudText Typo="Typo.h3" Style="font-weight: bold;">@totalGastosMes.ToString("C")</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Class="mt-2" Style="opacity: 0.5; position: absolute; right: 20px; top: 30px; font-size: 4rem;" />
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid>
+        @* --- FORMULARIO PARA AGREGAR NUEVO GASTO --- *@
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="3" Class="rounded-lg pa-2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Registrar Salida</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudForm @ref="form" @bind-IsValid="success">
+                        <MudTextField @bind-Value="nuevoGasto.Concepto" Label="Concepto (Ej. Pago de Luz)" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Class="mb-4" />
+                        
+                        <MudNumericField @bind-Value="nuevoGasto.Monto" Label="Monto ($)" Required="true" Min="1.0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Class="mb-4" />
+                        
+                        <MudSelect T="string" Label="Categoría" @bind-Value="nuevoGasto.Categoria" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4">
+                            <MudSelectItem Value="@("Operativo")">Operativo (Papelería, Limpieza)</MudSelectItem>
+                            <MudSelectItem Value="@("Nómina")">Nómina (Profesores, Staff)</MudSelectItem>
+                            <MudSelectItem Value="@("Servicios")">Servicios (Luz, Internet, Agua)</MudSelectItem>
+                            <MudSelectItem Value="@("Renta")">Renta de Inmueble</MudSelectItem>
+                            <MudSelectItem Value="@("Publicidad")">Publicidad y Marketing</MudSelectItem>
+                            <MudSelectItem Value="@("Otro")">Otro</MudSelectItem>
+                        </MudSelect>
+
+                        <MudDatePicker @bind-Date="fechaTemp" Label="Fecha del Gasto" Variant="Variant.Outlined" Class="mb-4" />
+                        
+                        <MudTextField @bind-Value="nuevoGasto.Notas" Label="Notas adicionales (Opcional)" Lines="2" Variant="Variant.Outlined" />
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions Class="d-flex justify-end pb-4 pr-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Add" OnClick="GuardarGasto" Disabled="@guardando">
+                        @if (guardando) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> } GUARDAR GASTO
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* --- TABLA DE HISTORIAL DE GASTOS --- *@
+        <MudItem xs="12" md="8">
+            <MudTable Items="@listaGastos" Hover="true" Striped="true" Elevation="3" Class="rounded-lg" Filter="new Func<Gasto,bool>(FilterFunc)">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Historial de Movimientos</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Buscar concepto..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Concepto</MudTh>
+                    <MudTh>Categoría</MudTh>
+                    <MudTh Style="text-align: right;">Monto</MudTh>
+                    <MudTh Style="text-align: center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Fecha">@context.Fecha.ToLocalTime().ToString("dd/MMM/yyyy")</MudTd>
+                    <MudTd DataLabel="Concepto">
+                        <b>@context.Concepto</b>
+                        @if(!string.IsNullOrEmpty(context.Notas))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Default" Style="display:block; opacity:0.6;">@context.Notas</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Categoría">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Dark" Variant="Variant.Outlined">@context.Categoria</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Monto" Style="text-align: right; font-weight: bold; color: #E53935;">
+                        - @context.Monto.ToString("C")
+                    </MudTd>
+                    <MudTd DataLabel="Acciones" Style="text-align: center;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarGasto(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Class="pa-4">No hay gastos registrados.</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Filas:" />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private MudForm form = default!;
+    private bool success;
+    private bool guardando = false;
+    
+    private Gasto nuevoGasto = new();
+    private DateTime? fechaTemp = DateTime.Today;
+    private List<Gasto> listaGastos = new();
+    private string searchString = "";
+    
+    private double totalGastosMes = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarGastos();
+    }
+
+    private async Task CargarGastos()
+    {
+        listaGastos = await Firebase.GetGastosAsync();
+        
+        var mesActual = DateTime.UtcNow.Month;
+        var anoActual = DateTime.UtcNow.Year;
+        
+        totalGastosMes = listaGastos
+            .Where(g => g.Fecha.ToLocalTime().Month == mesActual && g.Fecha.ToLocalTime().Year == anoActual)
+            .Sum(g => g.Monto);
+    }
+
+    private async Task GuardarGasto()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            try
+            {
+                guardando = true;
+                StateHasChanged();
+
+                if (fechaTemp.HasValue)
+                {
+                    nuevoGasto.Fecha = fechaTemp.Value;
+                }
+
+                await Firebase.AddGastoAsync(nuevoGasto);
+                Snackbar.Add("Gasto registrado exitosamente", Severity.Success);
+                
+                nuevoGasto = new Gasto { Categoria = "Operativo" };
+                fechaTemp = DateTime.Today;
+                await CargarGastos();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                guardando = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task EliminarGasto(Gasto gasto)
+    {
+        // CORRECCIÓN: Se actualizó de ShowMessageBox a ShowMessageBoxAsync para MudBlazor v7
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            "Confirmar Eliminación", 
+            $"¿Estás seguro que deseas eliminar el registro de '{gasto.Concepto}' por {gasto.Monto.ToString("C")}?", 
+            yesText: "Eliminar", cancelText: "Cancelar");
+
+        if (result == true)
+        {
+            await Firebase.DeleteGastoAsync(gasto.Id);
+            Snackbar.Add("Registro eliminado", Severity.Info);
+            await CargarGastos();
+            StateHasChanged();
+        }
+    }
+
+    private bool FilterFunc(Gasto element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Concepto.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Categoria.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

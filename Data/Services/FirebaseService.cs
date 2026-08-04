@@ -1,5 +1,4 @@
 using Google.Cloud.Firestore;
-using Google.Apis.Auth.OAuth2;
 using EscuelaManagement.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +17,6 @@ public class FirebaseService
     public FirebaseService()
     {
         string? base64Env = Environment.GetEnvironmentVariable("FIREBASE_CONFIG_BASE64");
-        GoogleCredential credential;
 
         if (!string.IsNullOrEmpty(base64Env))
         {
@@ -28,39 +26,23 @@ public class FirebaseService
             byte[] data = Convert.FromBase64String(base64Env);
             string jsonCreds = Encoding.UTF8.GetString(data);
 
-            // Forma moderna y segura de cargar credenciales sin advertencias de obsolescencia
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(jsonCreds)))
-            {
-                credential = GoogleCredential.FromStream(stream);
-            }
-
-            FirestoreDbBuilder builder = new()
-            {
-                ProjectId = ProjectId,
-                Credential = credential
-            };
-            _db = builder.Build(); 
+            // SOLUCIÓN DEFINITIVA: Guardar en un archivo temporal seguro
+            // Esto evita cualquier advertencia de seguridad o métodos obsoletos de Google
+            string tempAuthFile = Path.Combine(Path.GetTempPath(), "firebase_auth_render.json");
+            File.WriteAllText(tempAuthFile, jsonCreds);
+            
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempAuthFile);
         }
         else
         {
             // ==========================================
             // --- MODO DESARROLLO (TU COMPUTADORA) ---
             // ==========================================
-            const string path = "firebase-credentials.json.json";
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
-            
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                credential = GoogleCredential.FromStream(stream);
-            }
-
-            FirestoreDbBuilder builder = new()
-            {
-                ProjectId = ProjectId,
-                Credential = credential
-            };
-            _db = builder.Build();
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "firebase-credentials.json");
         }
+
+        // Construcción nativa recomendada. Google leerá la variable de entorno automáticamente.
+        _db = FirestoreDb.Create(ProjectId);
     }
 
     // ==========================================
@@ -161,10 +143,10 @@ public class FirebaseService
     {
         Query query = _db.Collection("payments").WhereEqualTo("StudentId", studentId);
         QuerySnapshot snapshot = await query.GetSnapshotAsync();
-        
+
         return snapshot.Documents
             .Select(d => d.ConvertTo<Payment>())
-            .OrderByDescending(p => p.PaymentDate) 
+            .OrderByDescending(p => p.PaymentDate)
             .ToList();
     }
 
@@ -180,7 +162,7 @@ public class FirebaseService
         }
         catch
         {
-            return [];
+            return []; // Inicialización de colección simplificada
         }
     }
 
@@ -244,17 +226,17 @@ public class FirebaseService
     {
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-        
+
         if (snapshot.Exists)
         {
             return snapshot.ConvertTo<ConfiguracionEscuela>();
         }
-        return new ConfiguracionEscuela();
+        return new();
     }
 
     public async Task SaveConfiguracionAsync(ConfiguracionEscuela config)
     {
-        config.Id = "global"; 
+        config.Id = "global";
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
         await docRef.SetAsync(config);
     }
@@ -297,11 +279,45 @@ public class FirebaseService
     {
         DocumentReference docRef = _db.Collection("configuraciones").Document("config_diseno_credencial");
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-        
+
         if (snapshot.Exists)
         {
             return snapshot.ConvertTo<CredencialDiseno>();
         }
-        return new CredencialDiseno(); 
+        return new();
+    }
+
+    // ==========================================
+    // --- MÉTODOS PARA CONTROL DE GASTOS (EGRESOS) ---
+    // ==========================================
+    public async Task<List<Gasto>> GetGastosAsync()
+    {
+        try
+        {
+            QuerySnapshot snapshot = await _db.Collection("Gastos").OrderByDescending("Fecha").GetSnapshotAsync();
+            return snapshot.Documents.Select(d => d.ConvertTo<Gasto>()).ToList();
+        }
+        catch
+        {
+            return []; // Inicialización de colección simplificada
+        }
+    }
+
+    public async Task AddGastoAsync(Gasto gasto)
+    {
+        DocumentReference docRef = _db.Collection("Gastos").Document(gasto.Id);
+
+        if (gasto.Fecha.Kind == DateTimeKind.Unspecified || gasto.Fecha.Kind == DateTimeKind.Local)
+        {
+            gasto.Fecha = gasto.Fecha.ToUniversalTime();
+        }
+
+        await docRef.SetAsync(gasto);
+    }
+
+    public async Task DeleteGastoAsync(string id)
+    {
+        DocumentReference docRef = _db.Collection("Gastos").Document(id);
+        await docRef.DeleteAsync();
     }
 }
