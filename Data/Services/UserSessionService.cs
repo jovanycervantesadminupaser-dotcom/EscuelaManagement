@@ -1,18 +1,22 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.JSInterop;
 using System;
+using System.Threading.Tasks;
 
 namespace EscuelaManagement.Data.Services
 {
     public class UserSessionService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IJSRuntime _jsRuntime;
 
-        public UserSessionService(IHttpContextAccessor httpContextAccessor)
+        public UserSessionService(IHttpContextAccessor httpContextAccessor, IJSRuntime jsRuntime)
         {
             _httpContextAccessor = httpContextAccessor;
+            _jsRuntime = jsRuntime;
         }
 
-        // --- PROPIEDADES CONECTADAS A COOKIES (Sobreviven al F5) ---
+        // --- PROPIEDADES QUE LEEN DESDE LAS COOKIES (Sobreviven al F5) ---
         public bool IsLoggedIn
         {
             get
@@ -22,60 +26,30 @@ namespace EscuelaManagement.Data.Services
             }
         }
 
-        public string Nombre
+        public string Nombre => _httpContextAccessor.HttpContext?.Request.Cookies["UserName"] ?? string.Empty;
+        public string Correo => _httpContextAccessor.HttpContext?.Request.Cookies["UserEmail"] ?? string.Empty;
+        public string Rol => _httpContextAccessor.HttpContext?.Request.Cookies["UserRol"] ?? string.Empty;
+
+        // --- MÉTODO ASÍNCRONO PARA INICIAR SESIÓN (Usa JS para evitar el error de headers) ---
+        public async Task IniciarSesionAsync(string nombre, string correo, string rol)
         {
-            get => _httpContextAccessor.HttpContext?.Request.Cookies["UserName"] ?? string.Empty;
+            string cookieOptions = "path=/; secure; samesite=strict; max-age=604800"; // 7 días de duración
+
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'IsLoggedIn=true; {cookieOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserName={nombre}; {cookieOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserEmail={correo}; {cookieOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserRol={rol}; {cookieOptions}';");
         }
 
-        public string Correo
+        // --- MÉTODO ASÍNCRONO PARA CERRAR SESIÓN ---
+        public async Task CerrarSesionAsync()
         {
-            get => _httpContextAccessor.HttpContext?.Request.Cookies["UserEmail"] ?? string.Empty;
-        }
+            string expiredOptions = "path=/; secure; samesite=strict; max-age=0";
 
-        public string Rol
-        {
-            get => _httpContextAccessor.HttpContext?.Request.Cookies["UserRol"] ?? string.Empty;
-        }
-
-        // --- MÉTODO PARA INICIAR SESIÓN Y GUARDAR COOKIES ---
-        public void IniciarSesion(string nombre, string correo, string rol)
-        {
-            var options = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7) // La sesión dura 7 días activa
-            };
-
-            var context = _httpContextAccessor.HttpContext;
-            if (context != null)
-            {
-                context.Response.Cookies.Append("IsLoggedIn", "true", options);
-                context.Response.Cookies.Append("UserName", nombre ?? string.Empty, options);
-                context.Response.Cookies.Append("UserEmail", correo ?? string.Empty, options);
-                context.Response.Cookies.Append("UserRol", rol ?? string.Empty, options);
-            }
-        }
-
-        // --- MÉTODO PARA CERRAR SESIÓN Y BORRAR COOKIES ---
-        public void CerrarSesion()
-        {
-            var options = new CookieOptions
-            {
-                Expires = DateTime.UtcNow.AddDays(-1),
-                Secure = true,
-                HttpOnly = true
-            };
-
-            var context = _httpContextAccessor.HttpContext;
-            if (context != null)
-            {
-                context.Response.Cookies.Append("IsLoggedIn", "false", options);
-                context.Response.Cookies.Append("UserName", string.Empty, options);
-                context.Response.Cookies.Append("UserEmail", string.Empty, options);
-                context.Response.Cookies.Append("UserRol", string.Empty, options);
-            }
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'IsLoggedIn=false; {expiredOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserName=; {expiredOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserEmail=; {expiredOptions}';");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'UserRol=; {expiredOptions}';");
         }
 
         // --- REGLAS DE PODER (Roles) ---
