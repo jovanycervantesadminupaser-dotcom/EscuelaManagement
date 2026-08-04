@@ -5,7 +5,6 @@
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using QuestPDF.Fluent
-@* IMPORTANTE: No agregamos "using QuestPDF.Infrastructure" globalmente para evitar choques con MudBlazor *@
 
 @inject FirebaseService Firebase
 @inject PdfService Pdf
@@ -14,7 +13,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="MudBlazor.Color.Primary">Módulo de Credenciales</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Diseño y emisión de identificaciones PVC.</MudText>
 
     <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="MudBlazor.Color.Primary">
         
@@ -47,8 +46,12 @@
             </div>
         </MudTabPanel>
 
-        @* --- PESTAÑA 2: EMISIÓN EN LOTE --- *@
+        @* --- PESTAÑA 2: EMISIÓN EN LOTE (Vertical) --- *@
         <MudTabPanel Text="Emisión en Lote" Icon="@Icons.Material.Filled.PeopleAlt" Class="pa-6">
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                El sistema generará el <b>Anverso y Reverso</b> en formato Vertical (5.4cm x 8.6cm) con el diseño oficial UPASER, listo para imprimir.
+            </MudAlert>
+
             <MudGrid Class="mb-4">
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" />
@@ -111,75 +114,6 @@
             </MudTable>
         </MudTabPanel>
 
-        @* --- PESTAÑA 3: DISEÑADOR (CALIBRACIÓN) --- *@
-        <MudTabPanel Text="Configurar Plantilla" Icon="@Icons.Material.Filled.Architecture" Class="pa-6">
-            <MudGrid>
-                <MudItem xs="12" md="3">
-                    <MudText Typo="Typo.h6" Class="mb-4" Color="MudBlazor.Color.Secondary">Calibración (mm)</MudText>
-                    
-                    <MudExpansionPanels MultiExpansion="true">
-                        <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true">
-                            <MudNumericField @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
-                        
-                        <MudExpansionPanel Text="Textos Frente">
-                            <MudNumericField @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
-
-                        <MudExpansionPanel Text="Reverso (Firma)">
-                            <MudNumericField @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
-
-                    <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Success" Class="mt-4 w-100 py-3" StartIcon="@Icons.Material.Filled.Save" OnClick="GuardarDiseno">
-                        GUARDAR DISEÑO
-                    </MudButton>
-                </MudItem>
-
-                <MudItem xs="12" md="9">
-                    <MudGrid>
-                        @* VISTA PREVIA ANVERSO *@
-                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
-                            <MudText Typo="Typo.button" Class="mb-2">ANVERSO (FRENTE)</MudText>
-                            <div class="credencial-preview" style="width: 322px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
-                                @if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
-                                {
-                                    <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
-                                }
-                                <div style="position: absolute; left: @(diseno.FotoX * 3.76)px; top: @(diseno.FotoY * 3.76)px; width: @(diseno.FotoW * 3.76)px; height: @(diseno.FotoH * 3.76)px; border: 1px dashed red; background: rgba(255,0,0,0.1); z-index: 5;"></div>
-                                <div style="position: absolute; left: @(diseno.NombreX * 3.76)px; top: @(diseno.NombreY * 3.76)px; font-size: 10px; color: blue; font-weight: bold; z-index: 5;">NOMBRE ALUMNO</div>
-                                <div style="position: absolute; left: @(diseno.MatriculaX * 3.76)px; top: @(diseno.MatriculaY * 3.76)px; font-size: 10px; color: blue; font-weight: bold; z-index: 5;">MATRÍCULA</div>
-                            </div>
-                            <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR ANVERSO</MudButton>
-                            <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
-                        </MudItem>
-
-                        @* VISTA PREVIA REVERSO *@
-                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
-                            <MudText Typo="Typo.button" Class="mb-2">REVERSO (ATRÁS)</MudText>
-                            <div class="credencial-preview" style="width: 322px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
-                                @if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
-                                {
-                                    <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
-                                }
-                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.76)px; top: @(diseno.FirmaLineaY * 3.76)px; width: @(diseno.FirmaLineaW * 3.76)px; height: 1px; background: black; z-index: 5;"></div>
-                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.76)px; top: @((diseno.FirmaLineaY + 2) * 3.76)px; font-size: 8px; text-align:center; width: @(diseno.FirmaLineaW * 3.76)px; z-index: 5;">FIRMA DIRECTOR</div>
-                            </div>
-                            <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR REVERSO</MudButton>
-                            <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
-                        </MudItem>
-                    </MudGrid>
-                </MudItem>
-            </MudGrid>
-        </MudTabPanel>
     </MudTabs>
 </MudContainer>
 
@@ -188,6 +122,7 @@
     private List<Course> listaCursos = new();
     private List<Enrollment> listaInscripciones = new();
     private CredencialDiseno diseno = new();
+    private ConfiguracionEscuela configuracionEscuela = new();
     
     // Pestaña 1 (Individual)
     private Student? selectedStudent;
@@ -208,32 +143,25 @@
         public Student Student { get; set; } = new();
         public string CourseName { get; set; } = "";
 
-        // Necesario para el HashSet (selección múltiple)
         public override bool Equals(object? obj)
         {
-            if (obj is AlumnoCredencialVM other)
-            {
-                return Student.Id == other.Student.Id;
-            }
+            if (obj is AlumnoCredencialVM other) return Student.Id == other.Student.Id;
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return Student.Id?.GetHashCode() ?? 0;
-        }
+        public override int GetHashCode() => Student.Id?.GetHashCode() ?? 0;
     }
 
     protected override async Task OnInitializedAsync()
     {
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
+        configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
         listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
         listaCursos = await Firebase.GetCoursesAsync() ?? new();
         listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         diseno = await Firebase.GetDisenoCredencialAsync() ?? new();
 
-        // Llenar lista para la pestaña en Lote
         foreach (var alumno in listaAlumnos)
         {
             var inscripcion = listaInscripciones.FirstOrDefault(i => i.StudentId == alumno.Id);
@@ -242,7 +170,6 @@
         }
     }
 
-    // --- SE EXTRAE EL MÉTODO TOSTRING FUNC PARA EVITAR ERROR LAMBDA ---
     private string DisplayAlumno(Student? s)
     {
         if (s == null) return "";
@@ -253,10 +180,7 @@
     private Task<IEnumerable<Student>> SearchStudents(string value, CancellationToken token)
     {
         if (string.IsNullOrEmpty(value)) return Task.FromResult<IEnumerable<Student>>(listaAlumnos.Take(5));
-        
-        var filtrados = listaAlumnos.Where(s => 
-            ($"{(s.Name ?? "")} {(s.PaternalLastName ?? "")}").Contains(value, StringComparison.OrdinalIgnoreCase)
-        );
+        var filtrados = listaAlumnos.Where(s => ($"{(s.Name ?? "")} {(s.PaternalLastName ?? "")}").Contains(value, StringComparison.OrdinalIgnoreCase));
         return Task.FromResult<IEnumerable<Student>>(filtrados);
     }
 
@@ -279,7 +203,7 @@
         await JS.InvokeVoidAsync("downloadFileFromStream", $"Credencial_{selectedStudent.Name}.pdf", streamRef);
     }
 
-    // --- MÉTODOS PESTAÑA 2 (LOTE) ---
+    // --- MÉTODOS PESTAÑA 2 (LOTE VERTICAL PERFECTO) ---
     private IEnumerable<AlumnoCredencialVM> AlumnosFiltradosLote => listaAlumnosVM.Where(x => 
         (string.IsNullOrEmpty(searchStringLote) || $"{(x.Student.Name ?? "")} {(x.Student.PaternalLastName ?? "")}".Contains(searchStringLote, StringComparison.OrdinalIgnoreCase)) &&
         (string.IsNullOrEmpty(filterCourseIdLote) || x.CourseName == listaCursos.FirstOrDefault(c => c.Id == filterCourseIdLote)?.Name));
@@ -294,11 +218,11 @@
             StateHasChanged();
             await Task.Delay(100); 
 
-            var pdfBytes = CrearPdfCredencialesLote();
+            var pdfBytes = CrearPdfCredencialesLoteVertical();
             
             using var stream = new MemoryStream(pdfBytes);
             using var streamRef = new DotNetStreamReference(stream);
-            await JS.InvokeVoidAsync("downloadFileFromStream", $"Lote_Credenciales_{DateTime.Now:yyyyMMdd_HHmm}.pdf", streamRef);
+            await JS.InvokeVoidAsync("downloadFileFromStream", $"Credenciales_Lote_{DateTime.Now:yyyyMMdd}.pdf", streamRef);
             
             Snackbar.Add($"¡{alumnosSeleccionados.Count} credenciales generadas exitosamente!", Severity.Success);
             alumnosSeleccionados.Clear();
@@ -314,89 +238,119 @@
         }
     }
 
-    private byte[] CrearPdfCredencialesLote()
+    private byte[] CrearPdfCredencialesLoteVertical()
     {
         return Document.Create(container =>
         {
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
-                
-                // ESPECIFICAMOS DE DONDE VIENE LA UNIDAD PARA EVITAR CHOQUES CON MUDBLAZOR
                 page.Margin(1, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontFamily("Arial"));
 
-                page.Content().Inlined(inlined =>
+                page.Content().Grid(grid =>
                 {
-                    inlined.Spacing(0.5f, QuestPDF.Infrastructure.Unit.Centimetre); 
+                    grid.Columns(3); 
+                    grid.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre); 
 
                     foreach (var alumnoVM in alumnosSeleccionados)
                     {
                         var student = alumnoVM.Student;
 
-                        inlined.Item().Width(86, QuestPDF.Infrastructure.Unit.Millimetre).Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
-                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2) 
+                        // ==========================================
+                        // 1. DIBUJAR ANVERSO (FRENTE VERTICAL)
+                        // ==========================================
+                        grid.Item().Width(54, QuestPDF.Infrastructure.Unit.Millimetre).Height(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Background(QuestPDF.Helpers.Colors.White)
+                            .Padding(3, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Column(col =>
+                            {
+                                // Logo
+                                col.Item().Height(16, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().Element(e => {
+                                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                                    {
+                                        var logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Split(',')[1] : configuracionEscuela.LogoBase64;
+                                        e.Image(Convert.FromBase64String(logo)).FitHeight();
+                                    }
+                                });
+                                
+                                // Títulos UPASER
+                                col.Item().PaddingTop(2).AlignCenter().Text("UPASER").Bold().FontSize(11).FontColor("#003366");
+                                col.Item().AlignCenter().Text("Unidad Profesional de Asesoría y Regularización").FontSize(4.5f).FontColor("#003366");
+
+                                // Datos Nombre
+                                col.Item().PaddingTop(4).Text("ALUMNO(A):").FontSize(5).Bold().FontColor("#0099B8");
+                                col.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+
+                                // Recuadro FOTO
+                                col.Item().PaddingTop(3).AlignCenter().Width(24, QuestPDF.Infrastructure.Unit.Millimetre).Height(28, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten1)
+                                    .Element(e => {
+                                        if (!string.IsNullOrEmpty(student.PhotoBase64))
+                                        {
+                                            var photo = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
+                                            e.Image(Convert.FromBase64String(photo)).FitArea();
+                                        }
+                                        else
+                                        {
+                                            e.AlignCenter().AlignMiddle().Text("FOTO").FontSize(6).FontColor(QuestPDF.Helpers.Colors.Grey.Medium);
+                                        }
+                                    });
+
+                                // Datos Inferiores
+                                col.Item().PaddingTop(4).Text(t => {
+                                    t.Span("MATRÍCULA: ").FontSize(5).Bold().FontColor("#0099B8");
+                                    t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0,6).ToUpper() : "000001").FontSize(6).Bold();
+                                });
+                                col.Item().PaddingTop(1).Text(t => {
+                                    t.Span("CURSO: ").FontSize(5).Bold().FontColor("#0099B8");
+                                    t.Span(alumnoVM.CourseName).FontSize(5).Bold();
+                                });
+                                col.Item().PaddingTop(1).Text(t => {
+                                    t.Span("VIGENCIA: ").FontSize(5).Bold().FontColor("#0099B8");
+                                    t.Span(vigenciaInput).FontSize(5).Bold();
+                                });
+                            });
+
+                        // ==========================================
+                        // 2. DIBUJAR REVERSO (ATRÁS VERTICAL)
+                        // ==========================================
+                        grid.Item().Width(54, QuestPDF.Infrastructure.Unit.Millimetre).Height(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Background(QuestPDF.Helpers.Colors.White)
+                            .Padding(3, QuestPDF.Infrastructure.Unit.Millimetre)
                             .Layers(layers =>
                             {
-                                // 1. Fondo (Plantilla)
-                                layers.PrimaryLayer().Element(e =>
-                                {
-                                    if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
+                                // Logo ajustado (se retiró .Opacity)
+                                layers.Layer().AlignCenter().AlignMiddle().Element(e => {
+                                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
                                     {
-                                        var base64Data = diseno.PlantillaFrenteBase64.Contains(",") ? diseno.PlantillaFrenteBase64.Split(',')[1] : diseno.PlantillaFrenteBase64;
-                                        e.Image(Convert.FromBase64String(base64Data)).FitArea();
-                                    }
-                                    else
-                                    {
-                                        e.Background(QuestPDF.Helpers.Colors.White);
+                                        var logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Split(',')[1] : configuracionEscuela.LogoBase64;
+                                        e.Width(35, QuestPDF.Infrastructure.Unit.Millimetre).Image(Convert.FromBase64String(logo));
                                     }
                                 });
 
-                                // 2. Foto del alumno respetando la calibración
-                                if (!string.IsNullOrEmpty(student.PhotoBase64))
+                                // Textos sobre la marca de agua
+                                layers.PrimaryLayer().Column(col =>
                                 {
-                                    var photoData = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
-                                    layers.Layer()
-                                        .PaddingLeft(diseno.FotoX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.FotoY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Width(diseno.FotoW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Height(diseno.FotoH, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Image(Convert.FromBase64String(photoData)).FitArea();
-                                }
+                                    col.Item().PaddingTop(2).AlignCenter().Text("UPASER").Bold().FontSize(11).FontColor("#003366");
+                                    col.Item().AlignCenter().Text("Unidad Profesional de Asesoría y Regularización").FontSize(4.5f).FontColor("#003366");
 
-                                // 3. Nombre del alumno respetando calibración
-                                layers.Layer()
-                                    .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Text($"{student.Name} {student.PaternalLastName}").FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                
-                                // 4. Matrícula / ID respetando calibración
-                                layers.Layer()
-                                    .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Text($"ID: {(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000")}").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                    col.Item().ExtendVertical(); // Empuja la firma hasta abajo
+
+                                    col.Item().AlignCenter().Width(35, QuestPDF.Infrastructure.Unit.Millimetre).BorderBottom(1).BorderColor(QuestPDF.Helpers.Colors.Black);
+                                    col.Item().AlignCenter().PaddingTop(2).Text(directorInput).FontSize(5).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                    col.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(4).FontColor(QuestPDF.Helpers.Colors.Black);
+
+                                    col.Item().PaddingTop(6).AlignCenter().Text("Esta credencial es personal e intransferible y debe de ser portada obligatoriamente.")
+                                        .FontSize(4.5f).Italic().FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                                });
                             });
                     }
                 });
             });
         }).GeneratePdf();
-    }
-
-    // --- MÉTODOS PESTAÑA 3 (CALIBRACIÓN) ---
-    private async Task SubirFrente(InputFileChangeEventArgs e) => diseno.PlantillaFrenteBase64 = await ConvertToBase64(e.File);
-    private async Task SubirReverso(InputFileChangeEventArgs e) => diseno.PlantillaReversoBase64 = await ConvertToBase64(e.File);
-
-    private async Task<string> ConvertToBase64(IBrowserFile file)
-    {
-        using var ms = new MemoryStream();
-        await file.OpenReadStream(1024 * 1024 * 5).CopyToAsync(ms);
-        return $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
-    }
-
-    private async Task GuardarDiseno()
-    {
-        await Firebase.SaveDisenoCredencialAsync(diseno);
-        Snackbar.Add("Diseño guardado exitosamente.", Severity.Success);
     }
 }
