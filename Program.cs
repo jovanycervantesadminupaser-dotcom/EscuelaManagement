@@ -26,6 +26,9 @@ builder.Services.AddRazorComponents()
         options.MaximumReceiveMessageSize = 10 * 1024 * 1024;
     });
 
+// NECESARIO PARA LAS COOKIES: Habilita el acceso al contexto HTTP en servicios Scoped
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddMudServices();
 
 builder.Services.AddScoped<EscuelaManagement.Data.Services.FirebaseService>();
