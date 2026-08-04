@@ -66,17 +66,17 @@
     {
         @* EFECTO ESQUELETO MÚLTIPLE PARA EL DASHBOARD *@
         <div class="fade-in-suave">
-            @* Tarjetas de Salud Financiera *@
             <MudGrid Class="mb-4">
-                <MudItem xs="12" md="6">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" />
-                </MudItem>
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
             </MudGrid>
 
-            @* Tarjetas de KPIs *@
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
+            </MudGrid>
+
             <MudGrid Class="mb-6">
                 @for (int i = 0; i < 4; i++)
                 {
@@ -86,27 +86,58 @@
                 }
             </MudGrid>
 
-            @* Cuadros para las Gráficas *@
             <MudGrid Class="mb-4">
-                <MudItem xs="12" md="6">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" />
-                </MudItem>
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" /></MudItem>
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" /></MudItem>
             </MudGrid>
 
-            @* Cuadro para la Tabla Inferior *@
             <MudGrid Class="mt-4">
-                <MudItem xs="12">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" Class="rounded-lg" />
-                </MudItem>
+                <MudItem xs="12"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" Class="rounded-lg" /></MudItem>
             </MudGrid>
         </div>
     }
     else
     {
         <div class="fade-in-suave">
+            @* --- NUEVO MÓDULO DE UTILIDAD REAL Y FINANZAS --- *@
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #2e7d32; height: 100%;">
+                        <div class="d-flex justify-space-between align-start">
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados (Filtro)</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" />
+                        </div>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #c62828; height: 100%;">
+                        <div class="d-flex justify-space-between align-start">
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Egresos / Gastos (Filtro)</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Error"><b>- @totalGastosFiltro.ToString("C")</b></MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Color="Color.Error" Size="Size.Large" />
+                        </div>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="@($"border-color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")}; height: 100%;")">
+                        <div class="d-flex justify-space-between align-start">
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Utilidad Real (Neta)</MudText>
+                                <MudText Typo="Typo.h4" Style="@($"color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")};")"><b>@utilidadRealNeta.ToString("C")</b></MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Style="@($"color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")};")" Size="Size.Large" />
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
             @* --- SALUD FINANCIERA --- *@
             <MudGrid Class="mb-4">
                 <MudItem xs="12" md="6">
@@ -248,9 +279,12 @@
     private List<Enrollment> todasLasInscripciones = new();
     private List<Course> todosLosCursos = new();
     private List<Payment> todosLosPagos = new();
+    private List<Gasto> todosLosGastos = new();
     private List<string> listaAsesoresDisponibles = new();
     
     private double totalIngresos = 0;
+    private double totalGastosFiltro = 0;
+    private double utilidadRealNeta = 0;
     private int totalInscritos = 0;
     private string cursoEstrella = "N/A";
     private string mejorAsesor = "N/A";
@@ -275,6 +309,8 @@
         todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         todosLosCursos = await Firebase.GetCoursesAsync() ?? new();
         todosLosPagos = await Firebase.GetAllPaymentsAsync() ?? new(); 
+        todosLosGastos = await Firebase.GetGastosAsync() ?? new();
+
         listaAsesoresDisponibles = todasLasInscripciones.Where(e => !string.IsNullOrWhiteSpace(e.AsesorAsignado)).Select(e => e.AsesorAsignado).Distinct().OrderBy(a => a).ToList();
         ProcesarMetricas();
         cargando = false;
@@ -302,7 +338,18 @@
         if (filtroAsesor != "Todos") { queryActual = queryActual.Where(e => e.AsesorAsignado == filtroAsesor); queryAnterior = queryAnterior.Where(e => e.AsesorAsignado == filtroAsesor); }
 
         var lista = queryActual.ToList(); var listaPrev = queryAnterior.ToList();
-        totalInscritos = lista.Count; totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+        totalInscritos = lista.Count; 
+        totalIngresos = lista.Sum(e => e.MontoPlazo * (e.NumeroPlazos > 0 ? e.NumeroPlazos : 1));
+
+        // --- FILTRAR GASTOS SEGÚN EL PERIODO ---
+        var gastosQuery = todosLosGastos.AsQueryable();
+        if (currentStart.HasValue && currentEnd.HasValue)
+        {
+            gastosQuery = gastosQuery.Where(g => g.Fecha >= currentStart.Value && g.Fecha <= currentEnd.Value);
+        }
+        totalGastosFiltro = gastosQuery.Sum(g => g.Monto);
+        utilidadRealNeta = totalIngresos - totalGastosFiltro;
+
         totalCobranzaReal = 0; carteraVencida = 0;
 
         foreach (var inscripcion in lista)
@@ -452,11 +499,18 @@
                     x.Spacing(15);
                     x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Padding(10).Row(row =>
                     {
-                        row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Ingresos Proyectados").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalIngresos.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Green.Darken2); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Egresos / Gastos").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text($"- {totalGastosFiltro.ToString("C")}").SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Red.Medium); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Utilidad Neta").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(utilidadRealNeta.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); });
+                    });
+
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Padding(10).Row(row =>
+                    {
                         row.RelativeItem().Column(c => { c.Item().Text("Cobranza Real").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalCobranzaReal.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2); });
                         row.RelativeItem().Column(c => { c.Item().Text("Cartera Vencida").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(carteraVencida.ToString("C")).SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Red.Medium); });
-                        row.RelativeItem().Column(c => { c.Item().Text("Total Inscripciones").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalInscritos.ToString()).SemiBold().FontSize(12); });
+                        row.RelativeItem().Column(c => { c.Item().Text("Inscripciones").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2); c.Item().Text(totalInscritos.ToString()).SemiBold().FontSize(12); });
                     });
+
                     x.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Grey.Lighten2);
                     x.Item().Text("DESGLOSE POR CURSO").SemiBold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken3);
                     x.Item().Table(table =>
