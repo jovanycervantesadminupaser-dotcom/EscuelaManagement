@@ -49,7 +49,7 @@
         @* --- PESTAÑA 2: EMISIÓN EN LOTE (HORIZONTAL) --- *@
         <MudTabPanel Text="Emisión en Lote" Icon="@Icons.Material.Filled.PeopleAlt" Class="pa-6">
             <MudAlert Severity="Severity.Info" Class="mb-4">
-                El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) utilizando tu plantilla calibrada.
+                El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) con todos los encabezados (Curso, Vigencia, Director).
             </MudAlert>
 
             <MudGrid Class="mb-4">
@@ -149,7 +149,7 @@
 
                 <MudItem xs="12" md="9">
                     <MudGrid>
-                        @* VISTA PREVIA ANVERSO (HORIZONTAL 86x54 mm -> 325x204 px) *@
+                        @* VISTA PREVIA ANVERSO *@
                         <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
                             <MudText Typo="Typo.button" Class="mb-2">ANVERSO (FRENTE)</MudText>
                             <div class="credencial-preview" style="width: 325px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
@@ -157,15 +157,28 @@
                                 {
                                     <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
                                 }
+                                
+                                @* Marco de la foto *@
                                 <div style="position: absolute; left: @(diseno.FotoX * 3.78)px; top: @(diseno.FotoY * 3.78)px; width: @(diseno.FotoW * 3.78)px; height: @(diseno.FotoH * 3.78)px; border: 1px dashed red; background: rgba(255,0,0,0.1); z-index: 5;"></div>
-                                <div style="position: absolute; left: @(diseno.NombreX * 3.78)px; top: @(diseno.NombreY * 3.78)px; font-size: 10px; color: blue; font-weight: bold; z-index: 5;">NOMBRE ALUMNO</div>
-                                <div style="position: absolute; left: @(diseno.MatriculaX * 3.78)px; top: @(diseno.MatriculaY * 3.78)px; font-size: 10px; color: blue; font-weight: bold; z-index: 5;">MATRÍCULA</div>
+                                
+                                @* Bloque Nombre Completo *@
+                                <div style="position: absolute; left: @(diseno.NombreX * 3.78)px; top: @(diseno.NombreY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
+                                    <span style="font-size: 8px; color: #003366; font-weight: bold; line-height: 1.2;">ALUMNO(A):</span>
+                                    <span style="font-size: 12px; color: black; font-weight: bold; line-height: 1.1;">NOMBRE DEL ALUMNO</span>
+                                </div>
+                                
+                                @* Bloque Detalles (Matrícula, Curso, Vigencia) *@
+                                <div style="position: absolute; left: @(diseno.MatriculaX * 3.78)px; top: @(diseno.MatriculaY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
+                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">MATRÍCULA:</span> 123456</span>
+                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">CURSO:</span> CURSO ASIGNADO</span>
+                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">VIGENCIA:</span> @vigenciaInput</span>
+                                </div>
                             </div>
                             <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR ANVERSO</MudButton>
                             <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
                         </MudItem>
 
-                        @* VISTA PREVIA REVERSO (HORIZONTAL 86x54 mm -> 325x204 px) *@
+                        @* VISTA PREVIA REVERSO *@
                         <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
                             <MudText Typo="Typo.button" Class="mb-2">REVERSO (ATRÁS)</MudText>
                             <div class="credencial-preview" style="width: 325px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
@@ -173,8 +186,13 @@
                                 {
                                     <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
                                 }
+                                
+                                @* Línea y Firma del Director *@
                                 <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @(diseno.FirmaLineaY * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; height: 1px; background: black; z-index: 5;"></div>
-                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @((diseno.FirmaLineaY + 2) * 3.78)px; font-size: 8px; text-align:center; width: @(diseno.FirmaLineaW * 3.78)px; z-index: 5;">FIRMA DIRECTOR</div>
+                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @((diseno.FirmaLineaY + 1) * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; text-align: center; z-index: 5; display: flex; flex-direction: column;">
+                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.2;">@directorInput</span>
+                                    <span style="font-size: 7px; color: black; line-height: 1;">DIRECTOR DEL PLANTEL</span>
+                                </div>
                             </div>
                             <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR REVERSO</MudButton>
                             <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
@@ -274,7 +292,7 @@
         await JS.InvokeVoidAsync("downloadFileFromStream", $"Credencial_{selectedStudent.Name}.pdf", streamRef);
     }
 
-    // --- MÉTODOS PESTAÑA 2 (LOTE HORIZONTAL CON DISEÑADOR) ---
+    // --- MÉTODOS PESTAÑA 2 (LOTE HORIZONTAL CON TEXTOS COMPLETOS) ---
     private IEnumerable<AlumnoCredencialVM> AlumnosFiltradosLote => listaAlumnosVM.Where(x => 
         (string.IsNullOrEmpty(searchStringLote) || $"{(x.Student.Name ?? "")} {(x.Student.PaternalLastName ?? "")}".Contains(searchStringLote, StringComparison.OrdinalIgnoreCase)) &&
         (string.IsNullOrEmpty(filterCourseIdLote) || x.CourseName == listaCursos.FirstOrDefault(c => c.Id == filterCourseIdLote)?.Name));
@@ -320,7 +338,6 @@
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontFamily("Arial"));
 
-                // USAMOS INLINED EN VEZ DEL OBSOLETO GRID
                 page.Content().Inlined(inlined =>
                 {
                     inlined.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre); 
@@ -350,7 +367,7 @@
                                     }
                                 });
 
-                                // 2. Foto del alumno (usando calibración)
+                                // 2. Foto del alumno
                                 if (!string.IsNullOrEmpty(student.PhotoBase64))
                                 {
                                     var photoData = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
@@ -362,17 +379,38 @@
                                         .Image(Convert.FromBase64String(photoData)).FitArea();
                                 }
 
-                                // 3. Nombre (usando calibración)
+                                // 3. Bloque de Nombre Completo
                                 layers.Layer()
                                     .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Text($"{student.Name} {student.PaternalLastName}").FontSize(8).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                    .Column(c =>
+                                    {
+                                        c.Item().Text("ALUMNO(A):").FontSize(6).Bold().FontColor("#003366");
+                                        c.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}".Trim()).FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                    });
                                 
-                                // 4. Matrícula (usando calibración)
+                                // 4. Bloque de Datos (Matrícula, Curso, Vigencia)
                                 layers.Layer()
                                     .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Text($"ID: {(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000")}").FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                    .Column(c =>
+                                    {
+                                        c.Item().Text(t =>
+                                        {
+                                            t.Span("MATRÍCULA: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                        c.Item().Text(t =>
+                                        {
+                                            t.Span("CURSO: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(alumnoVM.CourseName).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                        c.Item().Text(t =>
+                                        {
+                                            t.Span("VIGENCIA: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(vigenciaInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                    });
                             });
 
                         // =====================================
@@ -396,13 +434,24 @@
                                     }
                                 });
 
-                                // 2. Línea de Firma (usando calibración)
+                                // 2. Línea de Firma
                                 layers.Layer()
                                     .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .PaddingTop(diseno.FirmaLineaY, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .Height(0.5f, QuestPDF.Infrastructure.Unit.Millimetre)
                                     .Background(QuestPDF.Helpers.Colors.Black);
+
+                                // 3. Textos de Firma (Nombre Director y Cargo)
+                                layers.Layer()
+                                    .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .PaddingTop(diseno.FirmaLineaY + 1, QuestPDF.Infrastructure.Unit.Millimetre) // Bajamos 1mm desde la línea
+                                    .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Column(c =>
+                                    {
+                                        c.Item().AlignCenter().Text(directorInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        c.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Black);
+                                    });
                             });
                     }
                 });
