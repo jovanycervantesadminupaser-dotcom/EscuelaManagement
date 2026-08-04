@@ -336,7 +336,7 @@
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
                 page.Margin(1, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
-                page.DefaultTextStyle(x => x.FontFamily("Arial"));
+                page.DefaultTextStyle(x => x.FontSize(10));
 
                 page.Content().Inlined(inlined =>
                 {

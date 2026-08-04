@@ -10,6 +10,7 @@
     <PackageReference Include="Google.Cloud.Firestore" Version="4.2.0" />
     <PackageReference Include="MudBlazor" Version="9.5.0" />
     <PackageReference Include="QuestPDF" Version="2026.5.0" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.151.0" />
   </ItemGroup>
 
 </Project>
