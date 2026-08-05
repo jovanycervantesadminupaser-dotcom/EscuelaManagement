@@ -22,7 +22,7 @@ namespace EscuelaManagement.Data.Services
                     page.Size(PageSizes.Letter.Landscape());
                     page.Margin(1, Unit.Centimetre);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Black).FontFamily("Arial"));
+                    page.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Black));
 
                     // Encabezado
                     page.Header().Column(col =>
