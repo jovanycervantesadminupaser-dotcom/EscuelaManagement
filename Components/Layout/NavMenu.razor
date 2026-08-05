@@ -6,7 +6,6 @@
     
     @if (_cargando)
     {
-        @* --- EFECTO DE CARGA ELEGANTE MIENTRAS COMPROBAMOS ROLES --- *@
         <div class="px-5 py-3">
             <MudSkeleton Width="85%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
             <MudSkeleton Width="70%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
@@ -15,7 +14,6 @@
     }
     else
     {
-        @* --- SECCIÓN RESTRINGIDA A CONTROL ESCOLAR Y ADMINISTRADORES --- *@
         @if (UserSession.EsControlEscolar)
         {
             <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
@@ -24,32 +22,26 @@
             <MudNavLink Href="/cobranza" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountBalanceWallet">Cobranza y Saldos</MudNavLink>
         }
 
-        @* --- SECCIÓN GENERAL (Lo ven todos) --- *@
         <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Alumnos</MudNavLink>
 
         <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true">
             
-            @* Solo Control Escolar puede crear o borrar materias y emitir credenciales *@
             @if (UserSession.EsControlEscolar)
             {
                 <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Materias</MudNavLink>
                 <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge">Credenciales</MudNavLink>
             }
 
-            @* Docentes y Control Escolar pueden ver calificaciones y reportes *@
+            <MudNavLink Href="/asistencia" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EventAvailable">Asistencia</MudNavLink>
+
             <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote">Calificaciones</MudNavLink>
-            <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas y Listas</MudNavLink>
+            <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas de Calificaciones</MudNavLink>
         </MudNavGroup>
         
-        @* --- SECCIÓN ULTRA SECRETA (Solo Administradores) --- *@
         @if (UserSession.EsAdministrador)
         {
-            @* --- NUEVO DASHBOARD DE VENTAS Y KPIs --- *@
             <MudNavLink Href="/metricas" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Dashboard de Ventas</MudNavLink>
-            
-            @* --- NUEVO MÓDULO DE GASTOS --- *@
             <MudNavLink Href="/gastos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MoneyOff">Control de Gastos</MudNavLink>
-            
             <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
         }
     }
@@ -60,10 +52,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Le otorgamos un breve respiro asíncrono de 150 milisegundos 
-        // para asegurar que el circuito de Blazor Server asiente los datos de UserSession
         await Task.Delay(150);
-        
         _cargando = false;
     }
 }

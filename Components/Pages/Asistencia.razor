@@ -1,0 +1,228 @@
+@page "/asistencia"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using System.IO
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@using AsistenciaModel = EscuelaManagement.Data.Models.Asistencia
+@inject FirebaseService Firebase
+@inject PdfService Pdf
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Asistencia</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Pase de lista diario por curso, fecha e impresión de formato oficial</MudText>
+
+    <MudPaper Elevation="3" Class="pa-4 mb-6 rounded-lg">
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="cursoSeleccionadoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem T="string" Value="@("")" Disabled="true">-- Seleccione un curso --</MudSelectItem>
+                    @foreach (var curso in listaCursos)
+                    {
+                        <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudDatePicker Label="Fecha de Pase de Lista" @bind-Date="fechaSeleccionada" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="5" Class="d-flex align-center gap-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="CargarListaAlumnos" Disabled="@string.IsNullOrEmpty(cursoSeleccionadoId)">
+                    CARGAR ALUMNOS
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="GenerarPdfLista" Disabled="@(!listaAsistenciaViewModel.Any())">
+                    FORMATO PDF
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (cargando)
+    {
+        <div class="d-flex justify-center my-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else if (listaAsistenciaViewModel.Any())
+    {
+        <MudCard Elevation="3" Class="rounded-lg">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Alumnos Inscritos (@listaAsistenciaViewModel.Count)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">Fecha: @(fechaSeleccionada?.ToString("dd/MMM/yyyy"))</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" StartIcon="@Icons.Material.Filled.CheckCircle" OnClick="MarcarTodosPresentes">
+                        Marcar Todos Presentes
+                    </MudButton>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Class="pa-0">
+                <MudTable T="AsistenciaModel" Items="@listaAsistenciaViewModel" Hover="true" Striped="true" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>#</MudTh>
+                        <MudTh>Alumno</MudTh>
+                        <MudTh Style="text-align: center;">Estado de Asistencia</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="#">@(listaAsistenciaViewModel.IndexOf(context) + 1)</MudTd>
+                        <MudTd DataLabel="Alumno">
+                            <b>@context.StudentName</b>
+                        </MudTd>
+                        <MudTd DataLabel="Estado" Style="text-align: center;">
+                            <MudToggleGroup T="string" @bind-Value="context.Estado" Color="Color.Primary" Size="Size.Small" SelectionMode="SelectionMode.SingleSelection">
+                                <MudToggleItem T="string" Value="@("Presente")" Text="Presente" />
+                                <MudToggleItem T="string" Value="@("Ausente")" Text="Ausente" />
+                                <MudToggleItem T="string" Value="@("Retardo")" Text="Retardo" />
+                                <MudToggleItem T="string" Value="@("Justificado")" Text="Justificado" />
+                            </MudToggleGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+            <MudCardActions Class="d-flex justify-end pa-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" Size="Size.Large" OnClick="GuardarAsistencia" Disabled="@guardando">
+                    @if (guardando) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> } GUARDAR ASISTENCIA
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+    else if (cursoSeleccionadoId != null && !cargando)
+    {
+        <MudPaper Elevation="1" Class="pa-6 text-center rounded-lg">
+            <MudText Typo="Typo.body1" Color="Color.Default">Selecciona un curso, elige la fecha y haz clic en <b>CARGAR ALUMNOS</b> para iniciar el pase de lista.</MudText>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private List<Course> listaCursos = [];
+    private List<Student> listaAlumnos = [];
+    private string cursoSeleccionadoId = "";
+    private DateTime? fechaSeleccionada = DateTime.Today;
+    
+    private List<AsistenciaModel> listaAsistenciaViewModel = [];
+    private bool cargando = false;
+    private bool guardando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaCursos = await Firebase.GetCoursesAsync() ?? [];
+        listaAlumnos = await Firebase.GetAllStudentsAsync() ?? [];
+    }
+
+    private async Task CargarListaAlumnos()
+    {
+        if (string.IsNullOrEmpty(cursoSeleccionadoId) || !fechaSeleccionada.HasValue) return;
+
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            var todasLasInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? [];
+            var inscripcionesDelCurso = todasLasInscripciones.Where(e => e.CourseId == cursoSeleccionadoId).ToList();
+
+            var asistenciasRegistradas = await Firebase.GetAsistenciasByCursoYFechaAsync(cursoSeleccionadoId, fechaSeleccionada.Value);
+
+            listaAsistenciaViewModel.Clear();
+
+            foreach (var insc in inscripcionesDelCurso)
+            {
+                var alumno = listaAlumnos.FirstOrDefault(a => a.Id == insc.StudentId);
+                string nombreCompleto = alumno != null ? $"{alumno.Name} {alumno.PaternalLastName}".Trim() : "Alumno Desconocido";
+
+                var existente = asistenciasRegistradas.FirstOrDefault(a => a.StudentId == insc.StudentId);
+
+                listaAsistenciaViewModel.Add(new AsistenciaModel
+                {
+                    Id = existente?.Id ?? Guid.NewGuid().ToString(),
+                    StudentId = insc.StudentId,
+                    StudentName = nombreCompleto,
+                    CourseId = cursoSeleccionadoId,
+                    Fecha = fechaSeleccionada.Value.Date,
+                    Estado = existente?.Estado ?? "Presente"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar alumnos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private void MarcarTodosPresentes()
+    {
+        foreach (var item in listaAsistenciaViewModel)
+        {
+            item.Estado = "Presente";
+        }
+        Snackbar.Add("Todos marcados como Presente", Severity.Info);
+    }
+
+    private async Task GuardarAsistencia()
+    {
+        try
+        {
+            guardando = true;
+            StateHasChanged();
+
+            await Firebase.SaveAsistenciasBatchAsync(listaAsistenciaViewModel);
+            Snackbar.Add("¡Asistencia guardada exitosamente!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar asistencia: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            guardando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GenerarPdfLista()
+    {
+        if (string.IsNullOrEmpty(cursoSeleccionadoId) || !listaAsistenciaViewModel.Any()) return;
+
+        try
+        {
+            var configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
+            var curso = listaCursos.FirstOrDefault(c => c.Id == cursoSeleccionadoId);
+            string nombreCurso = curso?.Name ?? "Curso";
+
+            List<Student> alumnosParaPdf = [];
+            foreach (var item in listaAsistenciaViewModel)
+            {
+                var est = listaAlumnos.FirstOrDefault(s => s.Id == item.StudentId);
+                if (est != null)
+                {
+                    alumnosParaPdf.Add(est);
+                }
+                else
+                {
+                    alumnosParaPdf.Add(new Student { Id = item.StudentId, Name = item.StudentName });
+                }
+            }
+
+            byte[] pdfBytes = Pdf.GenerarListaAsistencia(alumnosParaPdf, nombreCurso, configuracionEscuela.NombreEscuela, configuracionEscuela.LogoBase64);
+
+            using var stream = new MemoryStream(pdfBytes);
+            var dotNetStreamRef = new DotNetStreamReference(stream: stream);
+            
+            await JS.InvokeVoidAsync("downloadFileFromStream", $"Lista_Asistencia_{nombreCurso.Replace(" ", "_")}.pdf", dotNetStreamRef);
+            Snackbar.Add("Formato de lista de asistencia descargado exitosamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al generar el PDF: {ex.Message}", Severity.Error);
+        }
+    }
+}

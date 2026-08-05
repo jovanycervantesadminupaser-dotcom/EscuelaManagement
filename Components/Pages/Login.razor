@@ -194,17 +194,15 @@
                     }
                     else
                     {
-                        // ACTUALIZADO: Usamos el método asíncrono con cookies de JS
                         await UserSession.IniciarSesionAsync(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
                         Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
-                        Navigation.NavigateTo("/inicio", forceLoad: true); // Forzamos recarga para que el servidor lea la cookie fresca
+                        Navigation.NavigateTo("/inicio", forceLoad: true);
                     }
                 }
                 else
                 {
                     if (email == "admin@admin.com" && password == "123456")
                     {
-                        // ACTUALIZADO: Llave maestra con método asíncrono
                         await UserSession.IniciarSesionAsync("Llave Maestra", email, "Administrador");
                         Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
                         Navigation.NavigateTo("/inicio", forceLoad: true);

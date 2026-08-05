@@ -320,4 +320,45 @@ public class FirebaseService
         DocumentReference docRef = _db.Collection("Gastos").Document(id);
         await docRef.DeleteAsync();
     }
+
+    // ==========================================
+    // --- MÉTODOS PARA ASISTENCIAS ---
+    // ==========================================
+    public async Task<List<Asistencia>> GetAsistenciasByCursoYFechaAsync(string courseId, DateTime fecha)
+    {
+        try
+        {
+            var inicioDia = fecha.Date.ToUniversalTime();
+            var finDia = fecha.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
+
+            Query query = _db.Collection("asistencias")
+                .WhereEqualTo("CourseId", courseId)
+                .WhereGreaterThanOrEqualTo("Fecha", inicioDia)
+                .WhereLessThanOrEqualTo("Fecha", finDia);
+
+            QuerySnapshot snapshot = await query.GetSnapshotAsync();
+            return snapshot.Documents.Select(d => d.ConvertTo<Asistencia>()).ToList();
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    public async Task SaveAsistenciasBatchAsync(List<Asistencia> asistencias)
+    {
+        foreach (var item in asistencias)
+        {
+            if (string.IsNullOrEmpty(item.Id))
+            {
+                item.Id = Guid.NewGuid().ToString();
+            }
+            if (item.Fecha.Kind == DateTimeKind.Unspecified || item.Fecha.Kind == DateTimeKind.Local)
+            {
+                item.Fecha = item.Fecha.ToUniversalTime();
+            }
+            DocumentReference docRef = _db.Collection("asistencias").Document(item.Id);
+            await docRef.SetAsync(item);
+        }
+    }
 }
