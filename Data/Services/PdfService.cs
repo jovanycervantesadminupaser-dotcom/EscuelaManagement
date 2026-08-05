@@ -10,19 +10,21 @@ namespace EscuelaManagement.Data.Services
     public class PdfService
     {
         // ===================================================
-        // 1. GENERAR LISTA DE ASISTENCIA (Formato Oficial)
+        // 1. GENERAR LISTA DE ASISTENCIA MENSUAL (31 DÍAS)
         // ===================================================
-        public byte[] GenerarListaAsistencia(List<Student> alumnos, string nombreCurso, string nombreEscuela = "EscuelaManager", string logoBase64 = "")
+        public byte[] GenerarListaAsistencia(List<Student> alumnos, string nombreCurso, string mesSeleccionado, string nombreEscuela = "EscuelaManager", string logoBase64 = "")
         {
             return Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(PageSizes.Letter);
-                    page.Margin(1.5f, Unit.Centimetre);
+                    // Formato Horizontal para que quepan los 31 días
+                    page.Size(PageSizes.Letter.Landscape());
+                    page.Margin(1, Unit.Centimetre);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Black).FontFamily("Arial"));
+                    page.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Black).FontFamily("Arial"));
 
+                    // Encabezado
                     page.Header().Column(col =>
                     {
                         col.Item().Row(row =>
@@ -32,79 +34,83 @@ namespace EscuelaManagement.Data.Services
                                 try
                                 {
                                     var cleanLogo = logoBase64.Contains(',') ? logoBase64.Split(',')[1] : logoBase64;
-                                    row.ConstantItem(60).Height(60).Image(Convert.FromBase64String(cleanLogo));
+                                    row.ConstantItem(50).Height(50).Image(Convert.FromBase64String(cleanLogo));
                                 }
-                                catch { /* Ignorar si falla el logo */ }
+                                catch { /* Ignorar si falla */ }
                             }
 
                             row.RelativeItem().PaddingLeft(10).Column(c =>
                             {
-                                c.Item().AlignCenter().Text(nombreEscuela.ToUpper()).Bold().FontSize(16).FontColor("#003366");
-                                c.Item().AlignCenter().Text("FORMATO OFICIAL DE LISTA DE ASISTENCIA DIARIA").Bold().FontSize(12).FontColor(Colors.Grey.Darken2);
+                                c.Item().AlignCenter().Text(nombreEscuela.ToUpper()).Bold().FontSize(14).FontColor("#003366");
+                                c.Item().AlignCenter().Text("CONTROL DE ASISTENCIA MENSUAL").Bold().FontSize(11).FontColor(Colors.Grey.Darken2);
                             });
                         });
 
-                        col.Item().PaddingTop(15).Row(row =>
+                        col.Item().PaddingTop(10).Row(row =>
                         {
-                            row.RelativeItem().Text(t =>
-                            {
-                                t.Span("CURSO ASIGNADO: ").Bold().FontColor("#003366").FontSize(11);
-                                t.Span(nombreCurso.ToUpper()).Bold().FontSize(11);
+                            row.RelativeItem().Text(t => {
+                                t.Span("CURSO ASIGNADO: ").Bold().FontColor("#003366").FontSize(10);
+                                t.Span(nombreCurso.ToUpper()).Bold().FontSize(10);
                             });
-                            row.ConstantItem(150).AlignRight().Text(t =>
-                            {
-                                t.Span("FECHA: ").Bold().FontColor("#003366").FontSize(11);
-                                t.Span(DateTime.Now.ToString("dd/MM/yyyy")).FontSize(11);
+                            row.ConstantItem(200).AlignRight().Text(t => {
+                                t.Span("MES: ").Bold().FontColor("#003366").FontSize(10);
+                                t.Span(mesSeleccionado.ToUpper()).Bold().FontSize(10);
                             });
                         });
 
                         col.Item().PaddingTop(5).LineHorizontal(1.5f).LineColor("#003366");
                     });
 
-                    page.Content().PaddingTop(15).Column(col =>
+                    // Tabla de 31 Días
+                    page.Content().PaddingTop(10).Column(col =>
                     {
                         col.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
                             {
-                                columns.ConstantColumn(35);
-                                columns.RelativeColumn(3);     // Usamos RelativeColumn
-                                columns.RelativeColumn(1.2f);  // Usamos RelativeColumn
-                                columns.ConstantColumn(80);
+                                columns.ConstantColumn(20);  // No.
+                                columns.RelativeColumn(1);   // Nombre del Alumno
+                                for (int i = 1; i <= 31; i++) columns.ConstantColumn(18); // 31 Casillas
                             });
 
+                            // Cabecera
                             table.Header(header =>
                             {
-                                header.Cell().Background("#003366").Padding(6).AlignCenter().Text("No.").Bold().FontColor(Colors.White);
-                                header.Cell().Background("#003366").Padding(6).Text("NOMBRE COMPLETO DEL ALUMNO").Bold().FontColor(Colors.White);
-                                header.Cell().Background("#003366").Padding(6).AlignCenter().Text("MATRÍCULA").Bold().FontColor(Colors.White);
-                                header.Cell().Background("#003366").Padding(6).AlignCenter().Text("ESTATUS").Bold().FontColor(Colors.White);
+                                header.Cell().Background("#003366").Border(1).BorderColor(Colors.White).PaddingVertical(4).AlignCenter().Text("#").Bold().FontColor(Colors.White);
+                                header.Cell().Background("#003366").Border(1).BorderColor(Colors.White).PaddingVertical(4).AlignCenter().Text("NOMBRE COMPLETO DEL ALUMNO").Bold().FontColor(Colors.White);
+                                
+                                for (int i = 1; i <= 31; i++)
+                                {
+                                    header.Cell().Background("#003366").Border(1).BorderColor(Colors.White).PaddingVertical(4).AlignCenter().Text(i.ToString()).Bold().FontColor(Colors.White);
+                                }
                             });
 
+                            // Filas de Alumnos
                             int index = 1;
                             foreach (var alumno in alumnos)
                             {
                                 var bgColor = index % 2 == 0 ? Colors.Grey.Lighten4 : Colors.White;
+                                string nombreMostrado = !string.IsNullOrWhiteSpace(alumno.Name) 
+                                    ? $"{alumno.Name} {alumno.PaternalLastName} {alumno.MaternalLastName}".Trim() 
+                                    : "ALUMNO DESCONOCIDO";
 
-                                string nombreMostrado = "Alumno Desconocido";
-                                if (!string.IsNullOrWhiteSpace(alumno.Name))
+                                table.Cell().Background(bgColor).Border(1).BorderColor(Colors.Grey.Lighten2).Padding(4).AlignCenter().Text(index.ToString());
+                                table.Cell().Background(bgColor).Border(1).BorderColor(Colors.Grey.Lighten2).PaddingLeft(4).AlignMiddle().Text(nombreMostrado.ToUpper()).Bold();
+                                
+                                // Generar las 31 casillas vacías
+                                for (int i = 1; i <= 31; i++)
                                 {
-                                    nombreMostrado = $"{alumno.Name} {alumno.PaternalLastName} {alumno.MaternalLastName}".Trim();
+                                    table.Cell().Background(bgColor).Border(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text("");
                                 }
-
-                                table.Cell().Background(bgColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(6).AlignCenter().Text(index.ToString()).FontSize(9);
-                                table.Cell().Background(bgColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(6).Text(nombreMostrado.ToUpper()).Bold().FontSize(9);
-                                table.Cell().Background(bgColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(6).AlignCenter().Text(alumno.Id?.Length > 6 ? alumno.Id[..6].ToUpper() : "N/A").FontSize(9);
-                                table.Cell().Background(bgColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(6).AlignCenter().Text("________").FontSize(9);
-
                                 index++;
                             }
                         });
                     });
 
+                    // Pie de página (Firmas)
                     page.Footer().Column(col =>
                     {
-                        col.Item().PaddingTop(30).Row(row =>
+                        col.Item().PaddingTop(20).Row(row =>
                         {
                             row.RelativeItem().AlignCenter().Column(c =>
                             {
@@ -118,14 +124,6 @@ namespace EscuelaManagement.Data.Services
                                 c.Item().PaddingTop(4).Text("VO. BO. DIRECCIÓN GENERAL").FontSize(9).Bold().FontColor(Colors.Grey.Darken3);
                             });
                         });
-
-                        col.Item().PaddingTop(20).AlignCenter().Text(x =>
-                        {
-                            x.Span("Sistema de Control Escolar - Página ").FontSize(8).FontColor(Colors.Grey.Medium);
-                            x.CurrentPageNumber().FontSize(8).FontColor(Colors.Grey.Medium);
-                            x.Span(" de ").FontSize(8).FontColor(Colors.Grey.Medium);
-                            x.TotalPages().FontSize(8).FontColor(Colors.Grey.Medium);
-                        });
                     });
                 });
             }).GeneratePdf();
@@ -136,7 +134,7 @@ namespace EscuelaManagement.Data.Services
         // ===================================================
         public byte[] GenerarBoleta(Student alumno, List<FilaBoletaDto> calificaciones, string nombreCurso, string nombreEscuela = "EscuelaManager", string logoBase64 = "")
         {
-            var documento = Document.Create(container =>
+            return Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -150,8 +148,7 @@ namespace EscuelaManagement.Data.Services
                         if (!string.IsNullOrEmpty(logoBase64))
                         {
                             var cleanLogo = logoBase64.Contains(',') ? logoBase64.Split(',')[1] : logoBase64;
-                            var imageBytes = Convert.FromBase64String(cleanLogo);
-                            row.ConstantItem(75).Image(imageBytes);
+                            row.ConstantItem(75).Image(Convert.FromBase64String(cleanLogo));
                             row.ConstantItem(15);
                         }
 
@@ -172,7 +169,7 @@ namespace EscuelaManagement.Data.Services
 
                         column.Item().PaddingTop(5).Row(row =>
                         {
-                            row.RelativeItem().Text(t => { t.Span("ID Estudiante: ").Bold(); t.Span(alumno.Id?.Substring(0, 8).ToUpper() ?? ""); });
+                            row.RelativeItem().Text(t => { t.Span("ID Estudiante: ").Bold(); t.Span(alumno.Id?.Length >= 8 ? alumno.Id[..8].ToUpper() : alumno.Id?.ToUpper() ?? ""); });
                             row.RelativeItem().Text(t => { t.Span("Ciclo Escolar: ").Bold(); t.Span("2026-2027"); });
                         });
 
@@ -232,9 +229,7 @@ namespace EscuelaManagement.Data.Services
                         x.CurrentPageNumber();
                     });
                 });
-            });
-
-            return documento.GeneratePdf();
+            }).GeneratePdf();
         }
 
         // ===================================================
@@ -242,14 +237,13 @@ namespace EscuelaManagement.Data.Services
         // ===================================================
         public byte[] GenerarCredencialEstudiante(Student alumno, string matricula, string curso, string vigencia, string director, string logoBase64, CredencialDiseno diseno)
         {
-            _ = logoBase64; // Se silencia la advertencia de parámetro no usado
+            _ = logoBase64; 
 
             return Document.Create(container =>
             {
                 const float anchoCredencial = 85.6f;
                 const float altoCredencial = 54f;
 
-                // --- PÁGINA 1: FRENTE ---
                 container.Page(page =>
                 {
                     page.Size(anchoCredencial, altoCredencial, Unit.Millimetre);
@@ -312,7 +306,6 @@ namespace EscuelaManagement.Data.Services
                     });
                 });
 
-                // --- PÁGINA 2: REVERSO ---
                 container.Page(page =>
                 {
                     page.Size(anchoCredencial, altoCredencial, Unit.Millimetre);
@@ -339,7 +332,7 @@ namespace EscuelaManagement.Data.Services
                                       .LineHorizontal(0.5f).LineColor(Colors.Black);
 
                         layers.Layer().PaddingLeft(diseno.DirectorX, Unit.Millimetre).PaddingTop(diseno.DirectorY, Unit.Millimetre)
-                                      .Width(diseno.FirmaLineaW, Unit.Millimetre)
+                                      .Width(diseno.FirmaLineaW, Unit.Millimetre) 
                                       .Column(c =>
                                       {
                                           c.Item().AlignCenter().Text(director.ToUpper()).Bold().FontSize(diseno.DirectorSize).FontColor(Colors.Grey.Darken4);
