@@ -7,19 +7,19 @@ public class Student
 {
     [FirestoreProperty]
     public string? PhotoBase64 { get; set; }
-    
+
     [FirestoreProperty]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
     [FirestoreProperty]
     public string? Name { get; set; }
-    
+
     [FirestoreProperty]
     public string? PaternalLastName { get; set; }
-    
+
     [FirestoreProperty]
     public string? MaternalLastName { get; set; }
-    
+
     [FirestoreProperty]
     public Timestamp? DateOfBirth { get; set; } // Asegúrate de usar Timestamp aquí
 
@@ -34,7 +34,7 @@ public class Student
 
     [FirestoreProperty]
     public GuardianInfo Guardian { get; set; } = new();
-    
+
     [FirestoreProperty]
     public AddressInfo Address { get; set; } = new();
 }

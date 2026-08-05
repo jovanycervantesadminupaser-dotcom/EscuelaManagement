@@ -20,7 +20,7 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
-    .AddHubOptions(options => 
+    .AddHubOptions(options =>
     {
         // Aumentamos el límite de SignalR a 10MB para permitir la captura de fotos
         options.MaximumReceiveMessageSize = 10 * 1024 * 1024;

@@ -30,7 +30,7 @@ public class FirebaseService
             // Esto evita cualquier advertencia de seguridad o métodos obsoletos de Google
             string tempAuthFile = Path.Combine(Path.GetTempPath(), "firebase_auth_render.json");
             File.WriteAllText(tempAuthFile, jsonCreds);
-            
+
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempAuthFile);
         }
         else
