@@ -9,14 +9,23 @@
 @inject PdfService Pdf
 @inject IJSRuntime JS
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Centro de Reportes y Boletas</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Genera e imprime las boletas oficiales de calificaciones por alumno.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Centro de Reportes y Boletas</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Genera e imprime las boletas oficiales de calificaciones por alumno.</MudText>
+    </div>
 
-    <MudCard Elevation="3" Class="pa-6 rounded-lg">
+    <!-- Tarjeta de Controles (Filtros) -->
+    <MudPaper Elevation="0" Class="pa-8 rounded-lg mb-8" Style="border: 1px solid var(--mud-palette-lines-default);">
         <MudGrid>
             <MudItem xs="12" md="4">
-                <MudSelect T="string" Label="1. Selecciona el Curso" ValueChanged="OnCursoBoletaChangedAsync" Value="selectedCursoBoletaId" Variant="Variant.Outlined">
+                <MudSelect T="string" Label="1. Selecciona el Curso" 
+                           ValueChanged="@OnCursoBoletaChangedAsync" 
+                           Value="@selectedCursoBoletaId" 
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter">
                     @foreach (var c in listaCursos)
                     {
                         <MudSelectItem T="string" Value="@c.Id">@c.Name</MudSelectItem>
@@ -24,7 +33,12 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="string" Label="2. Selecciona el Alumno" ValueChanged="OnAlumnoBoletaChangedAsync" Value="selectedAlumnoBoletaId" Variant="Variant.Outlined" Disabled="@(!alumnosBoleta.Any())">
+                <MudSelect T="string" Label="2. Selecciona el Alumno" 
+                           ValueChanged="@OnAlumnoBoletaChangedAsync" 
+                           Value="@selectedAlumnoBoletaId" 
+                           Variant="Variant.Outlined" 
+                           Disabled="@(!alumnosBoleta.Any())"
+                           AnchorOrigin="Origin.BottomCenter">
                     @foreach (var a in alumnosBoleta)
                     {
                         <MudSelectItem T="string" Value="@a.Id">@a.Name</MudSelectItem>
@@ -32,39 +46,58 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" 
-                           OnClick="ImprimirBoleta" FullWidth="true" Size="Size.Large">
-                    IMPRIMIR BOLETA
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Print" 
+                           OnClick="@ImprimirBoleta" 
+                           FullWidth="true" 
+                           Size="Size.Large"
+                           Class="rounded-lg font-weight-bold"
+                           Style="text-transform: none; height: 56px;">
+                    Generar Boleta
                 </MudButton>
             </MudItem>
         </MudGrid>
+    </MudPaper>
 
-        @if (boletaPreview.Any())
-        {
-            <MudTable T="FilaBoleta" Items="@boletaPreview" Hover="true" Striped="true" Elevation="1" Class="mt-6 border-solid mud-border-lines-default border-2">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Vista Previa de Boleta</MudText>
-                </ToolBarContent>
+    <!-- Tabla de Vista Previa -->
+    @if (boletaPreview.Any())
+    {
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Vista Previa de Boleta</MudText>
+            
+            <MudTable T="FilaBoleta" Items="@boletaPreview" Hover="true" Elevation="0" Class="modern-table">
                 <HeaderContent>
-                    <MudTh>Materia</MudTh>
-                    <MudTh>Profesor</MudTh>
-                    <MudTh>Periodo</MudTh>
-                    <MudTh Style="text-align:center;">Calificación</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Materia</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Profesor</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Periodo</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:center;">Calificación</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd><b>@context.NombreMateria</b></MudTd>
-                    <MudTd>@context.Profesor</MudTd>
-                    <MudTd>@context.Periodo</MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small">
+                    <MudTd DataLabel="Materia" Class="font-weight-bold">@context.NombreMateria</MudTd>
+                    <MudTd DataLabel="Profesor">@context.Profesor</MudTd>
+                    <MudTd DataLabel="Periodo">@context.Periodo</MudTd>
+                    <MudTd DataLabel="Calificación" Style="text-align:center;">
+                        <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small" Class="font-weight-bold">
                             @context.Nota.ToString("0.0")
                         </MudChip>
                     </MudTd>
                 </RowTemplate>
             </MudTable>
-        }
-    </MudCard>
+        </MudPaper>
+    }
 </MudContainer>
+
+<style>
+    /* Estilos limpios para la tabla (Plantilla 3) */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 24px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private List<Course> listaCursos = [];

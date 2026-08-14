@@ -8,40 +8,55 @@
     border-right: none !important;
 }
 
-/* Enlaces del menú (Corregimos el ancho para matar la barra horizontal) */
+/* =======================================================
+   ENLACES DEL MENÚ (Letras e Iconos Forzados a Blanco)
+   ======================================================= */
 ::deep .modern-sidebar .mud-nav-link {
-    color: #E5E7EB !important; 
     padding: 12px 16px !important;
     margin: 4px 12px !important;
-    width: auto !important; /* Esto elimina la barra de scroll horizontal */
+    width: auto !important; /* Elimina la barra de scroll horizontal */
     border-radius: 8px !important; 
     transition: all 0.2s ease-in-out !important;
 }
-::deep .modern-sidebar .mud-nav-link-icon {
+
+/* Atacamos directamente al texto interno para obligarlo a ser blanco/gris claro */
+::deep .modern-sidebar .mud-nav-link,
+::deep .modern-sidebar .mud-nav-link .mud-nav-link-text {
+    color: #E5E7EB !important; 
+}
+
+/* Atacamos directamente a los iconos internos */
+::deep .modern-sidebar .mud-nav-link .mud-icon-root {
     color: rgba(255, 255, 255, 0.7) !important; 
 }
 
-/* Efectos al pasar el ratón (Hover) */
+/* --- Efectos al pasar el ratón (Hover) --- */
 ::deep .modern-sidebar .mud-nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
-    color: #FFFFFF !important;
 }
-::deep .modern-sidebar .mud-nav-link:hover .mud-nav-link-icon {
+::deep .modern-sidebar .mud-nav-link:hover,
+::deep .modern-sidebar .mud-nav-link:hover .mud-nav-link-text,
+::deep .modern-sidebar .mud-nav-link:hover .mud-icon-root {
     color: #FFFFFF !important;
 }
 
-/* El enlace activo (donde el usuario está actualmente) */
+/* --- El enlace activo (donde el usuario está actualmente) --- */
 ::deep .modern-sidebar .mud-nav-link.active {
     background-color: rgba(255, 255, 255, 0.2) !important;
-    color: #FFFFFF !important;
-    font-weight: bold;
 }
-::deep .modern-sidebar .mud-nav-link.active .mud-nav-link-icon {
+::deep .modern-sidebar .mud-nav-link.active,
+::deep .modern-sidebar .mud-nav-link.active .mud-nav-link-text {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}
+::deep .modern-sidebar .mud-nav-link.active .mud-icon-root {
     color: #FFFFFF !important;
 }
 
-/* Si tienes submenús, los mantenemos blancos */
-::deep .modern-sidebar .mud-nav-group > .mud-nav-link {
+/* --- Si tienes submenús (NavGroup) --- */
+::deep .modern-sidebar .mud-nav-group > .mud-nav-link,
+::deep .modern-sidebar .mud-nav-group > .mud-nav-link .mud-nav-link-text,
+::deep .modern-sidebar .mud-nav-group > .mud-nav-link .mud-icon-root {
     color: #FFFFFF !important;
 }
 
