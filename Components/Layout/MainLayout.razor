@@ -12,25 +12,37 @@
 
 <MudLayout>
     
-    <!-- BARRA SUPERIOR -->
+    <!-- BARRA SUPERIOR (Appbar Blanca/Oscura) -->
     <MudAppBar Elevation="1" Color="Color.Surface" Fixed="true">
+        
+        <!-- Usamos Color="Color.Default" para que los iconos se adapten solos (Gris en modo claro, Blanco en oscuro) -->
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Default" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        
+        <!-- Título de la escuela -->
         <MudText Typo="Typo.h6" Class="ml-3 font-weight-bold" Color="Color.Primary">@nombreEscuela</MudText>
+        
         <MudSpacer />
+        
+        <!-- Botón de Modo Oscuro con Color="Color.Default" -->
         <MudToggleIconButton @bind-Toggled="@_isDarkMode"
                              Icon="@Icons.Material.Filled.DarkMode" Color="Color.Default" Title="Activar Modo Oscuro"
                              ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" ToggledTitle="Activar Modo Claro" 
                              Class="mr-4" />
+
         <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" Size="Size.Small" OnClick="CerrarSesion">
             Salir
         </MudButton>
     </MudAppBar>
 
-    <!-- MENÚ LATERAL -->
+    <!-- MENÚ LATERAL (Sidebar Azul) -->
+    <!-- Estilo forzado para bloquear el fondo azul sin importar el tema -->
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Docked" Class="modern-sidebar" Fixed="true" Style="background-color: #003366 !important; overflow-x: hidden !important;">
+        
+        <!-- Espacio en la parte superior del menú -->
         <div class="mt-4 mb-2 px-4">
              <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px;">MENÚ PRINCIPAL</MudText>
         </div>
+        
         <NavMenu />
     </MudDrawer>
 
@@ -43,11 +55,15 @@
         </MudContainer>
     </MudMainContent>
 
-    <!-- BOTÓN FLOTANTE (FAB) -->
+    <!-- BOTÓN FLOTANTE DE ACCIÓN RÁPIDA (FAB) -->
     <div style="position: fixed; bottom: 30px; right: 30px; z-index: 9999;">
         <MudMenu @bind-Open="_fabOpen" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
             <ActivatorContent>
-                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" Elevation="4" OnClick="@(() => _fabOpen = !_fabOpen)" />
+                <MudFab Color="Color.Secondary" 
+                        StartIcon="@Icons.Material.Filled.Add" 
+                        Size="Size.Large" 
+                        Elevation="4" 
+                        OnClick="@(() => _fabOpen = !_fabOpen)" />
             </ActivatorContent>
             <ChildContent>
                 <MudMenuItem Href="/pagos" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" OnClick="@(() => _fabOpen = false)">Cobro Rápido</MudMenuItem>
@@ -61,10 +77,12 @@
     private bool _drawerOpen = true;
     private string nombreEscuela = "Cargando...";
     private string claseAnimacion = "fade-in-up";
+
     private bool _isDarkMode;
     private bool _fabOpen = false;
     private MudThemeProvider _mudThemeProvider = default!;
 
+    // Mantenemos tu tema personalizado (Aquí el Background controla el fondo de toda la app)
     private readonly MudTheme _themeCustom = new()
     {
         PaletteLight = new PaletteLight()
@@ -72,7 +90,7 @@
             Primary = "#003366",      
             Secondary = "#0099B8",    
             Success = "#76C043",      
-            Background = "#F3F4F6", 
+            Background = "#F3F4F6", /* Gris muy claro para el fondo en modo claro */
             Surface = "#FFFFFF",      
             AppbarBackground = "#FFFFFF" 
         },
@@ -81,7 +99,7 @@
             Primary = "#0099B8",      
             Secondary = "#76C043",    
             Success = "#76C043",
-            Background = "#121824", 
+            Background = "#121824", /* Azul marino casi negro para modo oscuro */
             Surface = "#1A2332",      
             AppbarBackground = "#1A2332",
             TextPrimary = "#ECEFF1",   
@@ -116,3 +134,42 @@
         claseAnimacion = "fade-in-up"; 
     }
 }
+
+<!-- ESTE BLOQUE ROMPE EL AISLAMIENTO DE BLAZOR Y FUERZA EL MENÚ A BLANCO -->
+<style>
+    /* Aseguramos el fondo azul marino */
+    .mud-drawer.modern-sidebar,
+    .mud-drawer.modern-sidebar .mud-drawer-content {
+        background-color: #003366 !important;
+    }
+
+    /* Forzamos el texto y los iconos a color blanco con ligera transparencia */
+    body .modern-sidebar .mud-nav-link .mud-nav-link-text,
+    body .modern-sidebar .mud-nav-link .mud-icon-root,
+    body .modern-sidebar .mud-nav-group > .mud-nav-link .mud-nav-link-text,
+    body .modern-sidebar .mud-nav-group > .mud-nav-link .mud-icon-root {
+        color: #FFFFFF !important;
+        opacity: 0.85 !important;
+    }
+
+    /* Efecto Hover (Al pasar el ratón): Blanco puro y fondo iluminado */
+    body .modern-sidebar .mud-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body .modern-sidebar .mud-nav-link:hover .mud-nav-link-text,
+    body .modern-sidebar .mud-nav-link:hover .mud-icon-root {
+        color: #FFFFFF !important;
+        opacity: 1 !important;
+    }
+
+    /* Enlace Activo (Donde está el usuario): Blanco puro, negritas y fondo más claro */
+    body .modern-sidebar .mud-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    body .modern-sidebar .mud-nav-link.active .mud-nav-link-text,
+    body .modern-sidebar .mud-nav-link.active .mud-icon-root {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+        opacity: 1 !important;
+    }
+</style>
