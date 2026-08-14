@@ -6,118 +6,124 @@
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión de Cursos</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Gestión de Cursos</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Crea, edita y administra los cursos activos y sus esquemas de pago.</MudText>
+    </div>
 
     <MudGrid>
+        <!-- COLUMNA IZQUIERDA: Formulario -->
         <MudItem xs="12" md="5">
             <EditForm Model="@newCourse" OnValidSubmit="HandleSubmit">
-                <MudCard Elevation="3">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6" Color="Color.Secondary">
-                                @(isEditing ? "Editar Curso Seleccionado" : "Nuevo Curso y Esquema de Pagos")
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudGrid>
-                            <MudItem xs="12">
-                                <MudTextField Label="Nombre del Curso*" @bind-Value="newCourse.Name" Required="true" Variant="Variant.Outlined" />
-                            </MudItem>
-                            <MudItem xs="12">
-                                <MudTextField Label="Horario (Ej. Lunes a Viernes 4-6 pm)" @bind-Value="newCourse.Schedule" Variant="Variant.Outlined" />
-                            </MudItem>
-                            
-                            <MudItem xs="12">
-                                <MudNumericField Label="Costo Una Sola Exhibición ($)*" @bind-Value="newCourse.SinglePaymentCost" Required="true" Variant="Variant.Outlined" Min="0" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
-                            </MudItem>
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">
+                        @(isEditing ? "Editar Curso Seleccionado" : "Nuevo Curso y Esquema de Pagos")
+                    </MudText>
+                    
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Nombre del Curso*" @bind-Value="newCourse.Name" Required="true" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Horario (Ej. Lunes a Viernes 4-6 pm)" @bind-Value="newCourse.Schedule" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudNumericField T="double" Label="Costo Una Sola Exhibición ($)*" @bind-Value="newCourse.SinglePaymentCost" Required="true" Variant="Variant.Outlined" Min="0" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Class="modern-input" />
+                        </MudItem>
 
-                            <MudItem xs="12">
+                        <MudItem xs="12" Class="mt-2">
+                            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: var(--mud-palette-background-grey);">
                                 <MudSwitch T="bool" @bind-Value="newCourse.AllowInstallments" Color="Color.Primary" Label="¿Ofrecer opción de pago a plazos?" />
+                            </MudPaper>
+                        </MudItem>
+
+                        @if (newCourse.AllowInstallments)
+                        {
+                            <MudItem xs="12">
+                                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true" Class="rounded-lg mb-2">Plazos Disponibles para este Curso</MudAlert>
+                                
+                                @if (newCourse.InstallmentOptions == null || !newCourse.InstallmentOptions.Any())
+                                {
+                                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);" Class="d-block my-2"><i>No se han agregado plazos todavía.</i></MudText>
+                                }
+                                else
+                                {
+                                    <MudChipSet T="string" AllClosable="false" Class="my-2">
+                                        @foreach (var opcion in newCourse.InstallmentOptions)
+                                        {
+                                            <MudChip @key="opcion" T="string" Color="Color.Secondary" Variant="Variant.Filled" OnClose="(() => RemoverPlazo(opcion))">
+                                                @opcion.InstallmentCount @opcion.InstallmentPeriod de @opcion.InstallmentAmount.ToString("C")
+                                            </MudChip>
+                                        }
+                                    </MudChipSet>
+                                }
                             </MudItem>
 
-                            @if (newCourse.AllowInstallments)
-                            {
-                                <MudItem xs="12">
-                                    <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true">Plazos Disponibles para este Curso</MudAlert>
-                                    
-                                    @if (newCourse.InstallmentOptions == null || !newCourse.InstallmentOptions.Any())
-                                    {
-                                        <MudText Typo="Typo.caption" Class="text-muted d-block my-2"><i>No se han agregado plazos todavía.</i></MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudChipSet T="string" AllClosable="false" Class="my-2">
-                                            @foreach (var opcion in newCourse.InstallmentOptions)
-                                            {
-                                                <MudChip @key="opcion" T="string" Color="Color.Secondary" Variant="Variant.Filled" OnClose="(() => RemoverPlazo(opcion))">
-                                                    @opcion.InstallmentCount @opcion.InstallmentPeriod de @opcion.InstallmentAmount.ToString("C")
-                                                </MudChip>
-                                            }
-                                        </MudChipSet>
-                                    }
-                                </MudItem>
-
-                                <MudItem xs="4">
-                                    <MudNumericField Label="Cant.*" @bind-Value="tempCount" Variant="Variant.Outlined" Min="1" />
-                                </MudItem>
-                                <MudItem xs="4">
-                                    <MudSelect T="string" Label="Periodo*" @bind-Value="tempPeriod" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                                        <MudSelectItem Value="@("Semanas")">Semanas</MudSelectItem>
-                                        <MudSelectItem Value="@("Quincenas")">Quincenas</MudSelectItem>
-                                        <MudSelectItem Value="@("Meses")">Meses</MudSelectItem>
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="4">
-                                    <MudNumericField Label="Monto ($)*" @bind-Value="tempAmount" Variant="Variant.Outlined" Min="0" />
-                                </MudItem>
-                                <MudItem xs="12" Class="d-flex justify-end">
-                                    <MudButton OnClick="AgregarPlazoALista" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AddCircleOutline">
-                                        Añadir Plazo
-                                    </MudButton>
-                                </MudItem>
-                            }
-                        </MudGrid>
-                    </MudCardContent>
-                    <MudCardActions Class="pb-4 pr-4 d-flex gap-2 justify-end">
+                            <!-- Mini-formulario para agregar plazos -->
+                            <MudItem xs="4">
+                                <MudNumericField T="int" Label="Cant.*" @bind-Value="tempCount" Variant="Variant.Outlined" Min="1" Class="modern-input" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudSelect T="string" Label="Periodo*" @bind-Value="tempPeriod" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
+                                    <MudSelectItem T="string" Value="@("Semanas")">Semanas</MudSelectItem>
+                                    <MudSelectItem T="string" Value="@("Quincenas")">Quincenas</MudSelectItem>
+                                    <MudSelectItem T="string" Value="@("Meses")">Meses</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudNumericField T="double" Label="Monto ($)*" @bind-Value="tempAmount" Variant="Variant.Outlined" Min="0" Class="modern-input" />
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex justify-end">
+                                <MudButton OnClick="AgregarPlazoALista" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddCircleOutline" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                                    Añadir Plazo
+                                </MudButton>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                    
+                    <div class="d-flex gap-3 justify-end mt-8 pt-4" style="border-top: 1px solid var(--mud-palette-lines-default);">
                         @if (isEditing)
                         {
-                            <MudButton OnClick="CancelarEdicion" Variant="Variant.Text" Color="Color.Default">Cancelar</MudButton>
+                            <MudButton OnClick="CancelarEdicion" Variant="Variant.Text" Color="Color.Default" Class="font-weight-bold rounded-lg" Style="text-transform: none;">Cancelar</MudButton>
                         }
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="@(isEditing ? Color.Warning : Color.Primary)" StartIcon="@(isEditing ? Icons.Material.Filled.Save : Icons.Material.Filled.Add)">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" DisableElevation="true" Color="@(isEditing ? Color.Warning : Color.Primary)" StartIcon="@(isEditing ? Icons.Material.Filled.Save : Icons.Material.Filled.Add)" Class="font-weight-bold rounded-lg px-6" Style="text-transform: none;">
                             @(isEditing ? "Guardar Cambios" : "Agregar Curso")
                         </MudButton>
-                    </MudCardActions>
-                </MudCard>
+                    </div>
+                </MudPaper>
             </EditForm>
         </MudItem>
 
+        <!-- COLUMNA DERECHA: Tabla de Cursos -->
         <MudItem xs="12" md="7">
             @if (isLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4 rounded-lg" />
             }
             else
             {
-                <div class="fade-in-suave">
-                    <MudTable Items="@listaCursos" Elevation="3" Hover="true" Striped="true">
-                        <ToolBarContent>
-                            <MudText Typo="Typo.h6">Lista de Cursos Activos</MudText>
-                        </ToolBarContent>
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Lista de Cursos Activos</MudText>
+                    
+                    <MudTable T="Course" Items="@listaCursos" Hover="true" Elevation="0" Class="modern-table">
                         <HeaderContent>
-                            <MudTh>Nombre / Horario</MudTh>
-                            <MudTh>Una Exhibición</MudTh>
-                            <MudTh>Esquemas a Plazos</MudTh>
-                            <MudTh Style="text-align: right;">Acciones</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre / Horario</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Una Exhibición</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Esquemas a Plazos</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Acciones</MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Nombre / Horario">
-                                <MudText Typo="Typo.body1"><b>@context.Name</b></MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Schedule</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Name</MudText>
+                                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@context.Schedule</MudText>
                             </MudTd>
                             <MudTd DataLabel="Una Exhibición">
-                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold">
                                     @context.SinglePaymentCost.ToString("C")
                                 </MudChip>
                             </MudTd>
@@ -126,18 +132,18 @@
                                 {
                                     @foreach (var opcion in context.InstallmentOptions)
                                     {
-                                        <MudText Typo="Typo.caption" Class="d-block mb-1">
+                                        <MudText Typo="Typo.caption" Class="d-block mb-1" Style="color: var(--mud-palette-text-secondary);">
                                             • <b>@opcion.InstallmentCount</b> @opcion.InstallmentPeriod de <b>@opcion.InstallmentAmount.ToString("C")</b>
                                         </MudText>
                                     }
                                 }
                                 else
                                 {
-                                    <MudText Typo="Typo.body2" Color="Color.Error"><i>No disponible</i></MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Error"><i>No disponible</i></MudText>
                                 }
                             </MudTd>
                             <MudTd DataLabel="Acciones" Style="text-align: right;">
-                                <div class="d-flex justify-end gap-2">
+                                <div class="d-flex justify-end gap-1">
                                     <MudTooltip Text="Editar Curso" Arrow="true" Placement="Placement.Top">
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="(() => IniciarEdicion(context))" />
                                     </MudTooltip>
@@ -148,10 +154,10 @@
                             </MudTd>
                         </RowTemplate>
                         <NoRecordsContent>
-                            <MudText Align="Align.Center" Class="pa-4">No se encontraron cursos registrados</MudText>
+                            <MudText Align="Align.Center" Class="pa-4" Style="color: var(--mud-palette-text-secondary);">No se encontraron cursos registrados</MudText>
                         </NoRecordsContent>
                     </MudTable>
-                </div>
+                </MudPaper>
             }
         </MudItem>
     </MudGrid>
@@ -160,10 +166,34 @@
         <MessageContent>
             ¿Estás seguro de que deseas eliminar el curso "<b>@cursoAEliminar?.Name</b>"? Esta acción borrará de forma permanente el registro en Firebase.
         </MessageContent>
-        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete">ELIMINAR</MudButton></YesButton>
-        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton></CancelButton>
+        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Class="rounded-lg" Style="text-transform: none;">Eliminar</MudButton></YesButton>
+        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default" Class="rounded-lg" Style="text-transform: none;">Cancelar</MudButton></CancelButton>
     </MudMessageBox>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private MudMessageBox mbox = default!;
