@@ -10,279 +10,300 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Ficha de Inscripción</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Ficha de Inscripción</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra un nuevo alumno o inscribe uno existente en la institución.</MudText>
+    </div>
 
-    <div class="fade-in-suave">
-        <MudCard Elevation="2" Class="mb-4 pa-4">
-            <MudGrid Class="d-flex align-center">
-                <MudItem xs="12" md="7">
-                    <MudAutocomplete T="Student" 
-                                     Label="Buscar Alumno Inscrito previamente (Nombre o Apellido)" 
-                                     Value="selectedStudent" 
-                                     ValueChanged="OnStudentSelected"
-                                     SearchFunc="@SearchStudents" 
-                                     ToStringFunc="@DisplayAlumno"
-                                     Variant="Variant.Outlined" 
-                                     AdornmentIcon="@Icons.Material.Filled.Search" 
-                                     AdornmentColor="Color.Primary" 
-                                     Clearable="true" 
-                                     Placeholder="Escribe para buscar..."/>
+    <!-- Módulo 1: Buscador de Alumnos -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+        <MudGrid Class="d-flex align-center">
+            <MudItem xs="12" md="7">
+                <MudAutocomplete T="Student" 
+                                 Label="Buscar Alumno Inscrito previamente (Nombre o Apellido)" 
+                                 Value="@selectedStudent" 
+                                 ValueChanged="@OnStudentSelected"
+                                 SearchFunc="@SearchStudents" 
+                                 ToStringFunc="@DisplayAlumno"
+                                 Variant="Variant.Outlined" 
+                                 AdornmentIcon="@Icons.Material.Filled.Search" 
+                                 AdornmentColor="Color.Primary" 
+                                 Clearable="true" 
+                                 Placeholder="Escribe para buscar..."
+                                 Class="modern-input" />
+            </MudItem>
+            <MudItem xs="12" md="5">
+                @if (isExistingStudent)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="w-100 rounded-lg">
+                        Alumno existente: Se creará un nuevo historial de curso para este perfil.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="w-100 rounded-lg">
+                        Modo: Nuevo Registro de Alumno.
+                    </MudAlert>
+                }
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Módulo 2: Formulario Principal -->
+    <MudForm @ref="form" Class="fade-in-up">
+        <MudPaper Elevation="0" Class="pa-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+            
+            <!-- SECCIÓN: Asesor y Fotografía -->
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Asignación de Asesor</MudText>
+                    <MudSelect T="string" Label="Ejecutivo que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor" Class="modern-input">
+                        @if(listaUsuarios != null && listaUsuarios.Any())
+                        {
+                            @foreach (var usuario in listaUsuarios.Where(u => u.Activo))
+                            {
+                                <MudSelectItem T="string" Value="@usuario.Nombre">@usuario.Nombre (@usuario.Rol)</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="5">
-                    @if (isExistingStudent)
+
+                <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-center">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Fotografía del Alumno</MudText>
+                    @if (isCameraOpen)
                     {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="w-100">
-                            Alumno existente: Se creará un nuevo historial de curso para este ID.
-                        </MudAlert>
+                        <div class="fade-in-suave w-100 d-flex flex-column align-center">
+                            <video id="cameraVideo" width="100%" style="max-width: 320px; border-radius: 8px; background-color: black; border: 1px solid var(--mud-palette-lines-default);" autoplay></video>
+                            <div class="mt-3 d-flex gap-4">
+                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Tomar Foto</MudButton>
+                                <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold" Style="text-transform: none;">Cancelar</MudButton>
+                            </div>
+                        </div>
                     }
                     else
                     {
-                        <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="w-100">
-                            Modo: Nuevo Registro de Alumno.
-                        </MudAlert>
-                    }
-                </MudItem>
-            </MudGrid>
-        </MudCard>
-    </div>
-
-    <MudForm @ref="form" Class="fade-in-up">
-        <MudCard Elevation="3">
-            <MudCardContent>
-                
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">ASIGNAR ASESOR(A):</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudSelect T="string" Label="Ejecutivo / Asesor que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor">
-                            @if(listaUsuarios != null && listaUsuarios.Any())
-                            {
-                                @foreach (var usuario in listaUsuarios.Where(u => u.Activo))
-                                {
-                                    <MudSelectItem T="string" Value="@usuario.Nombre">@usuario.Nombre (@usuario.Rol)</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
-                    </MudItem>
-                </MudGrid>
-                
-                <MudDivider Class="my-6" />
-
-                <MudGrid Class="mb-4">
-                    <MudItem xs="12" Class="d-flex flex-column align-center justify-center">
-                        @if (isCameraOpen)
-                        {
-                            <div class="fade-in-suave">
-                                <MudPaper Class="pa-3 mb-3 d-flex flex-column align-center" Elevation="3">
-                                    <video id="cameraVideo" width="320" height="240" autoplay style="border-radius: 8px; background-color: black;"></video>
-                                    <div class="mt-3 d-flex gap-4">
-                                        <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera">Tomar Foto</MudButton>
-                                        <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text">Cancelar</MudButton>
-                                    </div>
-                                </MudPaper>
-                            </div>
-                        }
-                        else
-                        {
+                        <div class="d-flex align-center gap-6">
                             @if (!string.IsNullOrEmpty(student.PhotoBase64))
                             {
-                                <MudImage Src="@student.PhotoBase64" Width="150" Height="150" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-lg mb-3 fade-in-suave" />
+                                <MudImage Src="@student.PhotoBase64" Width="120" Height="120" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);" />
                             }
                             else
                             {
-                                <MudPaper Width="150px" Height="150px" Class="d-flex align-center justify-center rounded-lg mb-3 fade-in-suave" Elevation="0" Outlined="true">
-                                    <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 5rem;" Color="Color.Default" />
+                                <MudPaper Width="120px" Height="120px" Class="d-flex align-center justify-center rounded-lg fade-in-suave" Elevation="0" Style="border: 1px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
                                 </MudPaper>
                             }
                             
-                            <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-                                <MudButton HtmlTag="label" for="fileInput" StartIcon="@Icons.Material.Filled.FileUpload">Subir Archivo</MudButton>
-                                <MudButton OnClick="AbrirCamara" StartIcon="@Icons.Material.Filled.CameraAlt">Usar Cámara</MudButton>
-                            </MudButtonGroup>
+                            <div class="d-flex flex-column gap-2">
+                                <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Subir Archivo</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Usar Cámara</MudButton>
+                            </div>
                             <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
+                        </div>
+                    }
+                </MudItem>
+            </MudGrid>
+            
+            <MudDivider Class="my-8" />
+
+            <!-- SECCIÓN 1: Datos del Alumno -->
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">1. Datos del Alumno</MudText>
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Nombre(s)" @bind-Value="student.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Apellido Paterno" @bind-Value="student.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-8" />
+
+            <!-- SECCIÓN 2: Tutor -->
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">2. Datos del Tutor / Contacto</MudText>
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Correo Electrónico del Tutor" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-8" />
+
+            <!-- SECCIÓN 3: Dirección -->
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">3. Dirección</MudText>
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudTextField T="string" Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudTextField T="string" Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="6" md="2">
+                    <MudTextField T="string" Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+                <MudItem xs="6" md="2">
+                    <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-8" />
+
+            <!-- SECCIÓN 4: Esquema Financiero y Condiciones -->
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">4. Detalles de Inscripción y Esquema Financiero</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="string" Label="Seleccionar Curso" Value="@enrollment.CourseId" ValueChanged="@OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
+                        @foreach (var curso in cursosDisponibles)
+                        {
+                            <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
                         }
-                    </MudItem>
-                </MudGrid>
+                    </MudSelect>
+                </MudItem>
 
-                <MudText Typo="Typo.h6" Class="mt-2 mb-4" Color="Color.Secondary">1. Datos del Alumno</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Nombre(s)" @bind-Value="student.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellido Paterno" @bind-Value="student.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Escuela de Procedencia" @bind-Value="student.PreviousSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                </MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="string" Label="Turno del Curso" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
+                        <MudSelectItem T="string" Value="@("MATUTINO")">MATUTINO</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
 
-                <MudDivider Class="my-6" />
+                @if (turnoSeleccionado == "OTRO")
+                {
+                    <MudItem xs="12" md="4" Class="fade-in-suave">
+                        <MudTextField T="string" Label="Especifique el Turno" @bind-Value="turnoManual" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                }
 
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">2. Datos del Tutor / Contacto</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Apellidos" @bind-Value="student.Guardian.PaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Parentesco (Ej. Madre, Tío)" @bind-Value="student.Guardian.Relationship" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Teléfono del Tutor" @bind-Value="student.Guardian.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Correo Electrónico del Tutor" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Disabled="@isExistingStudent" />
-                    </MudItem>
-                </MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudNumericField T="double" Label="Descuento Aplicado (%)" Value="@enrollment.DiscountAmount" ValueChanged="@OnDiscountChanged" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" Class="modern-input" />
+                </MudItem>
 
-                <MudDivider Class="my-6" />
+                <MudItem xs="12" md="4">
+                    <MudSelect T="string" Label="Esquema / Plazo de Pago" Value="@enrollment.TipoPlazo" ValueChanged="@OnTipoPlazoSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(currentCourse == null)" Class="modern-input">
+                        @foreach (var plan in availablePaymentPlans)
+                        {
+                            <MudSelectItem T="string" Value="@plan">@plan</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">3. Dirección</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
+                {
+                    <MudItem xs="6" md="4" Class="fade-in-suave">
+                        <MudNumericField T="int" Label="Cantidad de Plazos" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" Class="modern-input" />
                     </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudTextField T="string" Label="Núm. Exterior" @bind-Value="student.Address.ExtNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
+                    <MudItem xs="6" md="4" Class="fade-in-suave">
+                        <MudNumericField T="double" Label="Monto por Plazo ($)" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" ReadOnly="true" Class="modern-input" />
                     </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudTextField T="string" Label="Núm. Interior" @bind-Value="student.Address.IntNumber" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Colonia" @bind-Value="student.Address.Neighborhood" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="12" md="4">
-                        <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="student.Address.Municipality" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="6" md="2">
-                        <MudTextField T="string" Label="Estado" @bind-Value="student.Address.State" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                    <MudItem xs="6" md="2">
-                        <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" />
-                    </MudItem>
-                </MudGrid>
-
-                <MudDivider Class="my-6" />
-
-                <MudText Typo="Typo.h6" Class="mb-4" Color="Color.Secondary">4. Detalles de Inscripción y Esquema Financiero</MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Seleccionar Curso" Value="@enrollment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                            @foreach (var curso in cursosDisponibles)
-                            {
-                                <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-
-                    <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Turno del Curso" @bind-Value="turnoSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem T="string" Value="@("MATUTINO")">MATUTINO</MudSelectItem>
-                            <MudSelectItem T="string" Value="@("VESPERTINO")">VESPERTINO</MudSelectItem>
-                            <MudSelectItem T="string" Value="@("OTRO")">OTRO (Especificar)</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-
-                    @if (turnoSeleccionado == "OTRO")
-                    {
-                        <MudItem xs="12" md="4" Class="fade-in-suave">
-                            <MudTextField T="string" Label="Especifique el Turno" @bind-Value="turnoManual" Variant="Variant.Outlined" />
-                        </MudItem>
-                    }
-
-                    <MudItem xs="12" md="4">
-                        <MudNumericField T="double" Label="Descuento Aplicado (%)" Value="@enrollment.DiscountAmount" ValueChanged="OnDiscountChanged" Variant="Variant.Outlined" Min="0" Max="100" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="4">
-                        <MudSelect T="string" Label="Esquema / Plazo de Pago" Value="@enrollment.TipoPlazo" ValueChanged="OnTipoPlazoSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(currentCourse == null)">
-                            @foreach (var plan in availablePaymentPlans)
-                            {
-                                <MudSelectItem T="string" Value="@plan">@plan</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-
-                    @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
-                    {
-                        <MudItem xs="6" md="4" Class="fade-in-suave">
-                            <MudNumericField T="int" Label="Cantidad de Plazos" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" />
-                        </MudItem>
-                        <MudItem xs="6" md="4" Class="fade-in-suave">
-                            <MudNumericField T="double" Label="Monto por Plazo ($)" @bind-Value="enrollment.MontoPlazo" Variant="Variant.Outlined" Min="0.1" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" ReadOnly="true" />
-                        </MudItem>
-                    }
-                    
-                    <MudItem xs="12" Class="mt-4">
+                }
+                
+                <MudItem xs="12" Class="mt-6">
+                    <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: var(--mud-palette-background-grey);">
                         <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
-                    </MudItem>
-                    <MudItem xs="12">
                         <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
-                    </MudItem>
-                    <MudItem xs="12">
                         <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
-                    </MudItem>
-                </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
 
-            </MudCardContent>
-
-            <MudCardActions Class="pb-4 pr-4 flex-column align-end">
+            <!-- Acciones Finales -->
+            <div class="d-flex justify-end mt-8 pt-4" style="border-top: 1px solid var(--mud-palette-lines-default);">
                 @if (!registroCompletado)
                 {
-                    <div class="d-flex gap-4 fade-in-suave">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo">
+                    <div class="d-flex gap-4 fade-in-suave flex-wrap justify-end">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
                             @if (enviandoCorreo)
                             {
-                                <MudProgressCircular T="string" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                                 <span>ENVIANDO...</span>
                             }
                             else
                             {
-                                <span>GUARDAR Y ENVIAR POR CORREO</span>
+                                <span>Guardar y Enviar por Correo</span>
                             }
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo">
-                            GUARDAR Y DESCARGAR PDF
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                            Guardar y Descargar PDF
                         </MudButton>
                     </div>
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3 w-100 fade-in-suave">
-                        ¡Operación completada exitosamente!
-                    </MudAlert>
-                    
-                    <div class="d-flex gap-3 fade-in-suave">
-                        <MudButton Variant="Variant.Filled" Style="background-color: #25D366; color: white;" StartIcon="@Icons.Custom.Brands.WhatsApp" OnClick="CompartirWhatsApp">
-                            Notificar WhatsApp
-                        </MudButton>
-                        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="LimpiarFormulario">
-                            NUEVA INSCRIPCIÓN
-                        </MudButton>
+                    <div class="d-flex flex-column align-end w-100 fade-in-suave">
+                        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-4 w-100 rounded-lg">
+                            ¡Operación completada exitosamente!
+                        </MudAlert>
+                        
+                        <div class="d-flex gap-3 flex-wrap justify-end">
+                            <MudButton Variant="Variant.Filled" DisableElevation="true" Style="background-color: #25D366; color: white; text-transform: none;" StartIcon="@Icons.Custom.Brands.WhatsApp" Class="rounded-lg font-weight-bold px-6" OnClick="CompartirWhatsApp">
+                                Notificar WhatsApp
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="LimpiarFormulario" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">
+                                Nueva Inscripción
+                            </MudButton>
+                        </div>
                     </div>
                 }
-            </MudCardActions>
-        </MudCard>
+            </div>
+        </MudPaper>
     </MudForm>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs (Plantilla 3) */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+</style>
 
 @code {
     private MudForm form = default!;
@@ -546,7 +567,7 @@
             await Firebase.AddEnrollmentAsync(enrollment);
 
             var pdfBytes = GeneratePdfDocument();
-            // Corrección de los paréntesis en la interpolación del nombre de archivo:
+            
             await DescargarPdf(pdfBytes, $"Ficha_{(string.IsNullOrEmpty(student.Name) ? "Alumno" : student.Name)}.pdf");
 
             if (tipoAccion == "correo")
