@@ -8,9 +8,9 @@
     
     <!-- Encabezado de la página -->
     <div class="mb-10">
-        <!-- Eliminamos los Styles con Hexadecimales -->
         <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Panel de Control</MudText>
-        <MudText Typo="Typo.body1" Color="Color.Secondary">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
+        <!-- Corregido: Usamos la variable de texto secundario en lugar del color de marca -->
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
     </div>
 
     <!-- Fila de Tarjetas (Navegación / KPIs) -->
@@ -19,13 +19,12 @@
         @* --- 1. DIRECTORIO --- *@
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
-                <!-- Usamos las variables CSS dinámicas de MudBlazor para el fondo transparente -->
                 <MudAvatar Variant="Variant.Filled" Style="background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);" Class="mr-4 rounded-lg">
                     <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
                 </MudAvatar>
                 <div>
                     <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Directorio</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">Gestión de alumnos</MudText>
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Gestión de alumnos</MudText>
                 </div>
             </MudPaper>
         </MudItem>
@@ -41,7 +40,7 @@
                     </MudAvatar>
                     <div>
                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Inscripciones</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Nuevos ingresos</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Nuevos ingresos</MudText>
                     </div>
                 </MudPaper>
             </MudItem>
@@ -54,7 +53,7 @@
                     </MudAvatar>
                     <div>
                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Cursos Activos</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Materias y grupos</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Materias y grupos</MudText>
                     </div>
                 </MudPaper>
             </MudItem>
@@ -67,7 +66,7 @@
                     </MudAvatar>
                     <div>
                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Control de Pagos</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Finanzas y saldos</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Finanzas y saldos</MudText>
                     </div>
                 </MudPaper>
             </MudItem>
@@ -75,16 +74,14 @@
     </MudGrid>
 
     <!-- Sección de Accesos Rápidos -->
-    <!-- Usamos var(--mud-palette-lines-default) para que el borde cambie en modo oscuro -->
     <MudPaper Elevation="0" Class="pa-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
         <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Accesos Rápidos</MudText>
-        <MudText Typo="Typo.body2" Class="mb-6" Color="Color.Secondary">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
+        <MudText Typo="Typo.body2" Class="mb-6" Style="color: var(--mud-palette-text-secondary);">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
         
         <div class="d-flex flex-wrap gap-4">
             
             @if (UserSession.EsControlEscolar)
             {
-                <!-- Usamos Color="Color.Primary" en vez del background hexadecimal -->
                 <MudButton Variant="Variant.Filled" 
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.PersonAdd" 
@@ -110,18 +107,19 @@
 </MudContainer>
 
 <style>
-    /* Sombra base sutil para las tarjetas modernas */
     .modern-card {
         transition: all 0.3s ease;
         border: 1px solid transparent;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
     }
     
-    /* Efecto de elevación al pasar el mouse por las tarjetas */
-    /* Usamos la variable de lineas de MudBlazor para el hover */
     .modern-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
         border: 1px solid var(--mud-palette-lines-default);
     }
 </style>
+
+@code {
+    // Tu lógica de C# permanece intacta
+}
