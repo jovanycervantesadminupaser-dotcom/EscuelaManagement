@@ -73,7 +73,7 @@
         padding: 16px 14px !important; 
     }
 
-    /* Diseño Responsivo: Ocultar foto en celulares */
+    /* Diseño Responsivo: Ocultar foto en celulares (Doble arroba para evitar error de C#) */
     @@media (max-width: 960px) {
         .login-left-side {
             display: none !important; 
@@ -87,7 +87,6 @@
 <div class="login-wrapper">
     
     <!-- Lado Izquierdo (Foto y Logo) -->
-    <!-- Aquí usamos tu lógica para cargar la imagen de Firebase o un fondo sólido -->
     <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background-color: #003366;" : $"background-image: url('{backgroundLoginBase64}');")">
         <div class="overlay"></div>
         <div class="left-content">
@@ -108,6 +107,7 @@
                 
                 <!-- Campo: Correo Electrónico -->
                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Correo Electrónico</MudText>
+                
                 <MudTextField T="string" @bind-Value="email" 
                               Placeholder="ejemplo@correo.com" 
                               Variant="Variant.Outlined" 
@@ -120,6 +120,7 @@
 
                 <!-- Campo: Contraseña -->
                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Contraseña</MudText>
+                
                 <MudTextField T="string" @bind-Value="password" 
                               Placeholder="••••••••" 
                               Variant="Variant.Outlined" 

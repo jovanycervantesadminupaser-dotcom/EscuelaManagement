@@ -5,56 +5,6 @@
 @inject NavigationManager Navigation
 @inject FirebaseService Firebase
 
-<style>
-    /* 1. Fondo general de la aplicación (Gris claro) */
-    .mud-layout {
-        background-color: #F3F4F6 !important;
-    }
-
-    /* 2. DISEÑO DEL MENÚ LATERAL (Sidebar Azul) */
-    /* Teñimos el Drawer (el menú) de azul oscuro */
-    .modern-sidebar .mud-drawer-content {
-        background-color: #003366 !important;
-        color: #FFFFFF !important;
-    }
-    
-    /* Hacemos que los textos y los iconos dentro del menú sean blancos o grises claros */
-    .modern-sidebar .mud-nav-link {
-        color: #E5E7EB !important; /* Texto gris muy claro */
-        padding: 12px 16px;
-        margin: 4px 12px;
-        border-radius: 8px; /* Botones redondeados dentro del menú */
-        transition: all 0.2s ease-in-out;
-    }
-    .modern-sidebar .mud-nav-link-icon {
-        color: rgba(255, 255, 255, 0.7) !important; /* Iconos un poco transparentes */
-    }
-
-    /* 3. Efectos al pasar el mouse y al seleccionar (Hover & Active) */
-    .modern-sidebar .mud-nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        color: #FFFFFF !important;
-    }
-    .modern-sidebar .mud-nav-link:hover .mud-nav-link-icon {
-        color: #FFFFFF !important;
-    }
-    
-    /* El enlace activo (donde el usuario está actualmente) */
-    .modern-sidebar .mud-nav-link.active {
-        background-color: rgba(255, 255, 255, 0.2) !important;
-        color: #FFFFFF !important;
-        font-weight: bold;
-    }
-    .modern-sidebar .mud-nav-link.active .mud-nav-link-icon {
-        color: #FFFFFF !important;
-    }
-    
-    /* Si tienes submenús (NavGroup), les cambiamos el color también */
-    .modern-sidebar .mud-nav-group > .mud-nav-link {
-        color: #FFFFFF !important;
-    }
-</style>
-
 <MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="_themeCustom" />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -62,31 +12,29 @@
 
 <MudLayout>
     
-    <!-- BARRA SUPERIOR (Appbar Blanca) -->
-    <!-- Usamos Color="Color.Surface" (Blanco) y un Elevation suave -->
+    <!-- BARRA SUPERIOR (Appbar Blanca/Oscura) -->
     <MudAppBar Elevation="1" Color="Color.Surface" Fixed="true">
-        <!-- El botón del menú ahora es oscuro (Color.Dark) para que se vea sobre el blanco -->
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <!-- Usamos Color="Color.Inherit" para que se adapte al modo oscuro -->
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         
-        <!-- Nombre de la escuela en azul oscuro -->
-        <MudText Typo="Typo.h6" Class="ml-3 font-weight-bold" Style="color: #003366;">@nombreEscuela</MudText>
+        <!-- Cambiamos el color fijo por Color="Color.Primary" (Se ve azul oscuro en modo claro y azul brillante en modo oscuro) -->
+        <MudText Typo="Typo.h6" Class="ml-3 font-weight-bold" Color="Color.Primary">@nombreEscuela</MudText>
         
         <MudSpacer />
         
-        <!-- BOTÓN INTERRUPTOR PARA MODO OSCURO -->
+        <!-- Usamos Color="Color.Inherit" en ambos estados -->
         <MudToggleIconButton @bind-Toggled="@_isDarkMode"
-                     Icon="@Icons.Material.Filled.DarkMode" Color="Color.Dark" Title="Activar Modo Oscuro"
-                     ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Dark" ToggledTitle="Activar Modo Claro" 
-                     Class="mr-4" />
+                             Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" Title="Activar Modo Oscuro"
+                             ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Inherit" ToggledTitle="Activar Modo Claro" 
+                             Class="mr-4" />
 
-        <!-- Botón de Cerrar Sesión minimalista -->
         <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" Size="Size.Small" OnClick="CerrarSesion">
             Salir
         </MudButton>
     </MudAppBar>
 
     <!-- MENÚ LATERAL (Sidebar Azul) -->
-    <!-- Le agregamos la clase 'modern-sidebar' que definimos en el CSS arriba -->
+    <!-- Estilo forzado en la etiqueta para evitar que las capas internas lo sobrescriban -->
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Docked" Class="modern-sidebar" Fixed="true" Style="background-color: #003366 !important; overflow-x: hidden !important;">
         
         <!-- Espacio en la parte superior del menú para separar del borde -->
@@ -133,7 +81,7 @@
     private bool _fabOpen = false;
     private MudThemeProvider _mudThemeProvider = default!;
 
-    // Mantenemos tu tema personalizado
+    // Mantenemos tu tema personalizado (Aquí el Background controla el fondo de toda la app)
     private readonly MudTheme _themeCustom = new()
     {
         PaletteLight = new PaletteLight()
@@ -141,16 +89,16 @@
             Primary = "#003366",      
             Secondary = "#0099B8",    
             Success = "#76C043",      
-            Background = "#F3F4F6", /* Gris muy claro para el fondo */
+            Background = "#F3F4F6", /* Gris muy claro para el fondo en modo claro */
             Surface = "#FFFFFF",      
-            AppbarBackground = "#FFFFFF" /* Cambiamos a blanco por defecto */
+            AppbarBackground = "#FFFFFF" 
         },
         PaletteDark = new PaletteDark()
         {
             Primary = "#0099B8",      
             Secondary = "#76C043",    
             Success = "#76C043",
-            Background = "#121824",    
+            Background = "#121824", /* Azul marino casi negro para modo oscuro */
             Surface = "#1A2332",      
             AppbarBackground = "#1A2332",
             TextPrimary = "#ECEFF1",   

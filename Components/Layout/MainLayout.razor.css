@@ -1,9 +1,4 @@
-/* 1. Fondo general de la aplicación (Gris claro) */
-::deep .mud-layout {
-    background-color: #F3F4F6 !important;
-}
-
-/* 2. DISEÑO DEL MENÚ LATERAL (Sidebar Azul Institucional) */
+/* 1. DISEÑO DEL MENÚ LATERAL (Sidebar Azul Institucional) */
 /* Blindaje total a todas las capas internas de MudBlazor */
 ::deep .mud-drawer.modern-sidebar,
 ::deep .mud-drawer.modern-sidebar .mud-drawer-main,
@@ -26,7 +21,7 @@
     color: rgba(255, 255, 255, 0.7) !important; 
 }
 
-/* 3. Efectos al pasar el ratón (Hover) */
+/* Efectos al pasar el ratón (Hover) */
 ::deep .modern-sidebar .mud-nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
     color: #FFFFFF !important;
@@ -50,7 +45,7 @@
     color: #FFFFFF !important;
 }
 
-/* 4. Scrollbar Elegante y Premium (Para que no se vea la barra gris de Windows) */
+/* 2. Scrollbar Elegante y Premium (Para que no se vea la barra gris de Windows) */
 ::deep .modern-sidebar .mud-drawer-content::-webkit-scrollbar {
     width: 6px;
 }
