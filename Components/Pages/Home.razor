@@ -4,83 +4,122 @@
 @inject UserSessionService UserSession
 @inject NavigationManager NavigationManager
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Panel de Control</MudText>
-    <!-- Se quitó text-muted y se agregó opacidad para que se adapte al modo oscuro -->
-    <MudText Typo="Typo.subtitle1" Class="mb-8" Style="opacity: 0.8;">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado de la página -->
+    <div class="mb-10">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1" Style="color: #1F2937;">Panel de Control</MudText>
+        <MudText Typo="Typo.body1" Style="color: #6B7280;">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
+    </div>
 
-    <MudGrid>
-        @* --- 1. DIRECTORIO --- *@
+    <!-- Fila de Tarjetas (Navegación / KPIs) -->
+    <MudGrid Class="mb-10">
+        
+        @* --- 1. DIRECTORIO (Visible para todos) --- *@
         <MudItem xs="12" sm="6" md="3">
-            <!-- Se eliminó el background-color: #fafafa; para permitir el cambio automático -->
-            <MudPaper Elevation="2" 
-                      Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-primary cursor-pointer mud-ripple" 
-                      Style="height: 130px;" 
-                      @onclick="@(() => NavigationManager.NavigateTo("/alumnos"))">
-                <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Color="Color.Primary" Style="font-size: 3rem;" Class="mb-2"/>
-                <MudText Typo="Typo.subtitle1"><b>Directorio</b></MudText>
+            <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
+                <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(0, 51, 102, 0.1); color: #003366;" Class="mr-4 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
+                </MudAvatar>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1" Style="color: #1F2937;">Directorio</MudText>
+                    <MudText Typo="Typo.caption" Style="color: #6B7280;">Gestión de alumnos</MudText>
+                </div>
             </MudPaper>
         </MudItem>
 
+        @* --- VALIDACIÓN DE ROLES PARA LAS DEMÁS TARJETAS --- *@
         @if (UserSession.EsControlEscolar)
         {
             @* --- 2. INSCRIPCIONES --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" 
-                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-success cursor-pointer mud-ripple" 
-                          Style="height: 130px;" 
-                          @onclick="@(() => NavigationManager.NavigateTo("/inscripciones"))">
-                    <MudIcon Icon="@Icons.Material.Filled.HowToReg" Color="Color.Success" Style="font-size: 3rem;" Class="mb-2"/>
-                    <MudText Typo="Typo.subtitle1"><b>Inscripciones</b></MudText>
+                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
+                    <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(0, 51, 102, 0.1); color: #003366;" Class="mr-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.HowToReg" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1" Style="color: #1F2937;">Inscripciones</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #6B7280;">Nuevos ingresos</MudText>
+                    </div>
                 </MudPaper>
             </MudItem>
 
             @* --- 3. CURSOS ACTIVOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" 
-                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-warning cursor-pointer mud-ripple" 
-                          Style="height: 130px;" 
-                          @onclick="@(() => NavigationManager.NavigateTo("/cursos"))">
-                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Color="Color.Warning" Style="font-size: 3rem;" Class="mb-2"/>
-                    <MudText Typo="Typo.subtitle1"><b>Cursos Activos</b></MudText>
+                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/cursos")'>
+                    <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(0, 51, 102, 0.1); color: #003366;" Class="mr-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1" Style="color: #1F2937;">Cursos Activos</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #6B7280;">Materias y grupos</MudText>
+                    </div>
                 </MudPaper>
             </MudItem>
 
             @* --- 4. CONTROL DE PAGOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" 
-                          Class="pa-4 d-flex flex-column align-center justify-center border-t-4 mud-border-info cursor-pointer mud-ripple" 
-                          Style="height: 130px;" 
-                          @onclick="@(() => NavigationManager.NavigateTo("/pagos"))">
-                    <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Color="Color.Info" Style="font-size: 3rem;" Class="mb-2"/>
-                    <MudText Typo="Typo.subtitle1"><b>Control de Pagos</b></MudText>
+                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/pagos")'>
+                    <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(0, 51, 102, 0.1); color: #003366;" Class="mr-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.RequestQuote" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1" Style="color: #1F2937;">Control de Pagos</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #6B7280;">Finanzas y saldos</MudText>
+                    </div>
                 </MudPaper>
             </MudItem>
         }
     </MudGrid>
 
-    <MudCard Elevation="2" Class="mt-8 pa-6 rounded-lg">
-        <MudText Typo="Typo.h6" Color="Color.Secondary" GutterBottom="true">Accesos Rápidos</MudText>
-        <MudDivider Class="mb-4" />
-        <MudText Typo="Typo.body1" Class="mb-6">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
+    <!-- Sección de Accesos Rápidos -->
+    <MudPaper Elevation="0" Class="pa-8 rounded-lg" Style="border: 1px solid #E5E7EB; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
+        <MudText Typo="Typo.h6" Class="font-weight-bold mb-1" Style="color: #1F2937;">Accesos Rápidos</MudText>
+        <MudText Typo="Typo.body2" Class="mb-6" Style="color: #6B7280;">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
         
         <div class="d-flex flex-wrap gap-4">
             
             @* Botón exclusivo para Control Escolar y Administrador *@
             @if (UserSession.EsControlEscolar)
             {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/inscripciones" StartIcon="@Icons.Material.Filled.PersonAdd">
+                <MudButton Variant="Variant.Filled" 
+                           StartIcon="@Icons.Material.Filled.PersonAdd" 
+                           DisableElevation="true"
+                           Href="/inscripciones"
+                           Class="rounded-lg px-6 py-2 font-weight-bold" 
+                           Style="background-color: #003366; color: white; text-transform: none; font-size: 14px;">
                     Nueva Inscripción
                 </MudButton>
             }
-
-            @* Botón general (Todos los roles pueden consultar expedientes) *@
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" Href="/alumnos" StartIcon="@Icons.Material.Filled.FolderShared">
+            
+            @* Botón general *@
+            <MudButton Variant="Variant.Outlined" 
+                       StartIcon="@Icons.Material.Filled.FolderShared" 
+                       Href="/alumnos"
+                       Class="rounded-lg px-6 py-2 font-weight-bold" 
+                       Style="color: #003366; border-color: #003366; text-transform: none; font-size: 14px;">
                 Consultar Expedientes
             </MudButton>
         </div>
-    </MudCard>
+    </MudPaper>
+
 </MudContainer>
+
+<style>
+    /* Sombra base sutil para las tarjetas modernas */
+    .modern-card {
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+    }
+    
+    /* Efecto de elevación al pasar el mouse por las tarjetas */
+    .modern-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid #E5E7EB;
+    }
+</style>
 
 @code {
     // Aquí más adelante podemos conectar Firebase para que las tarjetas
