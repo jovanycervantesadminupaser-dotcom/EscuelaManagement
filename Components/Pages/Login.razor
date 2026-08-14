@@ -9,84 +9,120 @@
 @inject UserSessionService UserSession
 
 <style>
-    .login-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 100vw;
+    /* Contenedor principal para ocupar toda la pantalla sin bordes */
+    .login-wrapper {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #003366; 
+        min-height: 100vh;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Lado Izquierdo: Fotografía con Overlay */
+    .login-left-side {
+        width: 50%;
+        position: relative;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* La capa azul transparente sobre la foto */
+    .login-left-side .overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0, 51, 102, 0.70); /* Azul institucional transparente */
         z-index: 1;
     }
 
-    .glass-card {
-        background: rgba(255, 255, 255, 0.1) !important;
-        backdrop-filter: blur(15px) !important;
-        -webkit-backdrop-filter: blur(15px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
-        border-radius: 20px !important;
-        width: 100%;
-        max-width: 450px;
+    .left-content {
         z-index: 2;
+        text-align: center;
+        color: white;
+        padding: 2rem;
+    }
+    
+    /* Lado Derecho: Área de Trabajo Blanca */
+    .login-right-side {
+        width: 50%;
+        background-color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
     }
 
-    .glass-text {
-        color: white !important;
-        text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+    .form-container {
+        max-width: 420px;
+        width: 100%;
     }
 
-    .glass-input .mud-input {
-        background-color: rgba(255, 255, 255, 0.15) !important;
-        color: white !important;
-        border-radius: 8px;
+    /* Estilos de los inputs modernos (Cajas grises sin borde) */
+    .modern-input .mud-input-outlined-border {
+        border: none !important;
     }
-    .glass-input .mud-input-label {
-        color: rgba(255, 255, 255, 0.9) !important;
+    .modern-input .mud-input {
+        background-color: #F3F4F6 !important;
+        border-radius: 8px !important;
+        color: #1F2937 !important;
     }
-    .glass-input .mud-input-adornment .mud-icon-root {
-        color: white !important;
+    .modern-input .mud-input-slot {
+        padding: 16px 14px !important; 
     }
-    .glass-input .mud-input-slot {
-        color: white !important; 
+
+    /* Diseño Responsivo: Ocultar foto en celulares */
+    @@media (max-width: 960px) {
+        .login-left-side {
+            display: none !important; 
+        }
+        .login-right-side {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="login-container" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background-color: #003366;" : $"background-image: url('{backgroundLoginBase64}');")">
-    <MudCard Elevation="0" Class="pa-8 glass-card">
-        <MudCardHeader Class="d-flex justify-center pb-0">
-            <CardHeaderContent>
-                <div class="d-flex flex-column align-center">
-                    <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 4rem; color: white; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));" Class="mb-2" />
-                    
-                    <MudText Typo="Typo.h5" Class="glass-text mb-4" Style="font-weight: bold; text-align: center;">@nombreEscuela</MudText>
-                    <MudText Typo="Typo.subtitle1" Class="glass-text mb-4">Inicia sesión en tu cuenta</MudText>
-                </div>
-            </CardHeaderContent>
-        </MudCardHeader>
+<div class="login-wrapper">
+    
+    <!-- Lado Izquierdo (Foto y Logo) -->
+    <!-- Aquí usamos tu lógica para cargar la imagen de Firebase o un fondo sólido -->
+    <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background-color: #003366;" : $"background-image: url('{backgroundLoginBase64}');")">
+        <div class="overlay"></div>
+        <div class="left-content">
+            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: white;" Class="mb-4" />
+            <MudText Typo="Typo.h2" Class="font-weight-bold mb-2">UPASER</MudText>
+            <MudText Typo="Typo.h5" Style="opacity: 0.9;">@nombreEscuela</MudText>
+        </div>
+    </div>
 
-        <MudCardContent Class="pt-0">
+    <!-- Lado Derecho (Formulario Blanco) -->
+    <div class="login-right-side">
+        <div class="form-container">
+            
+            <MudText Typo="Typo.h4" Class="font-weight-bold mb-1" Style="color: #1F2937;">¡Bienvenido de vuelta!</MudText>
+            <MudText Typo="Typo.body1" Class="mb-8" Style="color: #6B7280;">Ingresa tus credenciales para acceder al sistema escolar.</MudText>
+
             <MudForm @ref="form" @bind-IsValid="@success">
                 
+                <!-- Campo: Correo Electrónico -->
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Correo Electrónico</MudText>
                 <MudTextField T="string" @bind-Value="email" 
-                              Label="Usuario o Correo Electrónico" 
-                              Variant="Variant.Filled" 
+                              Placeholder="ejemplo@correo.com" 
+                              Variant="Variant.Outlined" 
                               Required="true" 
                               RequiredError="El correo es obligatorio" 
                               InputType="InputType.Email" 
                               Adornment="Adornment.Start" 
                               AdornmentIcon="@Icons.Material.Filled.Email" 
-                              Class="mb-4 glass-input" />
+                              Class="mb-4 modern-input" />
 
+                <!-- Campo: Contraseña -->
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Contraseña</MudText>
                 <MudTextField T="string" @bind-Value="password" 
-                              Label="Contraseña" 
-                              Variant="Variant.Filled" 
+                              Placeholder="••••••••" 
+                              Variant="Variant.Outlined" 
                               Required="true" 
                               RequiredError="La contraseña es obligatoria" 
                               InputType="@passwordInput" 
@@ -94,37 +130,41 @@
                               AdornmentIcon="@passwordInputIcon" 
                               OnAdornmentClick="TogglePasswordVisibility" 
                               AdornmentAriaLabel="Mostrar contraseña"
-                              Class="mb-4 glass-input" />
+                              Class="mb-2 modern-input" />
             </MudForm>
-            
-            <div class="d-flex justify-center mt-2">
-                <MudLink OnClick="RecuperarContrasena" Style="cursor: pointer; color: white; text-decoration: underline; opacity: 0.8; font-size: 13px;">
-                    ¿Olvidaste tu contraseña?
+
+            <!-- Enlace: Olvidaste tu contraseña -->
+            <div class="d-flex justify-end mb-8 mt-1">
+                <MudLink OnClick="RecuperarContrasena" Typo="Typo.body2" Style="color: #003366; cursor: pointer; text-decoration: none;">
+                    ¿Olvidaste Tu Contraseña?
                 </MudLink>
             </div>
-        </MudCardContent>
 
-        <MudCardActions Class="d-flex flex-column align-center px-4 pb-4">
-            <MudButton Variant="Variant.Filled" 
-                       Color="Color.Success" 
+            <!-- Botón Principal -->
+            <MudButton OnClick="Ingresar" 
+                       Disabled="@cargando"
+                       Variant="Variant.Filled" 
                        Size="Size.Large" 
                        FullWidth="true" 
-                       Class="mt-4 py-3 rounded-pill"
-                       Style="font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);"
-                       OnClick="Ingresar"
-                       Disabled="@cargando">
+                       Class="rounded-lg py-3 font-weight-bold text-white" 
+                       Style="background-color: #003366; font-size: 16px; letter-spacing: 0.5px;">
                 @if (cargando)
                 {
                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
-                    <MudText Class="ms-2">VERIFICANDO...</MudText>
+                    <MudText Class="ms-2" Style="color: white;">VERIFICANDO...</MudText>
                 }
                 else
                 {
-                    <MudText>INGRESAR</MudText>
+                    <MudText>INGRESAR AL SISTEMA</MudText>
                 }
             </MudButton>
-        </MudCardActions>
-    </MudCard>
+
+            <div class="text-center mt-12">
+                <MudText Typo="Typo.caption" Style="color: #9CA3AF;">UPASER. Todos los derechos reservados.</MudText>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 @code {

@@ -6,10 +6,9 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
+<!-- MudLayout base sin restricciones de ancho para que el Split Screen ocupe el 100% -->
 <MudLayout>
-    <MudMainContent Class="d-flex align-center justify-center" Style="height: 100vh; background-color: #f4f6f8;">
-        <div style="width: 100%; max-width: 450px; padding: 24px;">
-            @Body
-        </div>
+    <MudMainContent Class="pa-0" Style="height: 100vh; width: 100vw; overflow: hidden; background-color: #FFFFFF;">
+        @Body
     </MudMainContent>
 </MudLayout>
