@@ -238,7 +238,8 @@ public class FirebaseService
     {
         config.Id = "global";
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
-        await docRef.SetAsync(config);
+        // Agregamos SetOptions.MergeAll para que actualice los botones sin borrar tu Logo u otros datos
+        await docRef.SetAsync(config, SetOptions.MergeAll); 
     }
 
     public async Task AddUsuarioAsync(Usuario usuario)
