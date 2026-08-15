@@ -82,9 +82,25 @@
             width: 100%;
         }
     }
+
+    /* --- Animación de salida (Cinematográfica) --- */
+    .animacion-salida {
+        animation: fadeOutUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+    }
+
+    @@keyframes fadeOutUp {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-40px) scale(0.98);
+        }
+    }
 </style>
 
-<div class="login-wrapper">
+<div class="login-wrapper @claseAnimacionSalida">
     
     <!-- Lado Izquierdo (Foto y Logo) -->
     <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background-color: #003366;" : $"background-image: url('{backgroundLoginBase64}');")">
@@ -176,6 +192,7 @@
     private string password = "";
     private string nombreEscuela = "Cargando...";
     private string backgroundLoginBase64 = "";
+    private string claseAnimacionSalida = "";
 
     private bool isShow;
     private InputType passwordInput = InputType.Password;
@@ -237,7 +254,13 @@
                     {
                         await UserSession.IniciarSesionAsync(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
                         Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
-                        Navigation.NavigateTo("/inicio", forceLoad: true);
+                        
+                        // --- INICIA LA ANIMACIÓN ---
+                        claseAnimacionSalida = "animacion-salida";
+                        StateHasChanged();
+                        await Task.Delay(400); // Esperamos a que termine la animación
+                        
+                        Navigation.NavigateTo("/inicio", forceLoad: false);
                     }
                 }
                 else
@@ -246,7 +269,13 @@
                     {
                         await UserSession.IniciarSesionAsync("Llave Maestra", email, "Administrador");
                         Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
-                        Navigation.NavigateTo("/inicio", forceLoad: true);
+                        
+                        // --- INICIA LA ANIMACIÓN ---
+                        claseAnimacionSalida = "animacion-salida";
+                        StateHasChanged();
+                        await Task.Delay(400); 
+                        
+                        Navigation.NavigateTo("/inicio", forceLoad: false);
                     }
                     else
                     {
