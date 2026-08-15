@@ -6,87 +6,124 @@
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión de Materias y Asignaciones</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Gestión de Materias y Asignaciones</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra nuevas materias y asígnalas a los profesores y cursos correspondientes.</MudText>
+    </div>
 
     <MudGrid>
+        <!-- COLUMNA IZQUIERDA: Formulario -->
         <MudItem xs="12" md="4">
-            <MudCard Elevation="3" Class="pa-4 rounded-lg">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6" Color="Color.Secondary">Nueva Materia</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudForm @ref="form" @bind-IsValid="@success">
-                        <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="nuevaMateria.CursoId" Required="true" RequiredError="Debes elegir un curso" Variant="Variant.Outlined" Class="mb-4">
-                            @if (listaCursos.Any())
+            <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Nueva Materia</MudText>
+                
+                <MudForm @ref="form" @bind-IsValid="@success">
+                    <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="nuevaMateria.CursoId" Required="true" RequiredError="Debes elegir un curso" Variant="Variant.Outlined" Class="modern-input mb-4" AnchorOrigin="Origin.BottomCenter">
+                        @if (listaCursos.Any())
+                        {
+                            @foreach (var curso in listaCursos)
                             {
-                                @foreach (var curso in listaCursos)
-                                {
-                                    <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem>
-                                }
+                                <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
                             }
-                            else
-                            {
-                                <MudSelectItem Value="@string.Empty" Disabled="true">Cargando cursos...</MudSelectItem>
-                            }
-                        </MudSelect>
-                        
-                        <MudTextField @bind-Value="nuevaMateria.Nombre" Label="Nombre de la Materia (Ej. Matemáticas)" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Class="mb-4" />
-                        
-                        <MudTextField @bind-Value="nuevaMateria.Profesor" Label="Profesor Titular" Required="true" RequiredError="Asigna un profesor" Variant="Variant.Outlined" />
-                    </MudForm>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" OnClick="GuardarMateria" Disabled="@(!success)">
-                        REGISTRAR MATERIA
+                        }
+                        else
+                        {
+                            <MudSelectItem T="string" Value="@string.Empty" Disabled="true">Cargando cursos...</MudSelectItem>
+                        }
+                    </MudSelect>
+                    
+                    <MudTextField T="string" @bind-Value="nuevaMateria.Nombre" Label="Nombre de la Materia (Ej. Matemáticas)" Required="true" RequiredError="El nombre es obligatorio" Variant="Variant.Outlined" Class="modern-input mb-4" />
+                    
+                    <MudTextField T="string" @bind-Value="nuevaMateria.Profesor" Label="Profesor Titular" Required="true" RequiredError="Asigna un profesor" Variant="Variant.Outlined" Class="modern-input mb-8" />
+                    
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" OnClick="GuardarMateria" Disabled="@(!success)" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                        Registrar Materia
                     </MudButton>
-                </MudCardActions>
-            </MudCard>
+                </MudForm>
+            </MudPaper>
         </MudItem>
 
+        <!-- COLUMNA DERECHA: Catálogo / Tabla -->
         <MudItem xs="12" md="8">
             @if (isLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4 rounded-lg" />
             }
             else
             {
-                <div class="fade-in-suave">
-                    <MudTable Items="@MateriasFiltradas" Hover="true" Striped="true" Elevation="3" Class="rounded-lg">
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudTable T="Materia" Items="@MateriasFiltradas" Hover="true" Elevation="0" Class="modern-table">
                         <ToolBarContent>
-                            <MudText Typo="Typo.h6">Catálogo Activo</MudText>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Catálogo Activo</MudText>
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Placeholder="Buscar por materia o profesor..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Immediate="true"></MudTextField>
+                            <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por materia o profesor..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 modern-input" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" Clearable="true"></MudTextField>
                         </ToolBarContent>
                         <HeaderContent>
-                            <MudTh>Curso</MudTh>
-                            <MudTh>Materia</MudTh>
-                            <MudTh>Profesor Asignado</MudTh>
-                            <MudTh Style="text-align:center;">Acciones</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Materia</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Profesor Asignado</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:center;">Acciones</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                            <MudTd DataLabel="Curso">
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">
                                     @(ObtenerNombreCurso(context.CursoId))
                                 </MudChip>
                             </MudTd>
-                            <MudTd><b>@context.Nombre</b></MudTd>
-                            <MudTd>@context.Profesor</MudTd>
-                            <MudTd Style="text-align:center;">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => BorrarMateria(context))" />
+                            <MudTd DataLabel="Materia">
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Nombre</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Profesor">
+                                <MudText Typo="Typo.body2">@context.Profesor</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Acciones" Style="text-align:center;">
+                                <MudTooltip Text="Eliminar Materia" Arrow="true" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => BorrarMateria(context))" />
+                                </MudTooltip>
                             </MudTd>
                         </RowTemplate>
                         <NoRecordsContent>
-                            <MudText Align="Align.Center" Class="pa-4">No se encontraron materias registradas.</MudText>
+                            <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                                <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Default" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
+                                <MudText Typo="Typo.h6" Class="mb-1 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Aún no hay materias</MudText>
+                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">No se encontraron materias registradas o que coincidan con tu búsqueda.</MudText>
+                            </div>
                         </NoRecordsContent>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" RowsPerPageString="Materias por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                        </PagerContent>
                     </MudTable>
-                </div>
+                </MudPaper>
             }
         </MudItem>
     </MudGrid>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private MudForm form = default!;
