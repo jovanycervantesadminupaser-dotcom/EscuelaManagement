@@ -11,198 +11,252 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="MudBlazor.Color.Primary">Módulo de Credenciales</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Módulo de Credenciales</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+    </div>
 
-    <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="MudBlazor.Color.Primary">
+    <!-- TABS CON ESTILO PLANO -->
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Style="border-bottom: 1px solid var(--mud-palette-lines-default);">
         
         @* --- PESTAÑA 1: EMISIÓN INDIVIDUAL --- *@
-        <MudTabPanel Text="Emisión Individual" Icon="@Icons.Material.Filled.Badge" Class="pa-6">
-            <MudGrid>
-                <MudItem xs="12" md="6">
-                    <MudAutocomplete T="Student" Label="1. Seleccionar Alumno" Value="selectedStudent" ValueChanged="OnStudentSelected"
-                                     SearchFunc="@SearchStudents" ToStringFunc="@DisplayAlumno"
-                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Clearable="true"/>
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="cursoInput" Label="Curso Asignado (Automático)" Variant="Variant.Outlined" ReadOnly="true"/>
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="matriculaInput" Label="Matrícula" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="vigenciaInput" Label="Vigencia" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="directorInput" Label="Nombre del Director" Variant="Variant.Outlined" />
-                </MudItem>
-            </MudGrid>
-            <MudDivider Class="my-6" />
-            <div class="d-flex justify-end">
-                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Large" StartIcon="@Icons.Material.Filled.Download" OnClick="GenerarPDF" Disabled="@(selectedStudent == null)">
-                    DESCARGAR PDF PVC
-                </MudButton>
+        <MudTabPanel Text="Emisión Individual" Icon="@Icons.Material.Filled.Badge">
+            <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudAutocomplete T="Student" Label="1. Seleccionar Alumno" Value="selectedStudent" ValueChanged="OnStudentSelected"
+                                         SearchFunc="@SearchStudents" ToStringFunc="@DisplayAlumno"
+                                         Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Clearable="true" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" @bind-Value="cursoInput" Label="Curso Asignado (Automático)" Variant="Variant.Outlined" ReadOnly="true" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField T="string" @bind-Value="matriculaInput" Label="Matrícula" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField T="string" @bind-Value="vigenciaInput" Label="Vigencia" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField T="string" @bind-Value="directorInput" Label="Nombre del Director" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                </MudGrid>
+                
+                <MudDivider Class="my-6" Style="opacity: 0.5;" />
+                
+                <div class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Download" OnClick="GenerarPDF" Disabled="@(selectedStudent == null)" Class="rounded-lg font-weight-bold px-8" Style="text-transform: none;">
+                        Descargar PDF PVC
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </MudTabPanel>
+
+        @* --- PESTAÑA 2: EMISIÓN EN LOTE --- *@
+        <MudTabPanel Text="Emisión en Lote" Icon="@Icons.Material.Filled.PeopleAlt">
+            <div class="fade-in-suave">
+                <MudAlert Severity="Severity.Info" Class="mb-6 rounded-lg" Elevation="0" Style="border: 1px solid var(--mud-palette-info);">
+                    El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) con todos los encabezados (Curso, Vigencia, Director).
+                </MudAlert>
+
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg mb-6" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="string" Label="Filtrar por Curso" @bind-Value="filterCourseIdLote" Variant="Variant.Outlined" Clearable="true" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var curso in listaCursos) 
+                                { 
+                                    <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudTable T="AlumnoCredencialVM" Items="@AlumnosFiltradosLote" MultiSelection="true" @bind-SelectedItems="alumnosSeleccionados" Hover="true" Elevation="0" Class="modern-table">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Alumnos Disponibles para Imprimir</MudText>
+                            <MudSpacer />
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" Disabled="@(!alumnosSeleccionados.Any() || generandoPdfLote)" OnClick="GenerarPDFLote" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                                @if (generandoPdfLote)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
+                                    <span>Procesando...</span>
+                                }
+                                else
+                                {
+                                    <span>Generar @alumnosSeleccionados.Count() Credenciales</span>
+                                }
+                            </MudButton>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Foto</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre del Alumno</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Foto">
+                                @if (!string.IsNullOrEmpty(context.Student.PhotoBase64))
+                                {
+                                    <MudAvatar Size="Size.Medium" Class="rounded-lg">
+                                        <MudImage Src="@context.Student.PhotoBase64" ObjectFit="ObjectFit.Cover" Width="40" Height="40" />
+                                    </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudAvatar Color="Color.Primary" Size="Size.Medium" Class="rounded-lg">@((context.Student.Name ?? "U").Substring(0, 1))</MudAvatar>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Nombre">
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Student.Name @context.Student.PaternalLastName</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Curso">
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">@context.CourseName</MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                                <MudIcon Icon="@Icons.Material.Filled.GroupOff" Color="Color.Default" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
+                                <MudText Typo="Typo.h6" Class="mb-1 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin resultados</MudText>
+                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">No se encontraron alumnos con los filtros actuales.</MudText>
+                            </div>
+                        </NoRecordsContent>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" RowsPerPageString="Filas:" />
+                        </PagerContent>
+                    </MudTable>
+                </MudPaper>
             </div>
         </MudTabPanel>
 
-        @* --- PESTAÑA 2: EMISIÓN EN LOTE (HORIZONTAL) --- *@
-        <MudTabPanel Text="Emisión en Lote" Icon="@Icons.Material.Filled.PeopleAlt" Class="pa-6">
-            <MudAlert Severity="Severity.Info" Class="mb-4">
-                El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) con todos los encabezados (Curso, Vigencia, Director).
-            </MudAlert>
-
-            <MudGrid Class="mb-4">
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSelect T="string" Label="Filtrar por Curso" @bind-Value="filterCourseIdLote" Variant="Variant.Outlined" Clearable="true">
-                        @foreach (var curso in listaCursos) 
-                        { 
-                            <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
-                        }
-                    </MudSelect>
-                </MudItem>
-            </MudGrid>
-
-            <MudTable T="AlumnoCredencialVM" Items="@AlumnosFiltradosLote" MultiSelection="true" @bind-SelectedItems="alumnosSeleccionados" Hover="true" Striped="true" Elevation="1">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Alumnos Disponibles para Imprimir</MudText>
-                    <MudSpacer />
-                    <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Success" StartIcon="@Icons.Material.Filled.Print" Disabled="@(!alumnosSeleccionados.Any() || generandoPdfLote)" OnClick="GenerarPDFLote">
-                        @if (generandoPdfLote)
-                        {
-                            <MudProgressCircular Size="MudBlazor.Size.Small" Indeterminate="true" Class="mr-2"/>
-                            <span>PROCESANDO...</span>
-                        }
-                        else
-                        {
-                            <span>GENERAR @alumnosSeleccionados.Count() CREDENCIALES</span>
-                        }
-                    </MudButton>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Foto</MudTh>
-                    <MudTh>Nombre del Alumno</MudTh>
-                    <MudTh>Curso</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Foto">
-                        @if (!string.IsNullOrEmpty(context.Student.PhotoBase64))
-                        {
-                            <MudAvatar Size="MudBlazor.Size.Medium">
-                                <MudImage Src="@context.Student.PhotoBase64" ObjectFit="ObjectFit.Cover" Width="40" Height="40" />
-                            </MudAvatar>
-                        }
-                        else
-                        {
-                            <MudAvatar Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Medium">@((context.Student.Name ?? "U").Substring(0, 1))</MudAvatar>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Nombre"><b>@context.Student.Name @context.Student.PaternalLastName</b></MudTd>
-                    <MudTd DataLabel="Curso">
-                        <MudChip T="string" Color="MudBlazor.Color.Info" Size="MudBlazor.Size.Small">@context.CourseName</MudChip>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText Align="Align.Center" Class="pa-4">No se encontraron alumnos con los filtros actuales.</MudText>
-                </NoRecordsContent>
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" RowsPerPageString="Filas:" />
-                </PagerContent>
-            </MudTable>
-        </MudTabPanel>
-
-        @* --- PESTAÑA 3: DISEÑADOR (HORIZONTAL 86x54 mm) --- *@
-        <MudTabPanel Text="Configurar Plantilla" Icon="@Icons.Material.Filled.Architecture" Class="pa-6">
-            <MudGrid>
-                <MudItem xs="12" md="3">
-                    <MudText Typo="Typo.h6" Class="mb-4" Color="MudBlazor.Color.Secondary">Calibración (mm)</MudText>
-                    
-                    <MudExpansionPanels MultiExpansion="true">
-                        <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true">
-                            <MudNumericField @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
+        @* --- PESTAÑA 3: DISEÑADOR --- *@
+        <MudTabPanel Text="Configurar Plantilla" Icon="@Icons.Material.Filled.Architecture">
+            <MudGrid Class="fade-in-suave">
+                <!-- COLUMNA IZQUIERDA: Formulario de Calibración -->
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Calibración (mm)</MudText>
                         
-                        <MudExpansionPanel Text="Textos Frente">
-                            <MudNumericField @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
+                        <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                            <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true" Class="font-weight-bold">
+                                <MudNumericField T="float" @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                            </MudExpansionPanel>
+                            
+                            <MudExpansionPanel Text="Textos Frente" Class="font-weight-bold">
+                                <MudNumericField T="float" @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                            </MudExpansionPanel>
 
-                        <MudExpansionPanel Text="Reverso (Firma)">
-                            <MudNumericField @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            <MudNumericField @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
+                            <MudExpansionPanel Text="Reverso (Firma)" Class="font-weight-bold">
+                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
 
-                    <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Success" Class="mt-4 w-100 py-3" StartIcon="@Icons.Material.Filled.Save" OnClick="GuardarDiseno">
-                        GUARDAR DISEÑO
-                    </MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-8 w-100 py-3 rounded-lg font-weight-bold" StartIcon="@Icons.Material.Filled.Save" Style="text-transform: none;" OnClick="GuardarDiseno">
+                            Guardar Diseño
+                        </MudButton>
+                    </MudPaper>
                 </MudItem>
 
-                <MudItem xs="12" md="9">
-                    <MudGrid>
-                        @* VISTA PREVIA ANVERSO *@
-                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
-                            <MudText Typo="Typo.button" Class="mb-2">ANVERSO (FRENTE)</MudText>
-                            <div class="credencial-preview" style="width: 325px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
-                                @if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
-                                {
-                                    <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
-                                }
+                <!-- COLUMNA DERECHA: Vista Previa -->
+                <MudItem xs="12" md="8">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg h-100" Style="border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);">
+                        <MudGrid>
+                            @* VISTA PREVIA ANVERSO *@
+                            <MudItem xs="12" lg="6" Class="d-flex flex-column align-center">
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">ANVERSO (FRENTE)</MudText>
                                 
-                                @* Marco de la foto *@
-                                <div style="position: absolute; left: @(diseno.FotoX * 3.78)px; top: @(diseno.FotoY * 3.78)px; width: @(diseno.FotoW * 3.78)px; height: @(diseno.FotoH * 3.78)px; border: 1px dashed red; background: rgba(255,0,0,0.1); z-index: 5;"></div>
-                                
-                                @* Bloque Nombre Completo *@
-                                <div style="position: absolute; left: @(diseno.NombreX * 3.78)px; top: @(diseno.NombreY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
-                                    <span style="font-size: 8px; color: #003366; font-weight: bold; line-height: 1.2;">ALUMNO(A):</span>
-                                    <span style="font-size: 12px; color: black; font-weight: bold; line-height: 1.1;">NOMBRE DEL ALUMNO</span>
+                                <div class="credencial-preview elevation-3" style="width: 325px; height: 204px; position: relative; border-radius: 8px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
+                                    @if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
+                                    {
+                                        <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
+                                    }
+                                    
+                                    @* Marco de la foto *@
+                                    <div style="position: absolute; left: @(diseno.FotoX * 3.78)px; top: @(diseno.FotoY * 3.78)px; width: @(diseno.FotoW * 3.78)px; height: @(diseno.FotoH * 3.78)px; border: 2px dashed #FF4842; background: rgba(255,72,66,0.15); z-index: 5; border-radius: 4px;"></div>
+                                    
+                                    @* Bloque Nombre Completo *@
+                                    <div style="position: absolute; left: @(diseno.NombreX * 3.78)px; top: @(diseno.NombreY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
+                                        <span style="font-size: 8px; color: #003366; font-weight: bold; line-height: 1.2;">ALUMNO(A):</span>
+                                        <span style="font-size: 12px; color: black; font-weight: bold; line-height: 1.1;">NOMBRE DEL ALUMNO</span>
+                                    </div>
+                                    
+                                    @* Bloque Detalles *@
+                                    <div style="position: absolute; left: @(diseno.MatriculaX * 3.78)px; top: @(diseno.MatriculaY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
+                                        <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">MATRÍCULA:</span> 123456</span>
+                                        <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">CURSO:</span> CURSO ASIGNADO</span>
+                                        <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">VIGENCIA:</span> @vigenciaInput</span>
+                                    </div>
                                 </div>
                                 
-                                @* Bloque Detalles (Matrícula, Curso, Vigencia) *@
-                                <div style="position: absolute; left: @(diseno.MatriculaX * 3.78)px; top: @(diseno.MatriculaY * 3.78)px; z-index: 5; display: flex; flex-direction: column;">
-                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">MATRÍCULA:</span> 123456</span>
-                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">CURSO:</span> CURSO ASIGNADO</span>
-                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.3;"><span style="color: #003366;">VIGENCIA:</span> @vigenciaInput</span>
-                                </div>
-                            </div>
-                            <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR ANVERSO</MudButton>
-                            <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
-                        </MudItem>
+                                <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-4 rounded-lg font-weight-bold" Style="text-transform: none;">Cargar Anverso</MudButton>
+                                <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
+                            </MudItem>
 
-                        @* VISTA PREVIA REVERSO *@
-                        <MudItem xs="12" md="6" Class="d-flex flex-column align-center">
-                            <MudText Typo="Typo.button" Class="mb-2">REVERSO (ATRÁS)</MudText>
-                            <div class="credencial-preview" style="width: 325px; height: 204px; position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white;">
-                                @if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
-                                {
-                                    <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
-                                }
+                            @* VISTA PREVIA REVERSO *@
+                            <MudItem xs="12" lg="6" Class="d-flex flex-column align-center mt-8 mt-lg-0">
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">REVERSO (ATRÁS)</MudText>
                                 
-                                @* Línea y Firma del Director *@
-                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @(diseno.FirmaLineaY * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; height: 1px; background: black; z-index: 5;"></div>
-                                <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @((diseno.FirmaLineaY + 1) * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; text-align: center; z-index: 5; display: flex; flex-direction: column;">
-                                    <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.2;">@directorInput</span>
-                                    <span style="font-size: 7px; color: black; line-height: 1;">DIRECTOR DEL PLANTEL</span>
+                                <div class="credencial-preview elevation-3" style="width: 325px; height: 204px; position: relative; border-radius: 8px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
+                                    @if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
+                                    {
+                                        <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
+                                    }
+                                    
+                                    @* Línea y Firma del Director *@
+                                    <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @(diseno.FirmaLineaY * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; height: 1.5px; background: black; z-index: 5;"></div>
+                                    <div style="position: absolute; left: @(diseno.FirmaLineaX * 3.78)px; top: @((diseno.FirmaLineaY + 1) * 3.78)px; width: @(diseno.FirmaLineaW * 3.78)px; text-align: center; z-index: 5; display: flex; flex-direction: column;">
+                                        <span style="font-size: 9px; color: black; font-weight: bold; line-height: 1.2;">@directorInput</span>
+                                        <span style="font-size: 7px; color: black; line-height: 1;">DIRECTOR DEL PLANTEL</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-3">CARGAR REVERSO</MudButton>
-                            <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
-                        </MudItem>
-                    </MudGrid>
+                                
+                                <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-4 rounded-lg font-weight-bold" Style="text-transform: none;">Cargar Reverso</MudButton>
+                                <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
                 </MudItem>
             </MudGrid>
         </MudTabPanel>
     </MudTabs>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private List<Student> listaAlumnos = new();
