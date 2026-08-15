@@ -1,111 +1,169 @@
 ﻿@page "/inicio"
 @using MudBlazor
-@using EscuelaManagement.Data.Services
+@using System.Text.Json
 @using System.Globalization
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@inject FirebaseService Firebase
 @inject UserSessionService UserSession
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
     
     <!-- BANNER DE BIENVENIDA (HERO SECTION) -->
-    <MudPaper Elevation="0" Class="pa-8 mb-10 rounded-xl d-flex flex-wrap align-center justify-space-between fade-in-suave" Style="background-color: var(--mud-palette-primary); color: white;">
+    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xl d-flex flex-wrap align-center justify-space-between fade-in-suave" Style="background-color: var(--mud-palette-primary); color: white;">
         <div>
-            <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">¡Hola, @UserSession.Nombre!</MudText>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">
+                ¡Hola, @(string.IsNullOrWhiteSpace(UserSession.Nombre) ? "Bienvenido" : UserSession.Nombre)!
+            </MudText>
             <MudText Typo="Typo.body1" Style="opacity: 0.85;" Class="mb-2">Bienvenido a tu panel de control central. Aquí tienes tu resumen operativo.</MudText>
             <MudText Typo="Typo.caption" Class="font-weight-bold" Style="opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">@fechaActual</MudText>
         </div>
         <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Style="font-size: 7rem; opacity: 0.15;" Class="d-none d-sm-flex" />
     </MudPaper>
 
+    <!-- CONTROL DE EDICIÓN Y GUARDADO -->
+    <div class="d-flex justify-end mb-4 fade-in-suave">
+        <MudButton Variant="@(isEditMode ? Variant.Filled : Variant.Outlined)" 
+                   Color="@(isEditMode ? Color.Success : Color.Default)" 
+                   StartIcon="@(isEditMode ? Icons.Material.Filled.Save : Icons.Material.Filled.Edit)" 
+                   OnClick="ToggleEditMode"
+                   Class="rounded-lg font-weight-bold px-6" 
+                   Style="text-transform: none;">
+            @(isEditMode ? "Guardar Panel" : "Editar Panel")
+        </MudButton>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MÓDULOS DE GESTIÓN -->
+    <!-- ============================================== -->
     <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Módulos de Gestión</MudText>
     
-    <!-- Fila de Tarjetas (Navegación / KPIs) -->
     <MudGrid Class="mb-10 fade-in-suave">
-        
-        @* --- 1. DIRECTORIO --- *@
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
-                <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1); color: var(--mud-palette-primary);" Class="mb-4 rounded-lg">
-                    <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Size="Size.Medium" />
-                </MudAvatar>
-                <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Directorio</MudText>
-                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Consulta y gestión general de expedientes de alumnos.</MudText>
-            </MudPaper>
-        </MudItem>
-
-        @* --- VALIDACIÓN DE ROLES --- *@
-        @if (UserSession.EsControlEscolar)
+        @foreach (var modulo in ModulosGestion.Where(m => !m.SoloAdmin || UserSession.EsControlEscolar))
         {
-            @* --- 2. INSCRIPCIONES --- *@
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
-                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success);" Class="mb-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.HowToReg" Size="Size.Medium" />
+            <MudItem xs="12" sm="6" md="3" Style="position: relative;">
+                @if (isEditMode)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" Class="eliminar-btn" OnClick="() => RemoveCard(modulo, true)" />
+                }
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick="() => NavigateIfNormal(modulo.Ruta)">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="@($"background-color: rgba(var(--mud-palette-{modulo.ColorBase}-rgb), 0.1); color: var(--mud-palette-{modulo.ColorBase});")" Class="mb-4 rounded-lg">
+                        <MudIcon Icon="@modulo.Icono" Size="Size.Medium" />
                     </MudAvatar>
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Inscripciones</MudText>
-                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Registra nuevos ingresos y matriculaciones al plantel.</MudText>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">@modulo.Titulo</MudText>
+                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">@modulo.Descripcion</MudText>
                 </MudPaper>
             </MudItem>
-
-            @* --- 3. CURSOS ACTIVOS --- *@
+        }
+        
+        <!-- BOTÓN AGREGAR MÓDULO -->
+        @if (isEditMode)
+        {
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/cursos")'>
-                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning);" Class="mb-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Medium" />
-                    </MudAvatar>
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Cursos Activos</MudText>
-                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Administración de materias, grupos y profesores.</MudText>
-                </MudPaper>
-            </MudItem>
-
-            @* --- 4. CONTROL DE PAGOS --- *@
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/pagos")'>
-                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="mb-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Size="Size.Medium" />
-                    </MudAvatar>
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Control de Pagos</MudText>
-                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Ingresos, recibos y estatus financiero de los alumnos.</MudText>
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-center justify-center rounded-xl cursor-pointer h-100 modern-add-card" @onclick="() => OpenAddDialog(true)">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 3rem; color: var(--mud-palette-text-secondary);" Class="mb-2" />
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Agregar Módulo</MudText>
                 </MudPaper>
             </MudItem>
         }
     </MudGrid>
 
-    <!-- Sección de Accesos Rápidos -->
+    <!-- ============================================== -->
+    <!-- ACCESOS RÁPIDOS -->
+    <!-- ============================================== -->
     <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Accesos Rápidos</MudText>
     
-    <MudGrid Class="fade-in-suave">
-        @if (UserSession.EsControlEscolar)
+    <MudGrid Class="fade-in-suave mb-10">
+        @foreach (var acceso in AccesosRapidos.Where(a => !a.SoloAdmin || UserSession.EsControlEscolar))
         {
-            <MudItem xs="12" sm="6" md="4">
-                <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center cursor-pointer modern-action-card" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
-                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" Class="mr-4" Style="font-size: 2rem;" />
+            <MudItem xs="12" sm="6" md="4" Style="position: relative;">
+                @if (isEditMode)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" Class="eliminar-btn" OnClick="() => RemoveCard(acceso, false)" />
+                }
+                <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center modern-action-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick="() => NavigateIfNormal(acceso.Ruta)">
+                    <MudIcon Icon="@acceso.Icono" Class="mr-4" Style="@($"font-size: 2rem; color: var(--mud-palette-{acceso.ColorBase});")" />
                     <div>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Nueva Inscripción</MudText>
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Ir al formulario de alta</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@acceso.Titulo</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@acceso.Descripcion</MudText>
                     </div>
                 </MudPaper>
             </MudItem>
         }
         
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center cursor-pointer modern-action-card" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
-                <MudIcon Icon="@Icons.Material.Filled.FolderShared" Color="Color.Secondary" Class="mr-4" Style="font-size: 2rem;" />
-                <div>
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Consultar Expedientes</MudText>
-                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Buscar historial de alumnos</MudText>
-                </div>
-            </MudPaper>
-        </MudItem>
+        <!-- BOTÓN AGREGAR ACCESO RÁPIDO -->
+        @if (isEditMode)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center justify-center cursor-pointer h-100 modern-add-card" @onclick="() => OpenAddDialog(false)">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 2rem; color: var(--mud-palette-text-secondary);" Class="mr-3" />
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Agregar Acceso</MudText>
+                </MudPaper>
+            </MudItem>
+        }
     </MudGrid>
 
 </MudContainer>
 
+<!-- ============================================== -->
+<!-- DIÁLOGO PARA AGREGAR TARJETAS -->
+<!-- ============================================== -->
+<MudDialog @bind-Visible="isAddDialogOpen" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">
+            @(addingToModulo ? "Nuevo Módulo de Gestión" : "Nuevo Acceso Rápido")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="form" Class="pa-2">
+            <MudTextField T="string" @bind-Value="newCard.Titulo" Label="Título" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+            <MudTextField T="string" @bind-Value="newCard.Descripcion" Label="Descripción breve" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+            <MudTextField T="string" @bind-Value="newCard.Ruta" Label="Ruta (Ej. /cursos, /asistencia)" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+            
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudSelect T="string" @bind-Value="newCard.ColorBase" Label="Color del botón" Variant="Variant.Outlined" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem T="string" Value="@("primary")">Azul Institucional</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("success")">Verde Éxito</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("warning")">Naranja Alerta</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("error")">Rojo Peligro</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("info")">Celeste Info</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("secondary")">Secundario</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSelect T="string" @bind-Value="newCard.Icono" Label="Seleccionar Ícono" Variant="Variant.Outlined" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var icon in availableIcons)
+                        {
+                            <MudSelectItem T="string" Value="@icon.Value">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@icon.Value" Size="Size.Small" Class="mr-2" />
+                                    @icon.Key
+                                </div>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+            
+            <MudSwitch T="bool" @bind-Value="newCard.SoloAdmin" Color="Color.Primary" Class="mt-4">
+                Mostrar este botón únicamente a Administradores / Control Escolar.
+            </MudSwitch>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => isAddDialogOpen = false" Variant="Variant.Text" Class="rounded-lg font-weight-bold">Cancelar</MudButton>
+        <MudButton OnClick="SaveCard" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-lg font-weight-bold px-6">Agregar Botón</MudButton>
+    </DialogActions>
+</MudDialog>
+
 <style>
-    /* Efecto de tarjetas principales */
     .modern-card {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         background-color: var(--mud-palette-background-grey);
+        cursor: pointer;
     }
     .modern-card:hover {
         transform: translateY(-5px);
@@ -113,30 +171,175 @@
         background-color: var(--mud-palette-surface);
         border-color: var(--mud-palette-primary) !important;
     }
-
-    /* Efecto de tarjetas de acceso rápido */
     .modern-action-card {
         transition: all 0.2s ease-in-out;
+        cursor: pointer;
     }
     .modern-action-card:hover {
         background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
         border-color: var(--mud-palette-primary) !important;
     }
+    .modern-add-card {
+        border: 2px dashed var(--mud-palette-lines-default);
+        background-color: transparent;
+        transition: all 0.2s ease;
+    }
+    .modern-add-card:hover {
+        border-color: var(--mud-palette-primary);
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.03);
+    }
+    .eliminar-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 10;
+        background-color: var(--mud-palette-surface);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .eliminar-btn:hover {
+        background-color: var(--mud-palette-error);
+        color: white !important;
+    }
+    .modern-input .mud-input-outlined-border { border-color: var(--mud-palette-lines-default) !important; }
+    .modern-input .mud-input { background-color: var(--mud-palette-background-grey) !important; border-radius: 8px !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-width: 2px !important; border-color: var(--mud-palette-primary) !important; }
 </style>
 
 @code {
     private string fechaActual = "";
+    private bool isEditMode = false;
+    private ConfiguracionEscuela appConfig = new();
+    
+    // Variables para el diálogo de agregar
+    private bool isAddDialogOpen = false;
+    private bool addingToModulo = true;
+    private TarjetaDashboard newCard = new();
+    private MudForm form = default!;
+    
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
 
-    protected override void OnInitialized()
+    public class TarjetaDashboard
     {
-        // Genera la fecha actual en un formato elegante: "Sábado, 15 de agosto de 2026"
+        public string Titulo { get; set; } = "";
+        public string Descripcion { get; set; } = "";
+        public string Icono { get; set; } = "";
+        public string ColorBase { get; set; } = "primary"; 
+        public string Ruta { get; set; } = "";
+        public bool SoloAdmin { get; set; }
+    }
+
+    // Listas por defecto (Se usarán si Firebase está vacío)
+    private List<TarjetaDashboard> ModulosGestion = new()
+    {
+        new TarjetaDashboard { Titulo = "Directorio", Descripcion = "Consulta y gestión general de expedientes de alumnos.", Icono = Icons.Material.Filled.PeopleAlt, ColorBase = "primary", Ruta = "/alumnos", SoloAdmin = false },
+        new TarjetaDashboard { Titulo = "Inscripciones", Descripcion = "Registra nuevos ingresos y matriculaciones al plantel.", Icono = Icons.Material.Filled.HowToReg, ColorBase = "success", Ruta = "/inscripciones", SoloAdmin = true },
+        new TarjetaDashboard { Titulo = "Cursos Activos", Descripcion = "Administración de materias, grupos y profesores.", Icono = Icons.Material.Filled.MenuBook, ColorBase = "warning", Ruta = "/cursos", SoloAdmin = true },
+        new TarjetaDashboard { Titulo = "Control de Pagos", Descripcion = "Ingresos, recibos y estatus financiero de los alumnos.", Icono = Icons.Material.Filled.RequestQuote, ColorBase = "error", Ruta = "/pagos", SoloAdmin = true }
+    };
+
+    private List<TarjetaDashboard> AccesosRapidos = new()
+    {
+        new TarjetaDashboard { Titulo = "Nueva Inscripción", Descripcion = "Ir al formulario de alta", Icono = Icons.Material.Filled.PersonAdd, ColorBase = "primary", Ruta = "/inscripciones", SoloAdmin = true },
+        new TarjetaDashboard { Titulo = "Consultar Expedientes", Descripcion = "Buscar historial de alumnos", Icono = Icons.Material.Filled.FolderShared, ColorBase = "secondary", Ruta = "/alumnos", SoloAdmin = false }
+    };
+
+    private Dictionary<string, string> availableIcons = new()
+    {
+        { "Personas / Alumnos", Icons.Material.Filled.PeopleAlt },
+        { "Inscripción / Registro", Icons.Material.Filled.HowToReg },
+        { "Libros / Cursos", Icons.Material.Filled.MenuBook },
+        { "Dinero / Pagos", Icons.Material.Filled.RequestQuote },
+        { "Agregar Persona", Icons.Material.Filled.PersonAdd },
+        { "Carpeta / Expediente", Icons.Material.Filled.FolderShared },
+        { "Calendario / Asistencia", Icons.Material.Filled.CalendarMonth },
+        { "Estrella / Calificaciones", Icons.Material.Filled.Star },
+        { "Impresora / Reportes", Icons.Material.Filled.Print },
+        { "Gráficas / Ventas", Icons.Material.Filled.BarChart },
+        { "Credenciales", Icons.Material.Filled.Badge },
+        { "Configuración", Icons.Material.Filled.Settings },
+        { "Enlace / Web", Icons.Material.Filled.Link }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
         var cultura = new CultureInfo("es-ES");
         var fecha = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
-        
-        // Capitalizar la primera letra
-        if (!string.IsNullOrEmpty(fecha))
+        if (!string.IsNullOrEmpty(fecha)) fechaActual = char.ToUpper(fecha[0]) + fecha.Substring(1);
+
+        // Cargar desde Firebase
+        try
         {
-            fechaActual = char.ToUpper(fecha[0]) + fecha.Substring(1);
+            appConfig = await Firebase.GetConfiguracionAsync() ?? new();
+
+            if (!string.IsNullOrEmpty(appConfig.ModulosDashboardJson))
+            {
+                ModulosGestion = JsonSerializer.Deserialize<List<TarjetaDashboard>>(appConfig.ModulosDashboardJson) ?? ModulosGestion;
+            }
+            
+            if (!string.IsNullOrEmpty(appConfig.AccesosDashboardJson))
+            {
+                AccesosRapidos = JsonSerializer.Deserialize<List<TarjetaDashboard>>(appConfig.AccesosDashboardJson) ?? AccesosRapidos;
+            }
+        }
+        catch (Exception) { /* Usará las listas por defecto en caso de error */ }
+    }
+
+    // ==========================================================
+    // LÓGICA DE EDICIÓN, GUARDADO EN FIREBASE Y NAVEGACIÓN
+    // ==========================================================
+    private async Task ToggleEditMode()
+    {
+        if (isEditMode)
+        {
+            // Apagando el modo edición -> Guardar en Firebase
+            try
+            {
+                appConfig.ModulosDashboardJson = JsonSerializer.Serialize(ModulosGestion);
+                appConfig.AccesosDashboardJson = JsonSerializer.Serialize(AccesosRapidos);
+                
+                // NOTA: Asegúrate de usar el método que tengas en tu FirebaseService para actualizar Configuración
+                await Firebase.SaveConfiguracionAsync(appConfig); 
+                Snackbar.Add("Panel guardado correctamente en la base de datos.", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al guardar en la nube: {ex.Message}", Severity.Error);
+            }
+        }
+        
+        isEditMode = !isEditMode;
+    }
+
+    private void NavigateIfNormal(string ruta)
+    {
+        if (!isEditMode && !string.IsNullOrEmpty(ruta))
+        {
+            NavigationManager.NavigateTo(ruta);
+        }
+    }
+
+    private void RemoveCard(TarjetaDashboard card, bool isModulo)
+    {
+        if (isModulo) ModulosGestion.Remove(card);
+        else AccesosRapidos.Remove(card);
+    }
+
+    private void OpenAddDialog(bool isModulo)
+    {
+        addingToModulo = isModulo;
+        newCard = new TarjetaDashboard { ColorBase = "primary", Icono = Icons.Material.Filled.Dashboard, SoloAdmin = false };
+        isAddDialogOpen = true;
+    }
+
+    private async Task SaveCard()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            if (addingToModulo) ModulosGestion.Add(newCard);
+            else AccesosRapidos.Add(newCard);
+                
+            isAddDialogOpen = false;
         }
     }
 }

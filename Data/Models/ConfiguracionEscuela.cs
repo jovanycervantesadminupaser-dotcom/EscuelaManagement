@@ -16,5 +16,13 @@ namespace EscuelaManagement.Data.Models
 
         [FirestoreProperty]
         public string BackgroundLoginBase64 { get; set; } = "";
+
+        // --- Nuevas variables para el Dashboard Dinámico ---
+        
+        [FirestoreProperty]
+        public string ModulosDashboardJson { get; set; } = "";
+
+        [FirestoreProperty]
+        public string AccesosDashboardJson { get; set; } = "";
     }
 }
