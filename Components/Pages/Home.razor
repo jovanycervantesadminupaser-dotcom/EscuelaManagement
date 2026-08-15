@@ -1,31 +1,35 @@
 ﻿@page "/inicio"
 @using MudBlazor
 @using EscuelaManagement.Data.Services
+@using System.Globalization
 @inject UserSessionService UserSession
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
     
-    <!-- Encabezado de la página -->
-    <div class="mb-10">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Panel de Control</MudText>
-        <!-- Corregido: Usamos la variable de texto secundario en lugar del color de marca -->
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Bienvenido al sistema de gestión escolar, @UserSession.Nombre.</MudText>
-    </div>
+    <!-- BANNER DE BIENVENIDA (HERO SECTION) -->
+    <MudPaper Elevation="0" Class="pa-8 mb-10 rounded-xl d-flex flex-wrap align-center justify-space-between fade-in-suave" Style="background-color: var(--mud-palette-primary); color: white;">
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">¡Hola, @UserSession.Nombre!</MudText>
+            <MudText Typo="Typo.body1" Style="opacity: 0.85;" Class="mb-2">Bienvenido a tu panel de control central. Aquí tienes tu resumen operativo.</MudText>
+            <MudText Typo="Typo.caption" Class="font-weight-bold" Style="opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">@fechaActual</MudText>
+        </div>
+        <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Style="font-size: 7rem; opacity: 0.15;" Class="d-none d-sm-flex" />
+    </MudPaper>
 
+    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Módulos de Gestión</MudText>
+    
     <!-- Fila de Tarjetas (Navegación / KPIs) -->
-    <MudGrid Class="mb-10">
+    <MudGrid Class="mb-10 fade-in-suave">
         
         @* --- 1. DIRECTORIO --- *@
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
-                <MudAvatar Variant="Variant.Filled" Style="background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);" Class="mr-4 rounded-lg">
-                    <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
+            <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
+                <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1); color: var(--mud-palette-primary);" Class="mb-4 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Size="Size.Medium" />
                 </MudAvatar>
-                <div>
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Directorio</MudText>
-                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Gestión de alumnos</MudText>
-                </div>
+                <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Directorio</MudText>
+                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Consulta y gestión general de expedientes de alumnos.</MudText>
             </MudPaper>
         </MudItem>
 
@@ -34,92 +38,105 @@
         {
             @* --- 2. INSCRIPCIONES --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
-                    <MudAvatar Variant="Variant.Filled" Style="background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);" Class="mr-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.HowToReg" />
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success);" Class="mb-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.HowToReg" Size="Size.Medium" />
                     </MudAvatar>
-                    <div>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Inscripciones</MudText>
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Nuevos ingresos</MudText>
-                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Inscripciones</MudText>
+                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Registra nuevos ingresos y matriculaciones al plantel.</MudText>
                 </MudPaper>
             </MudItem>
 
             @* --- 3. CURSOS ACTIVOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/cursos")'>
-                    <MudAvatar Variant="Variant.Filled" Style="background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);" Class="mr-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" />
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/cursos")'>
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning);" Class="mb-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Medium" />
                     </MudAvatar>
-                    <div>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Cursos Activos</MudText>
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Materias y grupos</MudText>
-                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Cursos Activos</MudText>
+                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Administración de materias, grupos y profesores.</MudText>
                 </MudPaper>
             </MudItem>
 
             @* --- 4. CONTROL DE PAGOS --- *@
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-4 d-flex align-center rounded-lg cursor-pointer modern-card" @onclick='() => NavigationManager.NavigateTo("/pagos")'>
-                    <MudAvatar Variant="Variant.Filled" Style="background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);" Class="mr-4 rounded-lg">
-                        <MudIcon Icon="@Icons.Material.Filled.RequestQuote" />
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xl cursor-pointer modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/pagos")'>
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="mb-4 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Size="Size.Medium" />
                     </MudAvatar>
-                    <div>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold lh-1">Control de Pagos</MudText>
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Finanzas y saldos</MudText>
-                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Control de Pagos</MudText>
+                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Ingresos, recibos y estatus financiero de los alumnos.</MudText>
                 </MudPaper>
             </MudItem>
         }
     </MudGrid>
 
     <!-- Sección de Accesos Rápidos -->
-    <MudPaper Elevation="0" Class="pa-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
-        <MudText Typo="Typo.h6" Class="font-weight-bold mb-1">Accesos Rápidos</MudText>
-        <MudText Typo="Typo.body2" Class="mb-6" Style="color: var(--mud-palette-text-secondary);">Utiliza estos accesos para realizar las operaciones más comunes del día a día, o navega a través del menú lateral para ver los detalles completos.</MudText>
+    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Accesos Rápidos</MudText>
+    
+    <MudGrid Class="fade-in-suave">
+        @if (UserSession.EsControlEscolar)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center cursor-pointer modern-action-card" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/inscripciones")'>
+                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" Class="mr-4" Style="font-size: 2rem;" />
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Nueva Inscripción</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Ir al formulario de alta</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        }
         
-        <div class="d-flex flex-wrap gap-4">
-            
-            @if (UserSession.EsControlEscolar)
-            {
-                <MudButton Variant="Variant.Filled" 
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.PersonAdd" 
-                           DisableElevation="true"
-                           Href="/inscripciones"
-                           Class="rounded-lg px-6 py-2 font-weight-bold" 
-                           Style="text-transform: none; font-size: 14px;">
-                    Nueva Inscripción
-                </MudButton>
-            }
-            
-            <MudButton Variant="Variant.Outlined" 
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.FolderShared" 
-                       Href="/alumnos"
-                       Class="rounded-lg px-6 py-2 font-weight-bold" 
-                       Style="text-transform: none; font-size: 14px;">
-                Consultar Expedientes
-            </MudButton>
-        </div>
-    </MudPaper>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-xl d-flex align-center cursor-pointer modern-action-card" Style="border: 1px solid var(--mud-palette-lines-default);" @onclick='() => NavigationManager.NavigateTo("/alumnos")'>
+                <MudIcon Icon="@Icons.Material.Filled.FolderShared" Color="Color.Secondary" Class="mr-4" Style="font-size: 2rem;" />
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Consultar Expedientes</MudText>
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Buscar historial de alumnos</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 
 </MudContainer>
 
 <style>
+    /* Efecto de tarjetas principales */
     .modern-card {
-        transition: all 0.3s ease;
-        border: 1px solid transparent;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: var(--mud-palette-background-grey);
     }
-    
     .modern-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-        border: 1px solid var(--mud-palette-lines-default);
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
+        background-color: var(--mud-palette-surface);
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Efecto de tarjetas de acceso rápido */
+    .modern-action-card {
+        transition: all 0.2s ease-in-out;
+    }
+    .modern-action-card:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
+        border-color: var(--mud-palette-primary) !important;
     }
 </style>
 
 @code {
-    // Tu lógica de C# permanece intacta
+    private string fechaActual = "";
+
+    protected override void OnInitialized()
+    {
+        // Genera la fecha actual en un formato elegante: "Sábado, 15 de agosto de 2026"
+        var cultura = new CultureInfo("es-ES");
+        var fecha = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
+        
+        // Capitalizar la primera letra
+        if (!string.IsNullOrEmpty(fecha))
+        {
+            fechaActual = char.ToUpper(fecha[0]) + fecha.Substring(1);
+        }
+    }
 }
