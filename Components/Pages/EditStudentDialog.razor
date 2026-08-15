@@ -1,83 +1,145 @@
 @using MudBlazor
+@using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @using Google.Cloud.Firestore
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form">
-            <MudGrid>
-                <MudItem xs="12" Class="pb-0">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Datos Personales</b></MudText>
-                    <MudDivider />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Nombre(s)" @bind-Value="StudentToEdit.Name" Required="true" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Apellido Paterno" @bind-Value="StudentToEdit.PaternalLastName" Required="true" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
-                </MudItem>
-
-                <MudItem xs="12" Class="pb-0 mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Dirección</b></MudText>
-                    <MudDivider />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Calle" @bind-Value="StudentToEdit.Address!.Street" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="3">
-                    <MudTextField T="string" Label="Num. Ext/Int" @bind-Value="StudentToEdit.Address!.ExtNumber" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="3">
-                    <MudTextField T="string" Label="Código Postal" @bind-Value="StudentToEdit.Address!.ZipCode" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Colonia" @bind-Value="StudentToEdit.Address!.Neighborhood" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="StudentToEdit.Address!.Municipality" Variant="Variant.Outlined" />
-                </MudItem>
-
-                <MudItem xs="12" Class="pb-0 mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>Datos del Tutor (Contacto de Emergencia)</b></MudText>
-                    <MudDivider />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Nombre(s) del Tutor" @bind-Value="StudentToEdit.Guardian!.Name" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Apellidos" @bind-Value="StudentToEdit.Guardian!.PaternalLastName" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" Label="Parentesco" @bind-Value="StudentToEdit.Guardian!.Relationship" Variant="Variant.Outlined" />
-                </MudItem>
+        <MudContainer MaxWidth="MaxWidth.False" Class="px-6 pb-4">
+            <MudForm @ref="form" Class="fade-in-suave">
                 
-                @* --- AQUÍ SE AJUSTA EL TELÉFONO Y SE AGREGA EL CORREO --- *@
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Teléfono Tutor" @bind-Value="StudentToEdit.Guardian!.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Correo Electrónico" @bind-Value="StudentToEdit.Guardian!.Email" Variant="Variant.Outlined" InputType="InputType.Email" />
-                </MudItem>
-            </MudGrid>
-        </MudForm>
+                <!-- ZONA DE FOTOGRAFÍA -->
+                <MudPaper Elevation="0" Class="pa-6 mb-6 rounded-lg d-flex flex-column align-center" Style="border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">Fotografía del Alumno</MudText>
+                    
+                    @if (isCameraOpen)
+                    {
+                        <div class="fade-in-suave w-100 d-flex flex-column align-center">
+                            <video id="cameraVideoEdit" width="100%" style="max-width: 280px; border-radius: 8px; background-color: black; border: 1px solid var(--mud-palette-lines-default);" autoplay></video>
+                            <div class="mt-3 d-flex gap-3">
+                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-lg font-weight-bold" Style="text-transform: none; padding: 8px 16px;">Capturar</MudButton>
+                                <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold" Style="text-transform: none;">Cancelar</MudButton>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-center gap-4">
+                            @if (!string.IsNullOrEmpty(StudentToEdit.PhotoBase64))
+                            {
+                                <MudImage Src="@StudentToEdit.PhotoBase64" Width="120" Height="120" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);" />
+                            }
+                            else
+                            {
+                                <MudPaper Width="120px" Height="120px" Class="d-flex align-center justify-center rounded-lg fade-in-suave" Elevation="0" Style="border: 1px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
+                                </MudPaper>
+                            }
+                            
+                            <div class="d-flex gap-2">
+                                <MudButton HtmlTag="label" for="fileInputEdit" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Subir Archivo</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Usar Cámara</MudButton>
+                            </div>
+                            <InputFile id="fileInputEdit" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
+                        </div>
+                    }
+                </MudPaper>
+
+                <!-- DATOS PERSONALES -->
+                <MudPaper Elevation="0" Class="pa-6 mb-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">Datos Personales</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Nombre(s)" @bind-Value="StudentToEdit.Name" Required="true" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Apellido Paterno" @bind-Value="StudentToEdit.PaternalLastName" Required="true" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" Class="modern-input" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <!-- DIRECCIÓN -->
+                <MudPaper Elevation="0" Class="pa-6 mb-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">Dirección</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Calle" @bind-Value="StudentToEdit.Address!.Street" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField T="string" Label="Num. Ext/Int" @bind-Value="StudentToEdit.Address!.ExtNumber" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField T="string" Label="Código Postal" @bind-Value="StudentToEdit.Address!.ZipCode" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Colonia" @bind-Value="StudentToEdit.Address!.Neighborhood" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Municipio / Alcaldía" @bind-Value="StudentToEdit.Address!.Municipality" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <!-- DATOS DEL TUTOR -->
+                <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">Datos del Tutor (Contacto de Emergencia)</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Nombre(s) del Tutor" @bind-Value="StudentToEdit.Guardian!.Name" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Apellidos" @bind-Value="StudentToEdit.Guardian!.PaternalLastName" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Parentesco" @bind-Value="StudentToEdit.Guardian!.Relationship" Variant="Variant.Outlined" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Teléfono Tutor" @bind-Value="StudentToEdit.Guardian!.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" Class="modern-input" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Correo Electrónico" @bind-Value="StudentToEdit.Guardian!.Email" Variant="Variant.Outlined" InputType="InputType.Email" Class="modern-input" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+            </MudForm>
+        </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Guardar Cambios</MudButton>
+        <div class="px-6 pb-6 pt-2 w-100 d-flex justify-end gap-2">
+            <MudButton OnClick="Cancel" Variant="Variant.Text" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Cancelar</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">Guardar Cambios</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+</style>
 
 @code {
     [CascadingParameter] 
@@ -87,6 +149,7 @@
     public Student StudentToEdit { get; set; } = new();
 
     private MudForm form = default!;
+    private bool isCameraOpen = false;
 
     private DateTime? FechaNacimiento
     {
@@ -100,6 +163,55 @@
         StudentToEdit.Guardian ??= new();
     }
 
+    /* --- LÓGICA DE FOTOGRAFÍA --- */
+    private async Task AbrirCamara()
+    {
+        isCameraOpen = true;
+        StateHasChanged();
+        await Task.Delay(100); 
+        await JSRuntime.InvokeVoidAsync("cameraHelper.startCamera", "cameraVideoEdit");
+    }
+
+    private async Task CapturarFoto()
+    {
+        try
+        {
+            Snackbar.Add("Procesando imagen...", Severity.Info);
+            var base64 = await JSRuntime.InvokeAsync<string>("cameraHelper.takeSnapshot", "cameraVideoEdit");
+            StudentToEdit.PhotoBase64 = base64;
+            await CerrarCamara();
+            Snackbar.Add("¡Fotografía actualizada con éxito!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al tomar la foto: {ex.Message}", Severity.Error);
+            await CerrarCamara();
+        }
+    }
+
+    private async Task CerrarCamara()
+    {
+        await JSRuntime.InvokeVoidAsync("cameraHelper.stopCamera");
+        isCameraOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task UploadPhoto(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
+            
+            StudentToEdit.PhotoBase64 = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+            StateHasChanged();
+        }
+    }
+
+    /* --- GUARDAR EXPEDIENTE --- */
     private async Task Save()
     {
         await form.ValidateAsync();

@@ -1,22 +1,29 @@
 @page "/alumnos"
 @rendermode RenderMode.InteractiveServer
 @using MudBlazor
+@using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Gestión y Directorio de Alumnos</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Gestión y Directorio de Alumnos</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Consulta expedientes, edita información y administra el estatus de los alumnos en la institución.</MudText>
+    </div>
 
-    <MudCard Elevation="2" Class="mb-6 pa-4">
+    <!-- PANEL DE FILTROS -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="6">
-                <MudTextField T="string" @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..."/>
+                <MudTextField T="string" @bind-Value="filterName" Label="Buscar por nombre o apellidos" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Placeholder="Escribe para buscar..." Class="modern-input" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudSelect T="string" Label="Filtrar por Curso Inscrito" @bind-Value="filterCourseId" Variant="Variant.Outlined" Clearable="true">
+                <MudSelect T="string" Label="Filtrar por Curso Inscrito" @bind-Value="filterCourseId" Variant="Variant.Outlined" Clearable="true" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
                     @foreach (var curso in listaCursos) 
                     { 
                         <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
@@ -24,126 +31,164 @@
                 </MudSelect>
             </MudItem>
         </MudGrid>
-    </MudCard>
+    </MudPaper>
 
     @if (isLoading)
     {
         @* EFECTO ESQUELETO MIENTRAS CARGA (SKELETON LOADER) *@
-        <MudCard Elevation="3" Class="pa-4 fade-in-suave">
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
             <div class="d-flex justify-space-between mb-4">
                 <MudSkeleton SkeletonType="SkeletonType.Text" Width="250px" Height="40px" />
             </div>
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="mb-2 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="mb-2 rounded-lg" />
             @for (int i = 0; i < 5; i++)
             {
                 <div class="d-flex align-center gap-4 mb-3 mt-3">
                     <MudSkeleton SkeletonType="SkeletonType.Circle" Width="30px" Height="30px" />
                     <MudSkeleton SkeletonType="SkeletonType.Text" Width="30%" Height="30px" />
                     <MudSkeleton SkeletonType="SkeletonType.Text" Width="25%" Height="30px" />
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="20%" Height="25px" Class="rounded-xl" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="20%" Height="25px" Class="rounded-lg" />
                 </div>
                 <MudDivider />
             }
-        </MudCard>
+        </MudPaper>
     }
     else
     {
         <div class="fade-in-suave">
-            <MudTable T="Student" Items="@AlumnosFiltrados" @bind-SelectedItem="selectedStudent" Hover="true" Striped="true" Elevation="3">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Registros Encontrados (@AlumnosFiltrados.Count())</MudText>
-                    <MudSpacer />
-                    <MudText Typo="Typo.caption" Style="opacity: 0.7;"><i>*Haz clic en cualquier fila para ver el expediente.</i></MudText>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh Style="width: 50px; text-align:center;"></MudTh>
-                    <MudTh>Nombre Completo</MudTh>
-                    <MudTh>Tutor / Parentesco</MudTh>
-                    <MudTh>Cursos Inscritos</MudTh>
-                </HeaderContent>
-                <RowTemplate Context="alumnoRow">
-                    <MudTd style="text-align: center;">
-                        <MudIcon Icon="@(selectedStudent?.Id == alumnoRow?.Id ? Icons.Material.Filled.KeyboardArrowDown : Icons.Material.Filled.KeyboardArrowRight)" Color="Color.Primary" />
-                    </MudTd>
-                    <MudTd><b>@(alumnoRow?.Name) @(alumnoRow?.PaternalLastName) @(alumnoRow?.MaternalLastName)</b></MudTd>
-                    <MudTd>@(alumnoRow?.Guardian?.Name ?? "Sin tutor registrado")</MudTd>
-                    <MudTd>
-                        @foreach (var curso in ObtenerCursosDeAlumno(alumnoRow?.Id ?? ""))
-                        {
-                            <MudChip @key="curso" T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Filled">@curso</MudChip>
-                        }
-                    </MudTd>
-                </RowTemplate>
-                
-                <ChildRowContent Context="alumnoRow">
-                    <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
-                        <td colspan="4" style="padding: 16px;">
-                            <MudCard Outlined="true" Elevation="0" Class="pa-4">
-                                <MudGrid>
-                                    <MudItem xs="12" sm="3" Class="d-flex justify-center align-center">
-                                        @if (!string.IsNullOrEmpty(alumnoRow?.PhotoBase64))
-                                        {
-                                            <MudImage Src="@alumnoRow!.PhotoBase64" Width="140" Height="140" ObjectFit="ObjectFit.Cover" Elevation="3" Class="rounded-lg border-solid border-2 mud-border-primary" />
-                                        }
-                                        else
-                                        {
-                                            <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Outlined="true" Elevation="0">
-                                                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 4.5rem;" Color="Color.Default" />
-                                            </MudPaper>
-                                        }
-                                    </MudItem>
+            <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudTable T="Student" Items="@AlumnosFiltrados" @bind-SelectedItem="selectedStudent" Hover="true" Elevation="0" Class="modern-table">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Registros Encontrados (@AlumnosFiltrados.Count())</MudText>
+                        <MudSpacer />
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);"><i>*Haz clic en cualquier fila para ver el expediente completo.</i></MudText>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="width: 50px; text-align:center;"></MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre Completo</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Tutor / Parentesco</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Cursos Inscritos</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="alumnoRow">
+                        <MudTd style="text-align: center; cursor: pointer;">
+                            <MudIcon Icon="@(selectedStudent?.Id == alumnoRow?.Id ? Icons.Material.Filled.KeyboardArrowDown : Icons.Material.Filled.KeyboardArrowRight)" Color="Color.Primary" />
+                        </MudTd>
+                        <MudTd DataLabel="Nombre Completo" Style="cursor: pointer;">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@(alumnoRow?.Name) @(alumnoRow?.PaternalLastName) @(alumnoRow?.MaternalLastName)</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Tutor" Style="cursor: pointer;">
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">@(alumnoRow?.Guardian?.Name ?? "Sin tutor registrado")</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Cursos">
+                            @foreach (var curso in ObtenerCursosDeAlumno(alumnoRow?.Id ?? ""))
+                            {
+                                <MudChip @key="curso" T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold">@curso</MudChip>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                    
+                    <ChildRowContent Context="alumnoRow">
+                        <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
+                            <td colspan="4" style="padding: 16px; background-color: var(--mud-palette-background-grey);">
+                                <MudPaper Elevation="0" Class="pa-6 rounded-lg mx-2 my-2" Style="border: 1px solid var(--mud-palette-lines-default);">
+                                    <MudGrid>
+                                        <!-- FOTO DEL ALUMNO -->
+                                        <MudItem xs="12" sm="3" Class="d-flex justify-center align-center">
+                                            @if (!string.IsNullOrEmpty(alumnoRow?.PhotoBase64))
+                                            {
+                                                <MudImage Src="@alumnoRow!.PhotoBase64" Width="140" Height="140" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);" />
+                                            }
+                                            else
+                                            {
+                                                <MudPaper Width="140px" Height="140px" Class="d-flex align-center justify-center rounded-lg" Elevation="0" Style="border: 1px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4.5rem; color: var(--mud-palette-text-secondary);" />
+                                                </MudPaper>
+                                            }
+                                        </MudItem>
 
-                                    <MudItem xs="12" sm="6">
-                                        <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mb-2"><b>Información Detallada de la Ficha</b></MudText>
-                                        <MudText Typo="Typo.body2" Class="mb-1">
-                                            <b>Dirección:</b> @(alumnoRow?.Address?.Street ?? "") @(alumnoRow?.Address?.ExtNumber ?? ""), Col. @(alumnoRow?.Address?.Neighborhood ?? ""), @(alumnoRow?.Address?.Municipality ?? "")
-                                        </MudText>
-                                        <MudText Typo="Typo.body2" Class="mb-1"><b>Código Postal:</b> @(alumnoRow?.Address?.ZipCode ?? "N/A")</MudText>
-                                        <MudText Typo="Typo.body2" Class="mb-1">
-                                            <b>Fecha de Nacimiento:</b> @(alumnoRow?.DateOfBirth.HasValue == true ? alumnoRow!.DateOfBirth.Value.ToDateTime().ToString("dd/MM/yyyy") : "No registrada")
-                                        </MudText>
-                                        <MudText Typo="Typo.body2" Class="mb-1"><b>Teléfono Alumno:</b> @(alumnoRow?.Phone ?? "No registrado")</MudText>
-                                        <MudDivider Class="my-2"/>
-                                        <MudText Typo="Typo.body2" Class="mb-1">
-                                            <b>Contacto de Emergencia:</b> @(alumnoRow?.Guardian?.Name ?? "") @(alumnoRow?.Guardian?.PaternalLastName ?? "") 
-                                            <span style="opacity: 0.7;">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
-                                        </MudText>
-                                        <MudText Typo="Typo.body2"><b>Teléfono Tutor:</b> @(alumnoRow?.Guardian?.Phone ?? "No registrado")</MudText>
-                                    </MudItem>
+                                        <!-- INFORMACIÓN DETALLADA -->
+                                        <MudItem xs="12" sm="6">
+                                            <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="font-weight-bold mb-3">Expediente Detallado</MudText>
+                                            
+                                            <MudText Typo="Typo.body2" Class="mb-1">
+                                                <b style="color: var(--mud-palette-text-secondary);">Dirección:</b> @(alumnoRow?.Address?.Street ?? "") @(alumnoRow?.Address?.ExtNumber ?? ""), Col. @(alumnoRow?.Address?.Neighborhood ?? ""), @(alumnoRow?.Address?.Municipality ?? "")
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Class="mb-1"><b style="color: var(--mud-palette-text-secondary);">Código Postal:</b> @(alumnoRow?.Address?.ZipCode ?? "N/A")</MudText>
+                                            <MudText Typo="Typo.body2" Class="mb-1">
+                                                <b style="color: var(--mud-palette-text-secondary);">Fecha de Nacimiento:</b> @(alumnoRow?.DateOfBirth.HasValue == true ? alumnoRow!.DateOfBirth.Value.ToDateTime().ToString("dd/MM/yyyy") : "No registrada")
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Class="mb-3"><b style="color: var(--mud-palette-text-secondary);">Teléfono Alumno:</b> @(alumnoRow?.Phone ?? "No registrado")</MudText>
+                                            
+                                            <MudDivider Class="my-3" Style="opacity: 0.5;" />
+                                            
+                                            <MudText Typo="Typo.body2" Class="mb-1">
+                                                <b style="color: var(--mud-palette-text-secondary);">Contacto de Emergencia:</b> @(alumnoRow?.Guardian?.Name ?? "") @(alumnoRow?.Guardian?.PaternalLastName ?? "") 
+                                                <span style="opacity: 0.7;">(@(alumnoRow?.Guardian?.Relationship ?? "N/A"))</span>
+                                            </MudText>
+                                            <MudText Typo="Typo.body2"><b style="color: var(--mud-palette-text-secondary);">Teléfono Tutor:</b> @(alumnoRow?.Guardian?.Phone ?? "No registrado")</MudText>
+                                        </MudItem>
 
-                                    <MudItem xs="12" sm="3" Class="d-flex flex-column justify-center gap-3">
-                                        <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Edit" FullWidth="true" OnClick="() => EditarExpediente(alumnoRow!)">EDITAR EXPEDIENTE</MudButton>
-                                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.PersonRemove" FullWidth="true" OnClick="() => ConfirmarBaja(alumnoRow!)">DAR DE BAJA</MudButton>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudCard>
-                        </td>
-                    </MudTr>
-                </ChildRowContent>
+                                        <!-- BOTONES DE ACCIÓN -->
+                                        <MudItem xs="12" sm="3" Class="d-flex flex-column justify-center gap-3" Style="border-left: 1px dashed var(--mud-palette-lines-default); padding-left: 24px;">
+                                            <MudButton Variant="Variant.Filled" Color="Color.Warning" DisableElevation="true" StartIcon="@Icons.Material.Filled.Edit" FullWidth="true" Class="rounded-lg font-weight-bold" Style="text-transform: none;" OnClick="() => EditarExpediente(alumnoRow!)">Editar Expediente</MudButton>
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.PersonRemove" FullWidth="true" Class="rounded-lg font-weight-bold" Style="text-transform: none;" OnClick="() => ConfirmarBaja(alumnoRow!)">Dar de Baja</MudButton>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudPaper>
+                            </td>
+                        </MudTr>
+                    </ChildRowContent>
 
-                @* ESTADO VACÍO (EMPTY STATE) *@
-                <NoRecordsContent>
-                    <div class="d-flex flex-column align-center justify-center pa-8">
-                        <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Style="font-size: 4rem; opacity: 0.6;" Class="mb-3" />
-                        <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-1"><b>Aún no hay registros</b></MudText>
-                        <MudText Typo="Typo.body1" Style="opacity: 0.7;">No encontramos alumnos que coincidan con tu búsqueda.</MudText>
-                    </div>
-                </NoRecordsContent>
+                    @* ESTADO VACÍO (EMPTY STATE) *@
+                    <NoRecordsContent>
+                        <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                            <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
+                            <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-1 font-weight-bold">Aún no hay registros</MudText>
+                            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">No encontramos alumnos que coincidan con tu búsqueda.</MudText>
+                        </div>
+                    </NoRecordsContent>
 
-                @* PAGINACIÓN AGREGADA *@
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Alumnos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
-                </PagerContent>
-            </MudTable>
+                    @* PAGINACIÓN AGREGADA *@
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Alumnos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                    </PagerContent>
+                </MudTable>
+            </MudPaper>
         </div>
     }
 
     <MudMessageBox @ref="mbox" Title="Confirmar Baja del Alumno">
-        <MessageContent>¿Estás seguro de que deseas dar de baja a "<b>@(alumnoABorrar?.Name) @(alumnoABorrar?.PaternalLastName)</b>"? <br /> Esta acción eliminará su expediente de los servidores.</MessageContent>
-        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">ELIMINAR</MudButton></YesButton>
-        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default">CANCELAR</MudButton></CancelButton>
+        <MessageContent>
+            ¿Estás seguro de que deseas dar de baja a "<b>@(alumnoABorrar?.Name) @(alumnoABorrar?.PaternalLastName)</b>"? <br /> <br /> Esta acción eliminará su expediente de los servidores de manera permanente.
+        </MessageContent>
+        <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Class="rounded-lg" Style="text-transform: none;">Eliminar Expediente</MudButton></YesButton>
+        <CancelButton><MudButton Variant="Variant.Text" Color="Color.Default" Class="rounded-lg" Style="text-transform: none;">Cancelar</MudButton></CancelButton>
     </MudMessageBox>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private MudMessageBox mbox = default!;
