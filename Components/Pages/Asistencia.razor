@@ -19,7 +19,7 @@
 
     <!-- PANEL DE FILTROS -->
     <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
-        <MudGrid AlignItems="Center">
+        <MudGrid Class="align-center">
             <MudItem xs="12" md="5">
                 <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="cursoSeleccionadoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
                     <MudSelectItem T="string" Value="@("")" Disabled="true">-- Seleccione un curso --</MudSelectItem>
@@ -49,7 +49,7 @@
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="CargarListaAlumnos" Disabled="@string.IsNullOrEmpty(cursoSeleccionadoId)" Class="rounded-lg font-weight-bold" Style="text-transform: none; height: 56px;">
                     Cargar Lista
                 </MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="GenerarPdfLista" Disabled="@(!alumnosEnCurso.Any())" Class="rounded-lg font-weight-bold" Style="text-transform: none; height: 56px;">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="GenerarPdfLista" Disabled="@(!alumnosEnCurso.Any())" Class="rounded-lg font-weight-bold" Style="text-transform: none; height: 56px;">
                     Imprimir Formato
                 </MudButton>
             </MudItem>
@@ -169,7 +169,6 @@
                 }
                 else
                 {
-                    // AQUÍ ESTABA LA ADVERTENCIA: Agregamos el operador ?? "" para solucionarlo definitivamente.
                     alumnosEnCurso.Add(new Student { Id = insc.StudentId ?? "", Name = "ALUMNO DESCONOCIDO" });
                 }
             }
