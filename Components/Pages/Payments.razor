@@ -9,116 +9,123 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Pagos e Ingresos</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Control de Pagos e Ingresos</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra abonos, consulta historiales y emite comprobantes oficiales en PDF.</MudText>
+    </div>
 
-    <MudCard Elevation="2" Class="mb-4 pa-4">
+    <!-- Módulo 1: Buscador de Alumnos -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="Student" 
                                  Label="Buscar Alumno para registrar pago (Nombre o Apellido)" 
-                                 Value="selectedStudent" 
-                                 ValueChanged="OnStudentSelected"
+                                 Value="@selectedStudent" 
+                                 ValueChanged="@OnStudentSelected"
                                  SearchFunc="@SearchStudents" 
                                  ToStringFunc="@DisplayAlumno"
                                  Variant="Variant.Outlined" 
                                  AdornmentIcon="@Icons.Material.Filled.Search" 
                                  AdornmentColor="Color.Primary" 
                                  Clearable="true" 
-                                 Placeholder="Escribe el nombre del alumno..."/>
+                                 Placeholder="Escribe el nombre del alumno..."
+                                 Class="modern-input" />
             </MudItem>
             <MudItem xs="12" md="4">
                 @if (selectedStudent != null)
                 {
-                    <MudText Typo="Typo.subtitle1" Color="Color.Success"><b>Alumno cargado correctamente</b></MudText>
+                    <div class="d-flex align-center gap-2 fade-in-suave">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Color="Color.Success">Alumno cargado correctamente</MudText>
+                    </div>
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2" Style="opacity: 0.7;"><i>Por favor, selecciona un alumno para operar.</i></MudText>
+                    <MudText Typo="Typo.subtitle2" Style="color: var(--mud-palette-text-secondary);"><i>Por favor, selecciona un alumno para operar.</i></MudText>
                 }
             </MudItem>
         </MudGrid>
-    </MudCard>
+    </MudPaper>
 
     <div class="fade-in-suave">
         <MudGrid>
+            <!-- COLUMNA IZQUIERDA: Formulario de Pago -->
             <MudItem xs="12" md="5">
                 <MudForm @ref="form" @bind-IsValid="@success">
-                    <MudCard Elevation="3">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6" Color="Color.Secondary">Registrar Nuevo Abono</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12">
-                                    <MudSelect T="string" Label="Seleccionar Curso a Abonar*" Value="@newPayment.CourseId" ValueChanged="OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Seleccione el curso a abonar" Disabled="@(selectedStudent == null || !cursosDelAlumno.Any())">
-                                        @foreach (var curso in cursosDelAlumno)
-                                        {
-                                            <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-
-                                @if (!string.IsNullOrEmpty(newPayment.CourseId) && selectedStudent != null)
-                                {
-                                    <MudItem xs="12">
-                                        <MudPaper Outlined="true" Elevation="0" Class="pa-3" Style="border-left: 6px solid #1ec8a5;">
-                                            <div class="d-flex justify-space-between mb-1">
-                                                <MudText Typo="Typo.body2" Style="opacity: 0.7;">Costo total (con desc.):</MudText>
-                                                <MudText Typo="Typo.body2"><b>@costoTotalCurso.ToString("C")</b></MudText>
-                                            </div>
-                                            <div class="d-flex justify-space-between mb-1">
-                                                <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total abonado a la fecha:</MudText>
-                                                <MudText Typo="Typo.body2" Color="Color.Success"><b>@totalPagadoCurso.ToString("C")</b></MudText>
-                                            </div>
-                                            <MudDivider Class="my-2" />
-                                            <div class="d-flex justify-space-between">
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Error"><b>Monto Pendiente:</b></MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Error"><b>@montoPendienteCurso.ToString("C")</b></MudText>
-                                            </div>
-                                        </MudPaper>
-                                    </MudItem>
-                                }
-
-                                <MudItem xs="12">
-                                    <MudTextField T="string" Label="Concepto del Pago*" @bind-Value="newPayment.Concept" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Placeholder="Ej. Mensualidad 1, Pago único" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudNumericField T="double" Label="Monto a Recibir ($)*" @bind-Value="newPayment.Amount" Required="true" RequiredError="El monto es obligatorio" Variant="Variant.Outlined" Min="1.0" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudCardContent>
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
                         
-                        <MudCardActions Class="pb-4 pr-4 flex-column align-end">
-                            <div class="d-flex gap-2">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId) || enviandoCorreo)" OnClick="GuardarYEnviarCorreo">
-                                    @if (enviandoCorreo)
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Registrar Nuevo Abono</MudText>
+                        
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudSelect T="string" Label="Seleccionar Curso a Abonar*" Value="@newPayment.CourseId" ValueChanged="@OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Required="true" RequiredError="Seleccione el curso a abonar" Disabled="@(selectedStudent == null || !cursosDelAlumno.Any())" Class="modern-input">
+                                    @foreach (var curso in cursosDelAlumno)
                                     {
-                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                        <span>ENVIANDO...</span>
+                                        <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem>
                                     }
-                                    else
-                                    {
-                                        <span>GUARDAR Y ENVIAR</span>
-                                    }
-                                </MudButton>
+                                </MudSelect>
+                            </MudItem>
 
-                                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.ReceiptLong" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId) || enviandoCorreo)" OnClick="GuardarYDescargar">
-                                    GUARDAR Y DESCARGAR
-                                </MudButton>
-                            </div>
-                        </MudCardActions>
-                    </MudCard>
+                            @if (!string.IsNullOrEmpty(newPayment.CourseId) && selectedStudent != null)
+                            {
+                                <MudItem xs="12" Class="fade-in-suave">
+                                    <!-- Cuadro de Resumen tipo "Ticket" -->
+                                    <MudPaper Elevation="0" Class="pa-4 rounded-lg my-2" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default); border-left: 6px solid var(--mud-palette-primary);">
+                                        <div class="d-flex justify-space-between mb-2">
+                                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Costo total (con desc.):</MudText>
+                                            <MudText Typo="Typo.body2" Class="font-weight-bold">@costoTotalCurso.ToString("C")</MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between mb-3">
+                                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Total abonado a la fecha:</MudText>
+                                            <MudText Typo="Typo.body2" Class="font-weight-bold" Color="Color.Success">@totalPagadoCurso.ToString("C")</MudText>
+                                        </div>
+                                        <MudDivider Class="mb-3" />
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Color="@(montoPendienteCurso > 0 ? Color.Error : Color.Success)">Monto Pendiente:</MudText>
+                                            <MudText Typo="Typo.h6" Class="font-weight-bold" Color="@(montoPendienteCurso > 0 ? Color.Error : Color.Success)">@montoPendienteCurso.ToString("C")</MudText>
+                                        </div>
+                                    </MudPaper>
+                                </MudItem>
+                            }
+
+                            <MudItem xs="12">
+                                <MudTextField T="string" Label="Concepto del Pago*" @bind-Value="newPayment.Concept" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Placeholder="Ej. Mensualidad 1, Pago único" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" Class="modern-input" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudNumericField T="double" Label="Monto a Recibir ($)*" @bind-Value="newPayment.Amount" Required="true" RequiredError="El monto es obligatorio" Variant="Variant.Outlined" Min="1.0" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId))" Class="modern-input" />
+                            </MudItem>
+                        </MudGrid>
+                        
+                        <!-- Acciones del Formulario -->
+                        <div class="d-flex flex-wrap gap-3 justify-end mt-8 pt-4" style="border-top: 1px solid var(--mud-palette-lines-default);">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" DisableElevation="true" Class="rounded-lg font-weight-bold px-4" Style="text-transform: none;" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId) || enviandoCorreo)" OnClick="GuardarYEnviarCorreo">
+                                @if (enviandoCorreo)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enviando...</span>
+                                }
+                                else
+                                {
+                                    <span>Guardar y Enviar</span>
+                                }
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.ReceiptLong" DisableElevation="true" Class="rounded-lg font-weight-bold px-4" Style="text-transform: none;" Disabled="@(selectedStudent == null || string.IsNullOrEmpty(newPayment.CourseId) || enviandoCorreo)" OnClick="GuardarYDescargar">
+                                Guardar y Descargar
+                            </MudButton>
+                        </div>
+                    </MudPaper>
                 </MudForm>
             </MudItem>
 
+            <!-- COLUMNA DERECHA: Tabla de Historial -->
             <MudItem xs="12" md="7">
                 @if (isLoading)
                 {
-                    @* SKELETON LOADER PARA LA TABLA DE PAGOS *@
-                    <MudCard Elevation="3" Class="pa-4">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
                         <MudSkeleton SkeletonType="SkeletonType.Text" Width="200px" Height="40px" Class="mb-4" />
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-2" />
                         @for (int i = 0; i < 4; i++)
@@ -131,58 +138,84 @@
                             </div>
                             <MudDivider />
                         }
-                    </MudCard>
+                    </MudPaper>
                 }
                 else
                 {
-                    <MudTable T="Payment" Items="@historialPagos" Elevation="3" Hover="true" Striped="true">
-                        <ToolBarContent>
-                            <MudText Typo="Typo.h6">Historial de Transacciones</MudText>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>Fecha</MudTh>
-                            <MudTh>Curso / Concepto</MudTh>
-                            <MudTh Style="text-align: right;">Monto</MudTh>
-                            <MudTh Style="text-align: right;">Acciones</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Fecha">@context.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</MudTd>
-                            <MudTd DataLabel="Curso / Concepto">
-                                <MudText Typo="Typo.body2"><b>@ObtenerNombreCurso(context.CourseId)</b></MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Concept</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Monto" Style="text-align: right;">
-                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">
-                                    <b>@context.Amount.ToString("C")</b>
-                                </MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="Acciones" Style="text-align: right;">
-                                <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Success" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
-                                </MudTooltip>
-                            </MudTd>
-                        </RowTemplate>
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Historial de Transacciones</MudText>
                         
-                        @* DISEÑO DE ESTADO VACÍO INTERACTIVO *@
-                        <NoRecordsContent>
-                            <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
-                                <MudIcon Icon="@(selectedStudent == null ? Icons.Material.Filled.PersonSearch : Icons.Material.Filled.ReceiptLong)" Color="Color.Default" Style="font-size: 4.5rem; opacity: 0.4;" Class="mb-3" />
-                                <MudText Typo="Typo.h6" Style="opacity: 0.7;">
-                                    @(selectedStudent == null ? "Busca y selecciona un alumno arriba para operar." : "Este alumno aún no tiene pagos registrados.")
-                                </MudText>
-                            </div>
-                        </NoRecordsContent>
+                        <MudTable T="Payment" Items="@historialPagos" Elevation="0" Hover="true" Class="modern-table">
+                            <HeaderContent>
+                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Fecha</MudTh>
+                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso / Concepto</MudTh>
+                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Monto</MudTh>
+                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Ticket</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Fecha" Style="white-space: nowrap;">
+                                    <MudText Typo="Typo.body2">@context.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy")</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@context.PaymentDate.ToLocalTime().ToString("hh:mm tt")</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Curso / Concepto">
+                                    <MudText Typo="Typo.body2" Class="font-weight-bold">@ObtenerNombreCurso(context.CourseId)</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@context.Concept</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Monto" Style="text-align: right;">
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold">
+                                        @context.Amount.ToString("C")
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Ticket" Style="text-align: right;">
+                                    <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
+                                    </MudTooltip>
+                                </MudTd>
+                            </RowTemplate>
+                            
+                            <NoRecordsContent>
+                                <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                                    <MudIcon Icon="@(selectedStudent == null ? Icons.Material.Filled.PersonSearch : Icons.Material.Filled.ReceiptLong)" Color="Color.Default" Style="font-size: 4.5rem; opacity: 0.4;" Class="mb-3" />
+                                    <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">
+                                        @(selectedStudent == null ? "Busca y selecciona un alumno arriba para operar." : "Este alumno aún no tiene pagos registrados.")
+                                    </MudText>
+                                </div>
+                            </NoRecordsContent>
 
-                        @* PAGINACIÓN AGREGADA *@
-                        <PagerContent>
-                            <MudTablePager PageSizeOptions="new int[] { 5, 10, 20 }" RowsPerPageString="Pagos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
-                        </PagerContent>
-                    </MudTable>
+                            <PagerContent>
+                                <MudTablePager PageSizeOptions="new int[] { 5, 10, 20 }" RowsPerPageString="Pagos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                            </PagerContent>
+                        </MudTable>
+                    </MudPaper>
                 }
             </MudItem>
         </MudGrid>
     </div>
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private MudForm form = default!;
