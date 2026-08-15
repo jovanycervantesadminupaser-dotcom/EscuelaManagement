@@ -9,26 +9,35 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Módulo de Cobranza y Saldos</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Módulo de Cobranza y Saldos</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Monitorea la cartera vencida, envía recordatorios y genera estados de cuenta consolidados.</MudText>
+    </div>
 
     @if (isLoading)
     {
         @* EFECTO ESQUELETO MIENTRAS CARGA (SKELETON LOADER) *@
         <div class="fade-in-suave">
-            <MudGrid Class="mb-4">
+            <MudGrid Class="mb-6">
                 <MudItem xs="12" sm="6" md="4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded-lg" />
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="rounded-lg" />
+                    </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded-lg" />
+                    <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="rounded-lg" />
+                    </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            <MudCard Elevation="3" Class="pa-4">
+            <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
                 <div class="d-flex justify-space-between mb-4">
                     <MudSkeleton SkeletonType="SkeletonType.Text" Width="250px" Height="40px" />
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="40px" Class="rounded" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="250px" Height="40px" Class="rounded-lg" />
                 </div>
                 <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-2" />
                 @for (int i = 0; i < 5; i++)
@@ -42,94 +51,120 @@
                     </div>
                     <MudDivider />
                 }
-            </MudCard>
+            </MudPaper>
         </div>
     }
     else
     {
         <div class="fade-in-suave">
             @* TARJETAS INFORMATIVAS SUPERIORES *@
-            <MudGrid Class="mb-4">
+            <MudGrid Class="mb-6">
                 <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF4842;">
-                        <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Size="Size.Large" Class="mr-3" />
+                    <MudPaper Class="pa-6 d-flex align-center rounded-lg" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-left: 6px solid #FF4842;">
+                        <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Error" Style="font-size: 3rem;" Class="mr-4" />
                         <div>
-                            <MudText Typo="Typo.body2" Style="opacity: 0.7;">Total por Cobrar (Morosidad)</MudText>
-                            <MudText Typo="Typo.h5"><b>@totalCarteraVencida.ToString("C")</b></MudText>
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Total por Cobrar (Morosidad)</MudText>
+                            <MudText Typo="Typo.h5" Class="font-weight-bold">@totalCarteraVencida.ToString("C")</MudText>
                         </div>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Class="pa-4 d-flex align-center rounded-lg" Elevation="2" Style="border-left: 6px solid #FF9800;">
-                        <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                    <MudPaper Class="pa-6 d-flex align-center rounded-lg" Elevation="0" Style="border: 1px solid var(--mud-palette-lines-default); border-left: 6px solid #FF9800;">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Color="Color.Warning" Style="font-size: 3rem;" Class="mr-4" />
                         <div>
-                            <MudText Typo="Typo.body2" Style="opacity: 0.7;">Alumnos con Adeudos</MudText>
-                            <MudText Typo="Typo.h5"><b>@listaDebidores.Count Alumnos</b></MudText>
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Alumnos con Adeudos</MudText>
+                            <MudText Typo="Typo.h5" Class="font-weight-bold">@listaDebidores.Count Alumnos</MudText>
                         </div>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
 
             @* TABLA PRINCIPAL DE DEUDORES *@
-            <MudTable T="DebtorRowViewModel" Items="@listaDebidores" Elevation="3" Hover="true" Striped="true" Filter="new Func<DebtorRowViewModel,bool>(FilterFunc)">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Lista de Alumnos con Saldos Pendientes</MudText>
-                    <MudSpacer />
-                    <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre o curso..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0" Clearable="true" />
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Alumno</MudTh>
-                    <MudTh>Curso Inscrito</MudTh>
-                    <MudTh Style="text-align: right;">Costo (Con Desc.)</MudTh>
-                    <MudTh Style="text-align: right;">Total Pagado</MudTh>
-                    <MudTh Style="text-align: right;">Saldo Vencido</MudTh>
-                    <MudTh Style="text-align: center;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Alumno">
-                        <MudText Typo="Typo.body2"><b>@context.StudentName</b></MudText>
-                        <MudText Typo="Typo.caption" Style="opacity: 0.7;">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
-                    <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
-                    <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="green-text">@context.TotalPaid.ToString("C")</MudTd>
-                    <MudTd DataLabel="Saldo Vencido" Style="text-align: right;">
-                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">
-                            <b>@context.PendingBalance.ToString("C")</b>
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Acciones" Style="text-align: center;">
-                        <div class="d-flex justify-center gap-2">
-                            <MudTooltip Text="Descargar Estado de Cuenta (PDF)" Arrow="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
-                            </MudTooltip>
-                            <MudTooltip T="string" Text="Recordatorio por WhatsApp" Arrow="true">
-                                <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Style="color: #25D366;" Size="Size.Small" OnClick="(() => EnviarRecordatorioWhatsApp(context))" />
-                            </MudTooltip>
-                            <MudTooltip T="string" Text="Recordatorio por Correo" Arrow="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" OnClick="(() => EnviarRecordatorioCorreo(context))" />
-                            </MudTooltip>
+            <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudTable T="DebtorRowViewModel" Items="@listaDebidores" Elevation="0" Hover="true" Class="modern-table" Filter="new Func<DebtorRowViewModel,bool>(FilterFunc)">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Lista de Alumnos con Saldos Pendientes</MudText>
+                        <MudSpacer />
+                        <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar por nombre o curso..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-0 modern-input" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Style="max-width: 350px;" />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Alumno</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso Inscrito</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Costo (Con Desc.)</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Total Pagado</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Saldo Vencido</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Alumno">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@context.StudentName</MudText>
+                            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Tutor: @context.GuardianName | Tel: @context.GuardianPhone</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Curso Inscrito">@context.CourseName</MudTd>
+                        <MudTd DataLabel="Costo" Style="text-align: right;">@context.TotalCost.ToString("C")</MudTd>
+                        <MudTd DataLabel="Total Pagado" Style="text-align: right;" Class="font-weight-bold text-success">@context.TotalPaid.ToString("C")</MudTd>
+                        <MudTd DataLabel="Saldo Vencido" Style="text-align: right;">
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold px-3">
+                                @context.PendingBalance.ToString("C")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Acciones" Style="text-align: center;">
+                            <div class="d-flex justify-center gap-1">
+                                <MudTooltip Text="Descargar Estado de Cuenta (PDF)" Arrow="true" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="(() => DescargarEstadoCuenta(context))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Recordatorio por WhatsApp" Arrow="true" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Style="color: #25D366;" Size="Size.Small" OnClick="(() => EnviarRecordatorioWhatsApp(context))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Recordatorio por Correo" Arrow="true" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" OnClick="(() => EnviarRecordatorioCorreo(context))" />
+                                </MudTooltip>
+                            </div>
+                        </MudTd>
+                    </RowTemplate>
+                    
+                    @* DISEÑO DE ESTADO VACÍO (EMPTY STATE) *@
+                    <NoRecordsContent>
+                        <div class="d-flex flex-column align-center justify-center pa-8">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Style="font-size: 5rem;" Class="mb-4" />
+                            <MudText Typo="Typo.h5" Color="Color.Success" Class="mb-1 font-weight-bold">¡Todo al corriente!</MudText>
+                            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">No se encontraron alumnos con adeudos vencidos en este momento.</MudText>
                         </div>
-                    </MudTd>
-                </RowTemplate>
-                
-                @* DISEÑO DE ESTADO VACÍO (EMPTY STATE) *@
-                <NoRecordsContent>
-                    <div class="d-flex flex-column align-center justify-center pa-8">
-                        <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Style="font-size: 4rem;" Class="mb-3" />
-                        <MudText Typo="Typo.h5" Color="Color.Success" Class="mb-1"><b>¡Todo al corriente!</b></MudText>
-                        <MudText Typo="Typo.body1" Style="opacity: 0.7;">No se encontraron alumnos con adeudos vencidos en este momento.</MudText>
-                    </div>
-                </NoRecordsContent>
+                    </NoRecordsContent>
 
-                @* PAGINACIÓN AGREGADA *@
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Deudores por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
-                </PagerContent>
-            </MudTable>
+                    @* PAGINACIÓN AGREGADA *@
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Deudores por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                    </PagerContent>
+                </MudTable>
+            </MudPaper>
         </div>
     }
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private bool isLoading = true;

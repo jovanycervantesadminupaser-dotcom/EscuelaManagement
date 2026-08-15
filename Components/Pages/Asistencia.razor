@@ -9,15 +9,19 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Asistencia</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Generación de formato oficial impreso para el pase de lista mensual por curso.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- Encabezado Limpio -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Control de Asistencia</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Generación de formato oficial impreso para el pase de lista mensual por curso.</MudText>
+    </div>
 
-    @* --- PANEL DE FILTROS --- *@
-    <MudPaper Elevation="3" Class="pa-5 mb-6 rounded-lg">
+    <!-- PANEL DE FILTROS -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
         <MudGrid AlignItems="Center">
             <MudItem xs="12" md="5">
-                <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="cursoSeleccionadoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                <MudSelect T="string" Label="Seleccionar Curso" @bind-Value="cursoSeleccionadoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
                     <MudSelectItem T="string" Value="@("")" Disabled="true">-- Seleccione un curso --</MudSelectItem>
                     @foreach (var curso in listaCursos)
                     {
@@ -26,7 +30,7 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudSelect T="string" Label="Mes a Imprimir" @bind-Value="mesSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                <MudSelect T="string" Label="Mes a Imprimir" @bind-Value="mesSeleccionado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
                     <MudSelectItem T="string" Value="@("Enero")">Enero</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Febrero")">Febrero</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Marzo")">Marzo</MudSelectItem>
@@ -42,57 +46,87 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center gap-3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="CargarListaAlumnos" Disabled="@string.IsNullOrEmpty(cursoSeleccionadoId)">
-                    CARGAR
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="CargarListaAlumnos" Disabled="@string.IsNullOrEmpty(cursoSeleccionadoId)" Class="rounded-lg font-weight-bold" Style="text-transform: none; height: 56px;">
+                    Cargar Lista
                 </MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="GenerarPdfLista" Disabled="@(!alumnosEnCurso.Any())">
-                    IMPRIMIR LISTA
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="GenerarPdfLista" Disabled="@(!alumnosEnCurso.Any())" Class="rounded-lg font-weight-bold" Style="text-transform: none; height: 56px;">
+                    Imprimir Formato
                 </MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-    @* --- TABLA DE ALUMNOS INSCRITOS --- *@
+    <!-- TABLA DE ALUMNOS INSCRITOS -->
     @if (cargando)
     {
-        <div class="d-flex justify-center my-8">
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-        </div>
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+            <div class="d-flex flex-column align-center justify-center py-8 fade-in-suave">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="mb-4" />
+                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Procesando lista de alumnos...</MudText>
+            </div>
+        </MudPaper>
     }
     else if (alumnosEnCurso.Any())
     {
-        <MudCard Elevation="3" Class="rounded-lg">
-            <MudCardHeader Class="bg-light">
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Alumnos Inscritos (@alumnosEnCurso.Count)</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Default">Esta lista se utilizará para generar el formato PDF de asistencia mensual.</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent Class="pa-0">
-                <MudTable T="Student" Items="@alumnosEnCurso" Hover="true" Striped="true" Elevation="0">
-                    <HeaderContent>
-                        <MudTh Style="width: 50px;">#</MudTh>
-                        <MudTh>Matrícula</MudTh>
-                        <MudTh>Nombre Completo del Alumno</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="#">@(alumnosEnCurso.IndexOf(context) + 1)</MudTd>
-                        <MudTd DataLabel="Matrícula">@(context.Id?.Length > 6 ? context.Id[..6].ToUpper() : "N/A")</MudTd>
-                        <MudTd DataLabel="Alumno">
-                            <b>@($"{context.Name} {context.PaternalLastName} {context.MaternalLastName}".Trim())</b>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudCardContent>
-        </MudCard>
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-1" Color="Color.Primary">Alumnos Inscritos (@alumnosEnCurso.Count)</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);" Class="mb-4">Esta lista se utilizará para generar el formato PDF de asistencia mensual.</MudText>
+            
+            <MudTable T="Student" Items="@alumnosEnCurso" Hover="true" Elevation="0" Class="modern-table">
+                <HeaderContent>
+                    <MudTh Style="width: 50px; font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">#</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Matrícula</MudTh>
+                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre Completo del Alumno</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="#" Class="font-weight-bold text-muted">@(alumnosEnCurso.IndexOf(context) + 1)</MudTd>
+                    <MudTd DataLabel="Matrícula">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                            @(context.Id != null && context.Id.Length > 6 ? context.Id[..6].ToUpper() : "N/A")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Alumno">
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">
+                            @($"{context.Name} {context.PaternalLastName} {context.MaternalLastName}".Trim())
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
     }
     else if (!string.IsNullOrEmpty(cursoSeleccionadoId) && !cargando)
     {
-        <MudPaper Elevation="1" Class="pa-6 text-center rounded-lg">
-            <MudText Typo="Typo.body1" Color="Color.Default">No se encontraron alumnos inscritos en este curso.</MudText>
+        <MudPaper Elevation="0" Class="pa-8 text-center rounded-lg fade-in-suave" Style="border: 1px dashed var(--mud-palette-lines-default); background-color: transparent;">
+            <MudIcon Icon="@Icons.Material.Filled.GroupOff" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" Class="mb-3" />
+            <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin alumnos inscritos</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">No se encontraron alumnos registrados activamente en este curso.</MudText>
         </MudPaper>
     }
 </MudContainer>
+
+<style>
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private List<Course> listaCursos = [];
@@ -135,7 +169,8 @@
                 }
                 else
                 {
-                    alumnosEnCurso.Add(new Student { Id = insc.StudentId, Name = "ALUMNO DESCONOCIDO" });
+                    // AQUÍ ESTABA LA ADVERTENCIA: Agregamos el operador ?? "" para solucionarlo definitivamente.
+                    alumnosEnCurso.Add(new Student { Id = insc.StudentId ?? "", Name = "ALUMNO DESCONOCIDO" });
                 }
             }
             
