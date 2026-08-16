@@ -8,169 +8,224 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Opciones Administrativas</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Configuración global del sistema, diseño de reportes y control de accesos.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- ENCABEZADO -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Opciones Administrativas</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Configuración global del sistema, diseño de reportes y control de accesos.</MudText>
+    </div>
 
-    <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary">
+    <!-- TABS MODERNOS SIN FONDO PESADO -->
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="false" Color="Color.Primary" PanelClass="pt-6 fade-in-suave">
         
-        <MudTabPanel Text="Identidad Escolar" Icon="@Icons.Material.Filled.Business" Class="pa-6">
-            <div class="fade-in-suave">
-                <MudGrid>
-                    @* --- 1. NOMBRE DE LA INSTITUCIÓN --- *@
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Class="mb-4">Información Institucional</MudText>
+        @* ========================================== *@
+        @* PESTAÑA 1: IDENTIDAD ESCOLAR               *@
+        @* ========================================== *@
+        <MudTabPanel Text="Identidad Escolar" Icon="@Icons.Material.Filled.Business">
+            <MudGrid>
+                
+                @* --- 1. NOMBRE DE LA INSTITUCIÓN --- *@
+                <MudItem xs="12">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Información Institucional</MudText>
                         <MudTextField @bind-Value="config.NombreEscuela" 
                                       Label="Nombre de la Institución Educativa" 
                                       Variant="Variant.Outlined" 
-                                      Required="true" />
-                    </MudItem>
+                                      Required="true"
+                                      Class="modern-input" />
+                    </MudPaper>
+                </MudItem>
 
-                    <MudItem xs="12">
-                        <MudDivider Class="my-2" />
-                    </MudItem>
-
-                    @* --- 2. LOGOTIPO OFICIAL --- *@
-                    <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-start pa-4">
-                        <MudText Typo="Typo.h6" Class="mb-4">Logotipo Oficial</MudText>
+                @* --- 2. LOGOTIPO OFICIAL --- *@
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xl modern-card d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Logotipo Oficial</MudText>
                         
                         @if (!string.IsNullOrEmpty(config.LogoBase64))
                         {
-                            <MudImage Src="@config.LogoBase64" Width="180" Height="180" ObjectFit="ObjectFit.Contain" Elevation="2" Class="rounded-lg mb-4 pa-2 bg-white border-solid border" />
+                            <MudImage Src="@config.LogoBase64" Width="180" Height="180" ObjectFit="ObjectFit.Contain" Elevation="0" Class="rounded-lg mb-4 pa-2" Style="border: 1px dashed var(--mud-palette-lines-default);" />
                         }
                         else
                         {
-                            <MudPaper Width="180px" Height="180px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: #e0e0e0;">
-                                <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 4rem;" Color="Color.Default" />
+                            <MudPaper Elevation="0" Width="180px" Height="180px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
+                                <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
                             </MudPaper>
                         }
 
-                        <MudButton HtmlTag="label" for="logoInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        <MudButton HtmlTag="label" for="logoInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
                             Subir Logotipo
                         </MudButton>
                         <InputFile id="logoInput" OnChange="CambiarLogo" accept=".jpg,.jpeg,.png" style="display: none;" />
-                        <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: PNG o JPG transparentes.</MudText>
-                    </MudItem>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);" Class="mt-2">Formatos sugeridos: PNG o JPG transparentes.</MudText>
+                    </MudPaper>
+                </MudItem>
 
-                    @* --- 3. FONDO DE PANTALLA LOGIN --- *@
-                    <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-start pa-4 border-inline-start">
-                        <MudText Typo="Typo.h6" Class="mb-4">Fondo de Pantalla (Login)</MudText>
+                @* --- 3. FONDO DE PANTALLA LOGIN --- *@
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xl modern-card d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Fondo de Pantalla (Login)</MudText>
                         
                         @if (!string.IsNullOrEmpty(config.BackgroundLoginBase64))
                         {
-                            <MudImage Src="@config.BackgroundLoginBase64" Width="240" Height="140" ObjectFit="ObjectFit.Cover" Elevation="2" Class="rounded-lg mb-4 border-solid border" />
+                            <MudImage Src="@config.BackgroundLoginBase64" Width="280" Height="160" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg mb-4" Style="border: 1px solid var(--mud-palette-lines-default);" />
                         }
                         else
                         {
-                            <MudPaper Width="240px" Height="140px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: #e0e0e0;">
-                                <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 3rem;" Color="Color.Default" />
+                            <MudPaper Elevation="0" Width="280px" Height="160px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
+                                <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
                             </MudPaper>
                         }
 
-                        <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
                             Subir Imagen de Fondo
                         </MudButton>
                         <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
-                        <MudText Typo="Typo.caption" Class="mt-2 text-muted text-center">Formatos sugeridos: JPG o PNG de alta resolución.</MudText>
-                    </MudItem>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);" Class="mt-2">Formatos sugeridos: JPG o PNG de alta resolución.</MudText>
+                    </MudPaper>
+                </MudItem>
 
-                    <MudItem xs="12">
-                        <MudDivider Class="my-2" />
-                    </MudItem>
-
-                    @* --- 4. BOTÓN DE GUARDAR AL FINAL --- *@
-                    <MudItem xs="12" Class="d-flex justify-end mt-2">
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="Color.Primary" 
-                                   Size="Size.Large" 
-                                   StartIcon="@Icons.Material.Filled.Save" 
-                                   OnClick="GuardarAjustes">
-                            GUARDAR CONFIGURACIÓN
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </div>
+                @* --- 4. BOTÓN DE GUARDAR AL FINAL --- *@
+                <MudItem xs="12" Class="d-flex justify-end mt-4">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Save" 
+                               OnClick="GuardarAjustes"
+                               Class="rounded-lg font-weight-bold px-8 py-3"
+                               Style="text-transform: none;">
+                        Guardar Configuración Visual
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
         </MudTabPanel>
 
-        <MudTabPanel Text="Usuarios y Roles" Icon="@Icons.Material.Filled.SupervisorAccount" Class="pa-6">
-            <MudToolBar Class="px-0 mb-4">
-                <MudText Typo="Typo.h6">Personal con Acceso al Sistema</MudText>
-                <MudSpacer />
-                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AbrirDialogoNuevo">
-                    NUEVO USUARIO
-                </MudButton>
-            </MudToolBar>
+        @* ========================================== *@
+        @* PESTAÑA 2: USUARIOS Y ROLES                *@
+        @* ========================================== *@
+        <MudTabPanel Text="Usuarios y Roles" Icon="@Icons.Material.Filled.SupervisorAccount">
+            <MudPaper Elevation="0" Class="pa-6 rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <div class="d-flex flex-wrap justify-space-between align-center mb-6 gap-4">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Personal con Acceso al Sistema</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AbrirDialogoNuevo" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">
+                        Nuevo Usuario
+                    </MudButton>
+                </div>
 
-            @if (cargandoUsuarios)
-            {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
-            }
-            else
-            {
-                <div class="fade-in-suave">
-                    <MudTable Items="@listaUsuarios" Hover="true" Striped="true" Elevation="1">
+                @if (cargandoUsuarios)
+                {
+                    <div class="d-flex flex-column align-center justify-center py-8 fade-in-suave">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="mb-4" />
+                        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Cargando directorio de accesos...</MudText>
+                    </div>
+                }
+                else
+                {
+                    <MudTable Items="@listaUsuarios" Hover="true" Elevation="0" Class="modern-table">
                         <HeaderContent>
-                            <MudTh>Usuario / Correo</MudTh>
-                            <MudTh>Nombre Completo</MudTh>
-                            <MudTh>Rol Asignado</MudTh>
-                            <MudTh>Estado</MudTh>
-                            <MudTh Style="text-align:right;">Acciones</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Usuario / Correo</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre Completo</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Rol Asignado</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Estado</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:right;">Acciones</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd>@context.Correo</MudTd>
-                            <MudTd><b>@context.Nombre</b></MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(context.Rol == "Administrador" ? Color.Error : Color.Info)" Size="Size.Small">
+                            <MudTd DataLabel="Correo">@context.Correo</MudTd>
+                            <MudTd DataLabel="Nombre">
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Nombre</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Rol">
+                                <MudChip T="string" Color="@(context.Rol == "Administrador" ? Color.Error : Color.Info)" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold px-3">
                                     @context.Rol
                                 </MudChip>
                             </MudTd>
-                            <MudTd>
+                            <MudTd DataLabel="Estado">
                                 @if(context.Activo)
                                 {
-                                    <MudBadge Dot="true" Color="Color.Success" Class="my-2">Activo</MudBadge>
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">Activo</MudChip>
                                 }
                                 else
                                 {
-                                    <MudBadge Dot="true" Color="Color.Error" Class="my-2">Inactivo</MudBadge>
+                                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">Inactivo</MudChip>
                                 }
                             </MudTd>
-                            <MudTd Style="text-align:right;">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => AbrirDialogoEditar(context))" />
+                            <MudTd DataLabel="Acciones" Style="text-align:right;">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" Class="mr-2" OnClick="@(() => AbrirDialogoEditar(context))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => EliminarUsuario(context))" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
-                </div>
-            }
+                }
+            </MudPaper>
         </MudTabPanel>
 
     </MudTabs>
 </MudContainer>
 
+<!-- ========================================== -->
+<!-- DIÁLOGO PARA CREAR/EDITAR USUARIO          -->
+<!-- ========================================== -->
 <MudDialog @bind-Visible="dialogoVisible" Options="dialogOptions">
     <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2"/> @(editando ? "Editar Usuario" : "Registrar Nuevo Usuario")
+        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2 mb-1"/> @(editando ? "Editar Usuario" : "Registrar Nuevo Usuario")
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="usuarioActual.Nombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" Class="mb-3" />
-        <MudTextField @bind-Value="usuarioActual.Correo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" Class="mb-3" InputType="InputType.Email" />
-        <MudTextField @bind-Value="usuarioActual.Password" Label="Contraseña de Acceso" Required="true" Variant="Variant.Outlined" Class="mb-3" InputType="InputType.Text" HelperText="Guarda esta contraseña; el usuario la necesitará para entrar." />
-        
-        <MudSelect T="string" Label="Rol Asignado" @bind-Value="usuarioActual.Rol" Variant="Variant.Outlined" Class="mb-4">
-            <MudSelectItem Value="@("Administrador")">Administrador (Acceso Total)</MudSelectItem>
-            <MudSelectItem Value="@("Control Escolar")">Control Escolar (Pagos y Calificaciones)</MudSelectItem>
-            <MudSelectItem Value="@("Docente")">Docente (Solo Lectura/Captura)</MudSelectItem>
-        </MudSelect>
+        <div class="pa-2">
+            <MudTextField @bind-Value="usuarioActual.Nombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+            <MudTextField @bind-Value="usuarioActual.Correo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" InputType="InputType.Email" />
+            <MudTextField @bind-Value="usuarioActual.Password" Label="Contraseña de Acceso" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" InputType="InputType.Text" HelperText="Guarda esta contraseña; el usuario la necesitará para entrar." />
+            
+            <MudSelect T="string" Label="Rol Asignado" @bind-Value="usuarioActual.Rol" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-6 modern-input">
+                <MudSelectItem Value="@("Administrador")">Administrador (Acceso Total)</MudSelectItem>
+                <MudSelectItem Value="@("Control Escolar")">Control Escolar (Pagos y Calificaciones)</MudSelectItem>
+                <MudSelectItem Value="@("Docente")">Docente (Solo Lectura/Captura)</MudSelectItem>
+            </MudSelect>
 
-        <MudSwitch T="bool" @bind-Value="usuarioActual.Activo" Label="@(usuarioActual.Activo ? "Usuario Activo" : "Usuario Suspendido")" Color="Color.Success" />
+            <MudSwitch T="bool" @bind-Value="usuarioActual.Activo" Label="@(usuarioActual.Activo ? "Usuario Activo y Permitido" : "Usuario Suspendido")" Color="@(usuarioActual.Activo ? Color.Success : Color.Error)" />
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="CerrarDialogo">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUsuario">Guardar Usuario</MudButton>
+        <MudButton OnClick="CerrarDialogo" Variant="Variant.Text" Class="rounded-lg font-weight-bold mr-2" Style="text-transform: none;">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUsuario" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">Guardar Usuario</MudButton>
     </DialogActions>
 </MudDialog>
+
+<style>
+    /* Efecto de tarjetas */
+    .modern-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: var(--mud-palette-background-grey);
+    }
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
+        background-color: var(--mud-palette-surface);
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private ConfiguracionEscuela config = new();
@@ -183,7 +238,7 @@
     private bool dialogoVisible;
     private bool editando;
     private Usuario usuarioActual = new();
-    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true, BackdropClick = false };
 
     protected override async Task OnInitializedAsync()
     {
@@ -325,6 +380,7 @@
 
     private async Task EliminarUsuario(Usuario usr)
     {
+        // NOTA: Usa DialogService.ShowMessageBoxAsync que es el estándar actualizado en MudBlazor v7
         bool? result = await DialogService.ShowMessageBoxAsync(
             "Eliminar Acceso", 
             $"¿Estás absolutamente seguro de eliminar el usuario de {usr.Nombre}? Perderá el acceso al sistema inmediatamente.", 
