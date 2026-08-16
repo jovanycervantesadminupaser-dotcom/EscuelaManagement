@@ -7,102 +7,150 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Control de Gastos y Egresos</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">Registra y monitorea las salidas de dinero (renta, nómina, servicios, etc.)</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- ENCABEZADO -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Control de Gastos y Egresos</MudText>
+        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra y monitorea las salidas de dinero (renta, nómina, servicios, etc.)</MudText>
+    </div>
 
     @* --- TARJETA DE RESUMEN DEL MES --- *@
-    <MudGrid Class="mb-6">
+    <MudGrid Class="mb-6 fade-in-suave">
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="3" Class="pa-6 rounded-lg" Style="background: linear-gradient(135deg, #E53935 0%, #E35D5B 100%); color: white;">
-                <MudText Typo="Typo.subtitle2" Class="mb-2" Style="opacity: 0.9;">Total Gastos (Este Mes)</MudText>
-                <MudText Typo="Typo.h3" Style="font-weight: bold;">@totalGastosMes.ToString("C")</MudText>
-                <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Class="mt-2" Style="opacity: 0.5; position: absolute; right: 20px; top: 30px; font-size: 4rem;" />
+            <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <div class="d-flex justify-space-between align-center mb-2">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Total Gastos (Este Mes)</MudText>
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" />
+                    </MudAvatar>
+                </div>
+                <MudText Typo="Typo.h3" Class="font-weight-bold" Color="Color.Error">@totalGastosMes.ToString("C")</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <MudGrid>
+    <MudGrid Class="fade-in-suave">
         @* --- FORMULARIO PARA AGREGAR NUEVO GASTO --- *@
         <MudItem xs="12" md="4">
-            <MudCard Elevation="3" Class="rounded-lg pa-2">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Registrar Salida</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudForm @ref="form" @bind-IsValid="success">
-                        <MudTextField @bind-Value="nuevoGasto.Concepto" Label="Concepto (Ej. Pago de Luz)" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Class="mb-4" />
-                        
-                        <MudNumericField @bind-Value="nuevoGasto.Monto" Label="Monto ($)" Required="true" Min="1.0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Class="mb-4" />
-                        
-                        <MudSelect T="string" Label="Categoría" @bind-Value="nuevoGasto.Categoria" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4">
-                            <MudSelectItem Value="@("Operativo")">Operativo (Papelería, Limpieza)</MudSelectItem>
-                            <MudSelectItem Value="@("Nómina")">Nómina (Profesores, Staff)</MudSelectItem>
-                            <MudSelectItem Value="@("Servicios")">Servicios (Luz, Internet, Agua)</MudSelectItem>
-                            <MudSelectItem Value="@("Renta")">Renta de Inmueble</MudSelectItem>
-                            <MudSelectItem Value="@("Publicidad")">Publicidad y Marketing</MudSelectItem>
-                            <MudSelectItem Value="@("Otro")">Otro</MudSelectItem>
-                        </MudSelect>
+            <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Registrar Salida</MudText>
+                
+                <MudForm @ref="form" @bind-IsValid="success">
+                    <MudTextField T="string" @bind-Value="nuevoGasto.Concepto" Label="Concepto (Ej. Pago de Luz)" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+                    
+                    <MudNumericField T="double" @bind-Value="nuevoGasto.Monto" Label="Monto ($)" Required="true" Min="1.0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Class="mb-4 modern-input" />
+                    
+                    <MudSelect T="string" Label="Categoría" @bind-Value="nuevoGasto.Categoria" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4 modern-input">
+                        <MudSelectItem T="string" Value="@("Operativo")">Operativo (Papelería, Limpieza)</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Nómina")">Nómina (Profesores, Staff)</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Servicios")">Servicios (Luz, Internet, Agua)</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Renta")">Renta de Inmueble</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Publicidad")">Publicidad y Marketing</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Otro")">Otro</MudSelectItem>
+                    </MudSelect>
 
-                        <MudDatePicker @bind-Date="fechaTemp" Label="Fecha del Gasto" Variant="Variant.Outlined" Class="mb-4" />
-                        
-                        <MudTextField @bind-Value="nuevoGasto.Notas" Label="Notas adicionales (Opcional)" Lines="2" Variant="Variant.Outlined" />
-                    </MudForm>
-                </MudCardContent>
-                <MudCardActions Class="d-flex justify-end pb-4 pr-4">
-                    <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Add" OnClick="GuardarGasto" Disabled="@guardando">
-                        @if (guardando) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> } GUARDAR GASTO
+                    <MudDatePicker @bind-Date="fechaTemp" Label="Fecha del Gasto" Variant="Variant.Outlined" Class="mb-4 modern-input" />
+                    
+                    <MudTextField T="string" @bind-Value="nuevoGasto.Notas" Label="Notas adicionales (Opcional)" Lines="3" Variant="Variant.Outlined" Class="mb-6 modern-input" />
+                    
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Add" FullWidth="true" Class="rounded-lg font-weight-bold py-3" Style="text-transform: none;" OnClick="GuardarGasto" Disabled="@guardando">
+                        @if (guardando) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> } Guardar Gasto
                     </MudButton>
-                </MudCardActions>
-            </MudCard>
+                </MudForm>
+            </MudPaper>
         </MudItem>
 
         @* --- TABLA DE HISTORIAL DE GASTOS --- *@
         <MudItem xs="12" md="8">
-            <MudTable Items="@listaGastos" Hover="true" Striped="true" Elevation="3" Class="rounded-lg" Filter="new Func<Gasto,bool>(FilterFunc)">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Historial de Movimientos</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Buscar concepto..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Fecha</MudTh>
-                    <MudTh>Concepto</MudTh>
-                    <MudTh>Categoría</MudTh>
-                    <MudTh Style="text-align: right;">Monto</MudTh>
-                    <MudTh Style="text-align: center;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Fecha">@context.Fecha.ToLocalTime().ToString("dd/MMM/yyyy")</MudTd>
-                    <MudTd DataLabel="Concepto">
-                        <b>@context.Concepto</b>
-                        @if(!string.IsNullOrEmpty(context.Notas))
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Default" Style="display:block; opacity:0.6;">@context.Notas</MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Categoría">
-                        <MudChip T="string" Size="Size.Small" Color="Color.Dark" Variant="Variant.Outlined">@context.Categoria</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Monto" Style="text-align: right; font-weight: bold; color: #E53935;">
-                        - @context.Monto.ToString("C")
-                    </MudTd>
-                    <MudTd DataLabel="Acciones" Style="text-align: center;">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarGasto(context))" />
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText Align="Align.Center" Class="pa-4">No hay gastos registrados.</MudText>
-                </NoRecordsContent>
-                <PagerContent>
-                    <MudTablePager RowsPerPageString="Filas:" />
-                </PagerContent>
-            </MudTable>
+            <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudTable T="Gasto" Items="@listaGastos" Hover="true" Elevation="0" Class="modern-table" Filter="new Func<Gasto,bool>(FilterFunc)">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Historial de Movimientos</MudText>
+                        <MudSpacer />
+                        <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar concepto..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 modern-input" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Style="max-width: 300px;" />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Fecha</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Concepto</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Categoría</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Monto</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Fecha">
+                            <MudText Typo="Typo.body2">@context.Fecha.ToLocalTime().ToString("dd/MMM/yyyy")</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Concepto">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Concepto</MudText>
+                            @if(!string.IsNullOrEmpty(context.Notas))
+                            {
+                                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary); display:block;">@context.Notas</MudText>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Categoría">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">@context.Categoria</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Monto" Style="text-align: right;">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold" Color="Color.Error">- @context.Monto.ToString("C")</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Acciones" Style="text-align: center;">
+                            <MudTooltip Text="Eliminar Gasto" Arrow="true" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarGasto(context))" />
+                            </MudTooltip>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
+                            <MudText Typo="Typo.h6" Class="mb-1 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin Movimientos</MudText>
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Aún no hay gastos registrados que coincidan con tu búsqueda.</MudText>
+                        </div>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" RowsPerPageString="Gastos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+                    </PagerContent>
+                </MudTable>
+            </MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>
+
+<style>
+    /* Efecto de tarjetas principales */
+    .modern-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: var(--mud-palette-background-grey);
+    }
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
+        background-color: var(--mud-palette-surface);
+        border-color: var(--mud-palette-error) !important;
+    }
+
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private MudForm form = default!;
@@ -169,7 +217,6 @@
 
     private async Task EliminarGasto(Gasto gasto)
     {
-        // CORRECCIÓN: Se actualizó de ShowMessageBox a ShowMessageBoxAsync para MudBlazor v7
         bool? result = await DialogService.ShowMessageBoxAsync(
             "Confirmar Eliminación", 
             $"¿Estás seguro que deseas eliminar el registro de '{gasto.Concepto}' por {gasto.Monto.ToString("C")}?", 
