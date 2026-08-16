@@ -9,264 +9,321 @@
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-    <MudToolBar Class="px-0 mb-4 d-flex flex-wrap gap-3">
-        <MudText Typo="Typo.h4" Color="Color.Primary">Panel de Ventas y Rendimiento</MudText>
-        <MudSpacer />
-        
-        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="DescargarReportePDF" Disabled="@generandoPdf">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+    
+    <!-- ENCABEZADO Y EXPORTACIÓN -->
+    <div class="mb-8 d-flex flex-wrap justify-space-between align-center gap-4">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Panel de Ventas y Rendimiento</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Análisis financiero, cobranza y métricas de desempeño del plantel.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="DescargarReportePDF" Disabled="@generandoPdf" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">
             @if (generandoPdf)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
-                <span>GENERANDO...</span>
+                <span>Generando...</span>
             }
             else
             {
-                <span>EXPORTAR PDF</span>
+                <span>Exportar Reporte PDF</span>
             }
         </MudButton>
+    </div>
 
-        @if (filtroTiempo == "Personalizado")
-        {
-            <div style="width: 260px;">
-                <MudDateRangePicker DateRange="rangoFechasCustom" 
-                                    DateRangeChanged="OnRangoFechasCambiado" 
-                                    Variant="Variant.Outlined" 
-                                    Margin="Margin.Dense" 
-                                    AnchorOrigin="Origin.BottomRight" 
-                                    TransformOrigin="Origin.TopRight"
-                                    Clearable="true" 
-                                    PlaceholderStart="Fecha Inicio" 
-                                    PlaceholderEnd="Fecha Fin"
-                                    DisableToolbar="true" />
-            </div>
-        }
+    <!-- PANEL DE FILTROS -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+        <MudGrid Class="align-center">
+            <MudItem xs="12" md="4" lg="3">
+                <MudSelect T="string" Label="Periodo de Análisis" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem T="string" Value="@("Este Mes")">Este Mes</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Este Año")">Este Año</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Personalizado")">Personalizado...</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <div style="width: 180px;">
-            <MudSelect T="string" Value="@filtroTiempo" ValueChanged="OnFiltroCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                <MudSelectItem T="string" Value="@("Este Mes")">Este Mes</MudSelectItem>
-                <MudSelectItem T="string" Value="@("Este Año")">Este Año</MudSelectItem>
-                <MudSelectItem T="string" Value="@("Histórico")">Histórico (Todo)</MudSelectItem>
-                <MudSelectItem T="string" Value="@("Personalizado")">Personalizado...</MudSelectItem>
-            </MudSelect>
-        </div>
+            @if (filtroTiempo == "Personalizado")
+            {
+                <MudItem xs="12" md="4" lg="4" Class="fade-in-suave">
+                    <MudDateRangePicker DateRange="rangoFechasCustom" 
+                                        DateRangeChanged="OnRangoFechasCambiado" 
+                                        Variant="Variant.Outlined" 
+                                        Class="modern-input"
+                                        AnchorOrigin="Origin.BottomCenter" 
+                                        Clearable="true" 
+                                        PlaceholderStart="Fecha Inicio" 
+                                        PlaceholderEnd="Fecha Fin" />
+                </MudItem>
+            }
 
-        <div style="width: 220px;">
-            <MudSelect T="string" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Margin="Margin.Dense" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Placeholder="Todos los Asesores">
-                <MudSelectItem T="string" Value="@("Todos")">Todos los Asesores</MudSelectItem>
-                @foreach(var asesor in listaAsesoresDisponibles)
-                {
-                    <MudSelectItem T="string" Value="@asesor">@asesor</MudSelectItem>
-                }
-            </MudSelect>
-        </div>
-    </MudToolBar>
+            <MudItem xs="12" md="4" lg="4">
+                <MudSelect T="string" Label="Filtrar por Asesor" Value="@filtroAsesor" ValueChanged="OnFiltroAsesorCambiado" Variant="Variant.Outlined" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem T="string" Value="@("Todos")">Todos los Asesores</MudSelectItem>
+                    @foreach(var asesor in listaAsesoresDisponibles)
+                    {
+                        <MudSelectItem T="string" Value="@asesor">@asesor</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
     @if (cargando)
     {
-        @* EFECTO ESQUELETO MÚLTIPLE PARA EL DASHBOARD *@
+        @* EFECTO ESQUELETO *@
         <div class="fade-in-suave">
-            <MudGrid Class="mb-4">
-                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
-                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
-                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
-            </MudGrid>
-
-            <MudGrid Class="mb-4">
-                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
-                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="130px" Class="rounded-lg" /></MudItem>
-            </MudGrid>
-
             <MudGrid Class="mb-6">
-                @for (int i = 0; i < 4; i++)
-                {
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" Class="rounded-lg" />
-                    </MudItem>
-                }
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="140px" Class="rounded-xl" /></MudItem>
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="140px" Class="rounded-xl" /></MudItem>
+                <MudItem xs="12" md="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="140px" Class="rounded-xl" /></MudItem>
             </MudGrid>
-
-            <MudGrid Class="mb-4">
-                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" /></MudItem>
-                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="350px" Class="rounded-lg" /></MudItem>
-            </MudGrid>
-
-            <MudGrid Class="mt-4">
-                <MudItem xs="12"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" Class="rounded-lg" /></MudItem>
+            <MudGrid Class="mb-6">
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="160px" Class="rounded-xl" /></MudItem>
+                <MudItem xs="12" md="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="160px" Class="rounded-xl" /></MudItem>
             </MudGrid>
         </div>
     }
     else
     {
         <div class="fade-in-suave">
-            @* --- NUEVO MÓDULO DE UTILIDAD REAL Y FINANZAS --- *@
-            <MudGrid Class="mb-4">
+            
+            @* --- 1. KPIs PRINCIPALES (UTILIDAD Y FINANZAS) --- *@
+            <MudGrid Class="mb-6">
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #2e7d32; height: 100%;">
-                        <div class="d-flex justify-space-between align-start">
-                            <div>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados (Filtro)</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
-                            </div>
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" />
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <div class="d-flex justify-space-between align-center mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Ingresos Proyectados</MudText>
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success);" Class="rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
+                            </MudAvatar>
                         </div>
+                        <MudText Typo="Typo.h3" Class="font-weight-bold" Color="Color.Success">@totalIngresos.ToString("C")</MudText>
                     </MudPaper>
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #c62828; height: 100%;">
-                        <div class="d-flex justify-space-between align-start">
-                            <div>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Egresos / Gastos (Filtro)</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Error"><b>- @totalGastosFiltro.ToString("C")</b></MudText>
-                            </div>
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Color="Color.Error" Size="Size.Large" />
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <div class="d-flex justify-space-between align-center mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Egresos / Gastos</MudText>
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingDown" />
+                            </MudAvatar>
                         </div>
+                        <MudText Typo="Typo.h3" Class="font-weight-bold" Color="Color.Error">- @totalGastosFiltro.ToString("C")</MudText>
                     </MudPaper>
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="@($"border-color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")}; height: 100%;")">
-                        <div class="d-flex justify-space-between align-start">
-                            <div>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Utilidad Real (Neta)</MudText>
-                                <MudText Typo="Typo.h4" Style="@($"color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")};")"><b>@utilidadRealNeta.ToString("C")</b></MudText>
-                            </div>
-                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Style="@($"color: {(utilidadRealNeta >= 0 ? "#1976d2" : "#e65100")};")" Size="Size.Large" />
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl h-100" Style="@($"border: 1px solid {(utilidadRealNeta >= 0 ? "var(--mud-palette-primary)" : "var(--mud-palette-warning)")};")">
+                        <div class="d-flex justify-space-between align-center mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Utilidad Real (Neta)</MudText>
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="@($"background-color: rgba({(utilidadRealNeta >= 0 ? "var(--mud-palette-primary-rgb)" : "var(--mud-palette-warning-rgb)")}, 0.1); color: {(utilidadRealNeta >= 0 ? "var(--mud-palette-primary)" : "var(--mud-palette-warning)")};")" Class="rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" />
+                            </MudAvatar>
                         </div>
+                        <MudText Typo="Typo.h3" Class="font-weight-bold" Style="@($"color: {(utilidadRealNeta >= 0 ? "var(--mud-palette-primary)" : "var(--mud-palette-warning)")};")">@utilidadRealNeta.ToString("C")</MudText>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            @* --- SALUD FINANCIERA --- *@
-            <MudGrid Class="mb-4">
+            @* --- 2. SALUD FINANCIERA (COBRANZA) --- *@
+            <MudGrid Class="mb-6">
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #2196f3; height: 100%;">
-                        <div class="d-flex justify-space-between align-start mb-2">
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <div class="d-flex justify-space-between align-center mb-4">
                             <div>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Cobranza Efectiva (Dinero Real)</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Info"><b>@totalCobranzaReal.ToString("C")</b></MudText>
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Cobranza Efectiva (Dinero Real)</MudText>
+                                <MudText Typo="Typo.h4" Class="font-weight-bold mt-1" Color="Color.Info">@totalCobranzaReal.ToString("C")</MudText>
                             </div>
-                            <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Info" Size="Size.Large" />
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-info-rgb), 0.1); color: var(--mud-palette-info);" Class="rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Medium" />
+                            </MudAvatar>
                         </div>
-                        <MudProgressLinear Color="Color.Info" Value="@porcentajeCobranza" Height="8px" Class="rounded-lg mb-1" />
-                        <MudText Typo="Typo.caption" Color="Color.Default"><b>@porcentajeCobranza.ToString("0.1")%</b> del ingreso proyectado ha sido cobrado.</MudText>
+                        <MudProgressLinear Color="Color.Info" Value="@porcentajeCobranza" Size="Size.Large" Class="rounded-lg mb-2" />
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);"><b>@porcentajeCobranza.ToString("0.1")%</b> del ingreso proyectado ha sido cobrado.</MudText>
                     </MudPaper>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="3" Class="pa-4 border-l-4" Style="border-color: #f44336; height: 100%;">
-                        <div class="d-flex justify-space-between align-start">
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <div class="d-flex justify-space-between align-center mb-4">
                             <div>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Pendiente por Cobrar / Cartera Vencida</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Error"><b>@carteraVencida.ToString("C")</b></MudText>
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Cartera Vencida (Pendiente)</MudText>
+                                <MudText Typo="Typo.h4" Class="font-weight-bold mt-1" Color="Color.Error">@carteraVencida.ToString("C")</MudText>
                             </div>
-                            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" />
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Medium" />
+                            </MudAvatar>
                         </div>
-                        <MudText Typo="Typo.body2" Class="mt-3" Color="Color.Default">
-                            Diferencia entre el valor exigible a la fecha (por periodos transcurridos) y los pagos registrados.
-                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Diferencia entre el valor exigible a la fecha (por periodos transcurridos) y los pagos registrados.</MudText>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            @* --- KPIs Y GRÁFICAS --- *@
+            @* --- 3. INDICADORES SECUNDARIOS --- *@
             <MudGrid Class="mb-6">
                 <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #4caf50; height: 100%;">
-                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Ingresos Proyectados</MudText>
-                        <MudText Typo="Typo.h5" Color="Color.Success"><b>@totalIngresos.ToString("C")</b></MudText>
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success);" Class="rounded-lg mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Ingresos Proyectados</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Success">@totalIngresos.ToString("C")</MudText>
                         
                         @if (mostrarCrecimiento)
                         {
-                            <div class="d-flex align-center mt-1">
+                            <div class="d-flex align-center mt-2">
                                 <MudIcon Icon="@(crecimientoIngresos >= 0 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)" 
-                                        Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
-                                <MudText Typo="Typo.caption" Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)" Class="ml-1">
-                                    <b>@(crecimientoIngresos >= 0 ? "+" : "")@crecimientoIngresos.ToString("0.1")%</b> vs periodo ant.
+                                         Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Class="font-weight-bold ml-1" Color="@(crecimientoIngresos >= 0 ? Color.Success : Color.Error)">
+                                    @(crecimientoIngresos >= 0 ? "+" : "")@crecimientoIngresos.ToString("0.1")% <span style="color: var(--mud-palette-text-secondary); font-weight: normal;">vs ant.</span>
                                 </MudText>
                             </div>
                         }
                     </MudPaper>
                 </MudItem>
+
                 <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #2196f3; height: 100%;">
-                        <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Total de Inscripciones</MudText>
-                        <MudText Typo="Typo.h5" Color="Color.Info"><b>@totalInscritos</b></MudText>
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(var(--mud-palette-info-rgb), 0.1); color: var(--mud-palette-info);" Class="rounded-lg mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.People" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Total Inscripciones</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Info">@totalInscritos</MudText>
 
                         @if (mostrarCrecimiento)
                         {
-                            <div class="d-flex align-center mt-1">
+                            <div class="d-flex align-center mt-2">
                                 <MudIcon Icon="@(crecimientoInscritos >= 0 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)" 
-                                        Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
-                                <MudText Typo="Typo.caption" Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)" Class="ml-1">
-                                    <b>@(crecimientoInscritos >= 0 ? "+" : "")@crecimientoInscritos.ToString("0.1")%</b> vs periodo ant.
+                                         Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Class="font-weight-bold ml-1" Color="@(crecimientoInscritos >= 0 ? Color.Success : Color.Error)">
+                                    @(crecimientoInscritos >= 0 ? "+" : "")@crecimientoInscritos.ToString("0.1")% <span style="color: var(--mud-palette-text-secondary); font-weight: normal;">vs ant.</span>
                                 </MudText>
                             </div>
                         }
                     </MudPaper>
                 </MudItem>
+
                 <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #ff9800; height: 100%;">
-                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Curso Estrella</MudText>
-                        <MudText Typo="Typo.h6" Align="Align.Center" Style="line-height: 1.2;"><b>@cursoEstrella</b></MudText>
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning);" Class="rounded-lg mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Curso Estrella</MudText>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mt-1" Style="line-height: 1.2;">@cursoEstrella</MudText>
                     </MudPaper>
                 </MudItem>
+
                 <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="3" Class="pa-4 d-flex flex-column align-center justify-center border-t-4" Style="border-color: #9c27b0; height: 100%;">
-                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.subtitle2" Color="Color.Default">Mejor Asesor(a)</MudText>
-                        <MudText Typo="Typo.h6" Align="Align.Center"><b>@mejorAsesor</b></MudText>
+                    <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudAvatar Variant="Variant.Filled" Style="background-color: rgba(var(--mud-palette-secondary-rgb), 0.1); color: var(--mud-palette-secondary);" Class="rounded-lg mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Mejor Asesor(a)</MudText>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mt-1">@mejorAsesor</MudText>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            <MudGrid>
+            @* --- 4. GRÁFICAS --- *@
+            <MudGrid Class="mb-6">
                 <MudItem xs="12" md="6">
-                    <MudCard Elevation="3" Style="height: 100%;">
-                        <MudCardHeader><MudText Typo="Typo.h6">Demanda por Curso</MudText></MudCardHeader>
-                        <MudCardContent Class="d-flex justify-center">
-                            @if (dataCursos.Any()) { <MudChart T="double" ChartType="ChartType.Pie" InputData="@dataCursos" InputLabels="@labelsCursos" Width="100%" Height="300px" /> }
-                        </MudCardContent>
-                    </MudCard>
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Demanda por Curso</MudText>
+                        <div class="d-flex justify-center">
+                            @if (dataCursos.Any()) 
+                            { 
+                                <MudChart T="double" ChartType="ChartType.Pie" InputData="@dataCursos" InputLabels="@labelsCursos" Width="100%" Height="300px" /> 
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);" Class="py-12">No hay datos suficientes.</MudText>
+                            }
+                        </div>
+                    </MudPaper>
                 </MudItem>
+                
                 <MudItem xs="12" md="6">
-                    <MudCard Elevation="3" Style="height: 100%;">
-                        <MudCardHeader><MudText Typo="Typo.h6">Ventas por Asesor</MudText></MudCardHeader>
-                        <MudCardContent>
-                            @if (SeriesAsesores.Any() && SeriesAsesores.First().Data.Any()) { <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="@SeriesAsesores" XAxisLabels="@labelsAsesores" Width="100%" Height="300px" /> }
-                        </MudCardContent>
-                    </MudCard>
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Ventas por Asesor</MudText>
+                        <div>
+                            @if (SeriesAsesores.Any() && SeriesAsesores.First().Data.Any()) 
+                            { 
+                                <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="@SeriesAsesores" XAxisLabels="@labelsAsesores" Width="100%" Height="300px" /> 
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);" Class="py-12 text-center">No hay datos suficientes.</MudText>
+                            }
+                        </div>
+                    </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            <MudGrid Class="mt-4">
-                <MudItem xs="12">
-                    <MudCard Elevation="3">
-                        <MudCardHeader><MudText Typo="Typo.h6">Desglose Financiero por Curso</MudText></MudCardHeader>
-                        <MudCardContent Class="pa-0">
-                            <MudTable Items="@desgloseCursos" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh><b>Nombre del Curso</b></MudTh>
-                                    <MudTh Style="text-align:center;"><b>Inscripciones</b></MudTh>
-                                    <MudTh Style="text-align:right;"><b>Ingresos Recabados</b></MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd>@context.NombreCurso</MudTd>
-                                    <MudTd Style="text-align:center;"><MudChip T="string" Color="Color.Primary" Size="Size.Small">@context.Cantidad</MudChip></MudTd>
-                                    <MudTd Style="text-align:right;">@context.IngresoTotal.ToString("C")</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            </MudGrid>
+            @* --- 5. TABLA DE DESGLOSE FINANCIERO --- *@
+            <MudPaper Elevation="0" Class="pa-6 rounded-xl mb-6" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudTable Items="@desgloseCursos" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="modern-table">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Desglose Financiero por Curso</MudText>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre del Curso</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:center;">Inscripciones</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:right;">Ingresos Proyectados</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Nombre del Curso">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@context.NombreCurso</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Inscripciones" Style="text-align:center;">
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold px-3">@context.Cantidad</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Ingresos Proyectados" Style="text-align:right;">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold text-success">@context.IngresoTotal.ToString("C")</MudText>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+
         </div>
     }
 </MudContainer>
+
+<style>
+    /* Efecto de tarjetas principales */
+    .modern-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: var(--mud-palette-background-grey);
+    }
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
+        background-color: var(--mud-palette-surface);
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
+    .modern-table .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 16px 12px !important;
+    }
+    .modern-table .mud-table-root {
+        border: none !important;
+    }
+</style>
 
 @code {
     private bool cargando = true;
