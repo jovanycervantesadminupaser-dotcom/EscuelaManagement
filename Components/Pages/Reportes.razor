@@ -11,60 +11,67 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
     
-    <!-- Encabezado Limpio -->
+    <!-- ENCABEZADO -->
     <div class="mb-8">
         <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Centro de Reportes y Boletas</MudText>
         <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Genera e imprime las boletas oficiales de calificaciones por alumno.</MudText>
     </div>
 
-    <!-- Tarjeta de Controles (Filtros) -->
-    <MudPaper Elevation="0" Class="pa-8 rounded-lg mb-8" Style="border: 1px solid var(--mud-palette-lines-default);">
-        <MudGrid>
+    <!-- PANEL DE FILTROS -->
+    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+        <MudGrid Class="align-center">
             <MudItem xs="12" md="4">
                 <MudSelect T="string" Label="1. Selecciona el Curso" 
                            ValueChanged="@OnCursoBoletaChangedAsync" 
                            Value="@selectedCursoBoletaId" 
                            Variant="Variant.Outlined"
-                           AnchorOrigin="Origin.BottomCenter">
+                           AnchorOrigin="Origin.BottomCenter"
+                           Class="modern-input">
                     @foreach (var c in listaCursos)
                     {
                         <MudSelectItem T="string" Value="@c.Id">@c.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
+            
             <MudItem xs="12" md="4">
                 <MudSelect T="string" Label="2. Selecciona el Alumno" 
                            ValueChanged="@OnAlumnoBoletaChangedAsync" 
                            Value="@selectedAlumnoBoletaId" 
                            Variant="Variant.Outlined" 
                            Disabled="@(!alumnosBoleta.Any())"
-                           AnchorOrigin="Origin.BottomCenter">
+                           AnchorOrigin="Origin.BottomCenter"
+                           Class="modern-input">
                     @foreach (var a in alumnosBoleta)
                     {
                         <MudSelectItem T="string" Value="@a.Id">@a.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="4" Class="d-flex align-center">
+            
+            <MudItem xs="12" md="4" Class="d-flex align-center mt-2 mt-md-0">
                 <MudButton Variant="Variant.Filled" 
                            Color="Color.Primary" 
-                           StartIcon="@Icons.Material.Filled.Print" 
+                           StartIcon="@Icons.Material.Filled.PictureAsPdf" 
                            OnClick="@ImprimirBoleta" 
                            FullWidth="true" 
-                           Size="Size.Large"
-                           Class="rounded-lg font-weight-bold"
-                           Style="text-transform: none; height: 56px;">
-                    Generar Boleta
+                           Disabled="@(!boletaPreview.Any())"
+                           Class="rounded-lg font-weight-bold py-3"
+                           Style="text-transform: none;">
+                    Generar Boleta Oficial
                 </MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-    <!-- Tabla de Vista Previa -->
+    <!-- ÁREA DE VISTA PREVIA O ESTADO VACÍO -->
     @if (boletaPreview.Any())
     {
-        <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Vista Previa de Boleta</MudText>
+        <MudPaper Elevation="0" Class="pa-6 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+            <div class="mb-4">
+                <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Vista Previa de Boleta</MudText>
+                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Verifica que las calificaciones sean correctas antes de generar el documento PDF.</MudText>
+            </div>
             
             <MudTable T="FilaBoleta" Items="@boletaPreview" Hover="true" Elevation="0" Class="modern-table">
                 <HeaderContent>
@@ -74,11 +81,13 @@
                     <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:center;">Calificación</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Materia" Class="font-weight-bold">@context.NombreMateria</MudTd>
+                    <MudTd DataLabel="Materia">
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">@context.NombreMateria</MudText>
+                    </MudTd>
                     <MudTd DataLabel="Profesor">@context.Profesor</MudTd>
                     <MudTd DataLabel="Periodo">@context.Periodo</MudTd>
                     <MudTd DataLabel="Calificación" Style="text-align:center;">
-                        <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small" Class="font-weight-bold">
+                        <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold px-3">
                             @context.Nota.ToString("0.0")
                         </MudChip>
                     </MudTd>
@@ -86,10 +95,32 @@
             </MudTable>
         </MudPaper>
     }
+    else
+    {
+        <!-- EMPTY STATE (ESTADO VACÍO) -->
+        <MudPaper Elevation="0" Class="pa-12 rounded-xl d-flex flex-column align-center justify-center fade-in-suave" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
+            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: var(--mud-palette-text-secondary); opacity: 0.5;" Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-secondary);">Generador de Boletas</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Selecciona un curso y un alumno para previsualizar sus calificaciones y generar el documento oficial en PDF.</MudText>
+        </MudPaper>
+    }
 </MudContainer>
 
 <style>
-    /* Estilos limpios para la tabla (Plantilla 3) */
+    /* Estilos modernos para los inputs */
+    .modern-input .mud-input-outlined-border {
+        border-color: var(--mud-palette-lines-default) !important;
+    }
+    .modern-input .mud-input {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+    }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-width: 2px !important;
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Estilos limpios para la tabla */
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
         padding: 16px 24px !important;
