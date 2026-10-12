@@ -9,38 +9,83 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="background-color: var(--mud-palette-background); min-height: 100vh;">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="background-color: #f8fafc; min-height: 100vh;">
     
-    <!-- BANNER DE BIENVENIDA (ESTILO M3 EXPRESSIVE HERO) -->
-    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl d-flex flex-wrap align-center justify-space-between fade-in-suave" Style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; box-shadow: 0 20px 25px -5px rgba(30, 27, 75, 0.2);">
+    <!-- BANNER DE BIENVENIDA / HERO (ESTILO DEL BOCETO SGE) -->
+    <div class="d-flex justify-space-between align-center mb-8 flex-wrap gap-4 fade-in-suave">
         <div>
-            <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">
+            <MudText Typo="Typo.h3" Class="font-weight-bold" Style="color: #1e1b4b; letter-spacing: -1px;">
                 ¡Hola, @(string.IsNullOrWhiteSpace(UserSession.Nombre) ? "Administrador" : UserSession.Nombre)! 👋
             </MudText>
-            <MudText Typo="Typo.body1" Style="opacity: 0.85;" Class="mb-3">Bienvenido a tu panel de control central. Aquí tienes tu resumen operativo.</MudText>
-            <MudChip T="string" Size="Size.Small" Style="background: rgba(255,255,255,0.15); color: white; font-weight: bold; border-radius: 8px;">@fechaActual</MudChip>
+            <MudText Typo="Typo.body1" Style="color: #64748b;" Class="mt-1">
+                Bienvenido a tu panel de control central. Aquí tienes tu resumen operativo y actividades de hoy.
+            </MudText>
         </div>
-        <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Style="font-size: 7rem; opacity: 0.1;" Class="d-none d-sm-flex" />
-    </MudPaper>
-
-    <!-- CONTROL DE EDICIÓN Y GUARDADO -->
-    <div class="d-flex justify-end mb-6 fade-in-suave">
+        
+        <!-- ACCIÓN DE EDITAR PANEL -->
         <MudButton Variant="@(isEditMode ? Variant.Filled : Variant.Outlined)" 
                    Color="@(isEditMode ? Color.Success : Color.Default)" 
                    StartIcon="@(isEditMode ? Icons.Material.Filled.Save : Icons.Material.Filled.Edit)" 
                    OnClick="ToggleEditMode"
-                   Class="rounded-xl font-weight-bold px-6 py-3" 
-                   Style="text-transform: none; border-color: var(--mud-palette-lines-default);">
+                   Class="rounded-xl font-weight-bold px-6 py-2.5" 
+                   Style="text-transform: none; border-color: #cbd5e1; background: white;">
             @(isEditMode ? "Guardar Panel" : "Editar Panel")
         </MudButton>
     </div>
 
+    <!-- ================================================= -->
+    <!-- TARJETAS MÉTRICAS SUPERIORES (COLORES DEL BOCETO) -->
+    <!-- ================================================= -->
+    <MudGrid Class="mb-8 fade-in-suave">
+        <!-- Tarjeta 1: Alumnos Activos (Verde Turquesa del Boceto) -->
+        <MudItem xs="12" md="4">
+            <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(13, 148, 136, 0.3);">
+                <div class="d-flex justify-space-between align-center">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Alumnos Activos</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Group" Style="font-size: 2rem; opacity: 0.85;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">1,245</MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Matriculados en el ciclo actual</MudText>
+                </div>
+            </div>
+        </MudItem>
+
+        <!-- Tarjeta 2: Asistencia Diaria (Petróleo / Esmeralda con Gráfica) -->
+        <MudItem xs="12" md="4">
+            <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(15, 118, 110, 0.3);">
+                <div class="d-flex justify-space-between align-center">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Asistencia Diaria</MudText>
+                    <MudProgressCircular Value="92" Color="Color.Warning" Size="Size.Small" Thickness="6" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">92%</MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Promedio general del plantel</MudText>
+                </div>
+            </div>
+        </MudItem>
+
+        <!-- Tarjeta 3: Mensajes Nuevos (Coral / Salmón del Boceto) -->
+        <MudItem xs="12" md="4">
+            <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #fb923c 0%, #f87171 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(248, 113, 113, 0.3);">
+                <div class="d-flex justify-space-between align-center">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Mensajes Nuevos</MudText>
+                    <MudChip T="string" Size="Size.Small" Style="background: rgba(255,255,255,0.3); color: white; font-weight: bold; border-radius: 8px;">14</MudChip>
+                </div>
+                <div>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">Bandeja</MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Avisos pendientes de tutores</MudText>
+                </div>
+            </div>
+        </MudItem>
+    </MudGrid>
+
     <!-- ============================================== -->
-    <!-- MÓDULOS DE GESTIÓN (M3 CARDS) -->
+    <!-- MÓDULOS DE GESTIÓN (M3 CARDS INTERACTIVAS) -->
     <!-- ============================================== -->
-    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Style="color: var(--mud-palette-text-primary);">Módulos de Gestión</MudText>
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Style="color: #1e1b4b;">Módulos de Gestión</MudText>
     
-    <MudGrid Class="mb-10 fade-in-suave">
+    <MudGrid Class="mb-8 fade-in-suave">
         @foreach (var modulo in ModulosGestion.Where(m => !m.SoloAdmin || UserSession.EsControlEscolar))
         {
             <MudItem xs="12" sm="6" md="3" Style="position: relative;">
@@ -48,12 +93,12 @@
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" Class="eliminar-btn" OnClick="() => RemoveCard(modulo, true)" />
                 }
-                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xxl m3-modern-card h-100" Style="border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);" @onclick="() => NavigateIfNormal(modulo.Ruta)">
+                <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-start rounded-xxl m3-modern-card h-100" Style="border: 1px solid #e2e8f0; background-color: #ffffff;" @onclick="() => NavigateIfNormal(modulo.Ruta)">
                     <MudAvatar Variant="Variant.Filled" Size="Size.Large" Style="@($"background-color: rgba(var(--mud-palette-{modulo.ColorBase}-rgb), 0.12); color: var(--mud-palette-{modulo.ColorBase});")" Class="mb-5 rounded-xl">
                         <MudIcon Icon="@modulo.Icono" Size="Size.Medium" />
                     </MudAvatar>
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-2" Style="color: var(--mud-palette-text-primary);">@modulo.Titulo</MudText>
-                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary); line-height: 1.5;">@modulo.Descripcion</MudText>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-2" Style="color: #0f172a;">@modulo.Titulo</MudText>
+                    <MudText Typo="Typo.body2" Style="color: #64748b; line-height: 1.5;">@modulo.Descripcion</MudText>
                 </MudPaper>
             </MudItem>
         }
@@ -63,17 +108,17 @@
         {
             <MudItem xs="12" sm="6" md="3">
                 <MudPaper Elevation="0" Class="pa-6 d-flex flex-column align-center justify-center rounded-xxl cursor-pointer h-100 modern-add-card" @onclick="() => OpenAddDialog(true)">
-                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 3rem; color: var(--mud-palette-text-secondary);" Class="mb-2" />
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Agregar Módulo</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 3rem; color: #94a3b8;" Class="mb-2" />
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: #64748b;">Agregar Módulo</MudText>
                 </MudPaper>
             </MudItem>
         }
     </MudGrid>
 
     <!-- ============================================== -->
-    <!-- ACCESOS RÁPIDOS -->
+    <!-- ACCESOS RÁPIDOS Y ACTIVIDADES (BLOQUE INFERIOR) -->
     <!-- ============================================== -->
-    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Style="color: var(--mud-palette-text-primary);">Accesos Rápidos</MudText>
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Style="color: #1e1b4b;">Accesos Rápidos</MudText>
     
     <MudGrid Class="fade-in-suave mb-10">
         @foreach (var acceso in AccesosRapidos.Where(a => !a.SoloAdmin || UserSession.EsControlEscolar))
@@ -83,13 +128,13 @@
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" Class="eliminar-btn" OnClick="() => RemoveCard(acceso, false)" />
                 }
-                <MudPaper Elevation="0" Class="pa-5 rounded-xxl d-flex align-center m3-action-card h-100" Style="border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);" @onclick="() => NavigateIfNormal(acceso.Ruta)">
+                <MudPaper Elevation="0" Class="pa-5 rounded-xxl d-flex align-center m3-action-card h-100" Style="border: 1px solid #e2e8f0; background-color: #ffffff;" @onclick="() => NavigateIfNormal(acceso.Ruta)">
                     <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="@($"background-color: rgba(var(--mud-palette-{acceso.ColorBase}-rgb), 0.12); color: var(--mud-palette-{acceso.ColorBase});")" Class="mr-4 rounded-xl">
                         <MudIcon Icon="@acceso.Icono" Size="Size.Small" />
                     </MudAvatar>
                     <div>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@acceso.Titulo</MudText>
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@acceso.Descripcion</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: #0f172a;">@acceso.Titulo</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #64748b;">@acceso.Descripcion</MudText>
                     </div>
                 </MudPaper>
             </MudItem>
@@ -100,8 +145,8 @@
         {
             <MudItem xs="12" sm="6" md="4">
                 <MudPaper Elevation="0" Class="pa-5 rounded-xxl d-flex align-center justify-center cursor-pointer h-100 modern-add-card" @onclick="() => OpenAddDialog(false)">
-                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 2rem; color: var(--mud-palette-text-secondary);" Class="mr-3" />
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Agregar Acceso</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Style="font-size: 2rem; color: #94a3b8;" Class="mr-3" />
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: #64748b;">Agregar Acceso</MudText>
                 </MudPaper>
             </MudItem>
         }
@@ -162,7 +207,7 @@
 </MudDialog>
 
 <style>
-    /* Estilos M3 Expressive y esquinas extra redondeadas */
+    /* Estilos Material 3 Expressive (Inspirados en el boceto SGE) */
     .rounded-xxl {
         border-radius: 28px !important;
     }
@@ -173,8 +218,8 @@
     .m3-modern-card:hover {
         transform: translateY(-6px);
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01) !important;
-        border-color: var(--mud-palette-primary) !important;
-        background-color: var(--mud-palette-surface);
+        border-color: #cbd5e1 !important;
+        background-color: #ffffff;
     }
     .m3-action-card {
         transition: all 0.25s ease-in-out;
@@ -183,33 +228,33 @@
     .m3-action-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04) !important;
-        border-color: var(--mud-palette-primary) !important;
-        background-color: var(--mud-palette-surface);
+        border-color: #cbd5e1 !important;
+        background-color: #ffffff;
     }
     .modern-add-card {
-        border: 2px dashed var(--mud-palette-lines-default);
+        border: 2px dashed #cbd5e1;
         background-color: transparent;
         transition: all 0.2s ease;
     }
     .modern-add-card:hover {
-        border-color: var(--mud-palette-primary);
-        background-color: rgba(var(--mud-palette-primary-rgb), 0.02);
+        border-color: #0d9488;
+        background-color: rgba(13, 148, 136, 0.02);
     }
     .eliminar-btn {
         position: absolute;
         top: 8px;
         right: 8px;
         z-index: 10;
-        background-color: var(--mud-palette-surface);
+        background-color: #ffffff;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .eliminar-btn:hover {
-        background-color: var(--mud-palette-error);
+        background-color: #ef4444;
         color: white !important;
     }
-    .modern-input .mud-input-outlined-border { border-color: var(--mud-palette-lines-default) !important; }
-    .modern-input .mud-input { background-color: var(--mud-palette-background-grey) !important; border-radius: 12px !important; }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-width: 2px !important; border-color: var(--mud-palette-primary) !important; }
+    .modern-input .mud-input-outlined-border { border-color: #cbd5e1 !important; }
+    .modern-input .mud-input { background-color: #f8fafc !important; border-radius: 12px !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-width: 2px !important; border-color: #0d9488 !important; }
 </style>
 
 @code {
