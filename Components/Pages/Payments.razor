@@ -327,7 +327,6 @@
 
         if (curso != null && enrollment != null)
         {
-            // CORRECCIÓN: Calcular según el plan elegido
             string tipo = enrollment.TipoPlazo ?? "";
             bool esPagoUnico = tipo.Contains("exhibición", StringComparison.OrdinalIgnoreCase) || 
                                tipo.Contains("exhibicion", StringComparison.OrdinalIgnoreCase) || 
@@ -344,7 +343,6 @@
                 int plazos = enrollment.NumeroPlazos > 0 ? enrollment.NumeroPlazos : 1;
                 double montoPlazo = enrollment.MontoPlazo > 0 ? enrollment.MontoPlazo : 0;
                 
-                // Si el monto plazo es 0 por error, usamos fallback. Si no, calculamos plazos * monto
                 costoTotalCurso = montoPlazo > 0 ? (plazos * montoPlazo) : (curso.SinglePaymentCost * (1 - (enrollment.DiscountAmount / 100.0)));
             }
 
@@ -558,7 +556,8 @@
                         costoTotal = curso.SinglePaymentCost;
                     }
 
-                    double yaPagado = historialPagos.Where(p => p.CourseId == curso.Id && p.PaymentDate <= pago.PaymentDate).Sum(p => p.Amount);
+                    // CORRECCIÓN: Sumar el monto del pago actual para asegurar la precisión del primer recibo emitido.
+                    double yaPagado = historialPagos.Where(p => p.CourseId == curso.Id && p.Id != pago.Id).Sum(p => p.Amount) + pago.Amount;
                     double restante = costoTotal - yaPagado;
                     if (restante < 0) restante = 0;
 
