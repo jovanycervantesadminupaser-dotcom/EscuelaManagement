@@ -11,7 +11,7 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="background-color: var(--mud-palette-background); min-height: 100vh;">
     
-    <!-- BANNER DE BIENVENIDA / HERO (ESTILO M3 EXPRESSIVE) -->
+    <!-- BANNER DE BIENVENIDA / HERO -->
     <div class="d-flex justify-space-between align-center mb-8 flex-wrap gap-4 fade-in-suave">
         <div>
             <MudText Typo="Typo.h3" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">
@@ -22,7 +22,6 @@
             </MudText>
         </div>
         
-        <!-- ACCIÓN DE EDITAR PANEL -->
         <MudButton Variant="@(isEditMode ? Variant.Filled : Variant.Outlined)" 
                    Color="@(isEditMode ? Color.Success : Color.Default)" 
                    StartIcon="@(isEditMode ? Icons.Material.Filled.Save : Icons.Material.Filled.Edit)" 
@@ -34,47 +33,53 @@
     </div>
 
     <!-- ================================================= -->
-    <!-- TARJETAS MÉTRICAS SUPERIORES (COLORES DINÁMICOS) -->
+    <!-- TARJETAS MÉTRICAS SUPERIORES (DATOS REALES FIREBASE) -->
     <!-- ================================================= -->
     <MudGrid Class="mb-8 fade-in-suave">
         <!-- Tarjeta 1: Alumnos Activos -->
         <MudItem xs="12" md="4">
             <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(13, 148, 136, 0.3);">
                 <div class="d-flex justify-space-between align-center">
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Alumnos Activos</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Alumnos Registrados</MudText>
                     <MudIcon Icon="@Icons.Material.Filled.Group" Style="font-size: 2rem; opacity: 0.85;" />
                 </div>
                 <div>
-                    <MudText Typo="Typo.h3" Class="font-weight-bold">1,245</MudText>
-                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Matriculados en el ciclo actual</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">
+                        @(cargandoMetricas ? "..." : totalAlumnos.ToString("N0"))
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Total en base de datos</MudText>
                 </div>
             </div>
         </MudItem>
 
-        <!-- Tarjeta 2: Asistencia Diaria -->
+        <!-- Tarjeta 2: Cursos Activos -->
         <MudItem xs="12" md="4">
             <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(15, 118, 110, 0.3);">
                 <div class="d-flex justify-space-between align-center">
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Asistencia Diaria</MudText>
-                    <MudProgressCircular Value="92" Color="Color.Warning" Size="Size.Small" Thickness="6" />
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Cursos Activos</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="font-size: 2rem; opacity: 0.85;" />
                 </div>
                 <div>
-                    <MudText Typo="Typo.h3" Class="font-weight-bold">92%</MudText>
-                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Promedio general del plantel</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">
+                        @(cargandoMetricas ? "..." : totalCursos.ToString("N0"))
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Materias y grupos impartidos</MudText>
                 </div>
             </div>
         </MudItem>
 
-        <!-- Tarjeta 3: Mensajes Nuevos -->
+        <!-- Tarjeta 3: Pagos Registrados -->
         <MudItem xs="12" md="4">
             <div class="pa-6 rounded-xxl position-relative overflow-hidden" style="background: linear-gradient(135deg, #fb923c 0%, #f87171 100%); color: white; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 25px -5px rgba(248, 113, 113, 0.3);">
                 <div class="d-flex justify-space-between align-center">
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Mensajes Nuevos</MudText>
-                    <MudChip T="string" Size="Size.Small" Style="background: rgba(255,255,255,0.3); color: white; font-weight: bold; border-radius: 8px;">14</MudChip>
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Pagos Registrados</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Payments" Style="font-size: 2rem; opacity: 0.85;" />
                 </div>
                 <div>
-                    <MudText Typo="Typo.h3" Class="font-weight-bold">Bandeja</MudText>
-                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Avisos pendientes de tutores</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">
+                        @(cargandoMetricas ? "..." : totalPagos.ToString("N0"))
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">Historial de transacciones</MudText>
                 </div>
             </div>
         </MudItem>
@@ -103,7 +108,6 @@
             </MudItem>
         }
         
-        <!-- BOTÓN AGREGAR MÓDULO -->
         @if (isEditMode)
         {
             <MudItem xs="12" sm="6" md="3">
@@ -140,7 +144,6 @@
             </MudItem>
         }
         
-        <!-- BOTÓN AGREGAR ACCESO RÁPIDO -->
         @if (isEditMode)
         {
             <MudItem xs="12" sm="6" md="4">
@@ -251,6 +254,12 @@
     private bool isEditMode = false;
     private ConfiguracionEscuela appConfig = new();
     
+    // Variables para las métricas dinámicas
+    private bool cargandoMetricas = true;
+    private int totalAlumnos = 0;
+    private int totalCursos = 0;
+    private int totalPagos = 0;
+
     private bool isAddDialogOpen = false;
     private bool addingToModulo = true;
     private TarjetaDashboard newCard = new();
@@ -305,6 +314,7 @@
         var fecha = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
         if (!string.IsNullOrEmpty(fecha)) fechaActual = char.ToUpper(fecha[0]) + fecha.Substring(1);
 
+        // 1. Cargar Configuración del Dashboard
         try
         {
             appConfig = await Firebase.GetConfiguracionAsync() ?? new();
@@ -320,6 +330,28 @@
             }
         }
         catch (Exception) { }
+
+        // 2. Cargar Métricas Dinámicas en Segundo Plano (Concurrentemente para mayor velocidad)
+        try
+        {
+            var taskAlumnos = Firebase.GetAllStudentsAsync();
+            var taskCursos = Firebase.GetCoursesAsync();
+            var taskPagos = Firebase.GetAllPaymentsAsync();
+
+            await Task.WhenAll(taskAlumnos, taskCursos, taskPagos);
+
+            totalAlumnos = taskAlumnos.Result?.Count ?? 0;
+            totalCursos = taskCursos.Result?.Count ?? 0;
+            totalPagos = taskPagos.Result?.Count ?? 0;
+        }
+        catch (Exception)
+        {
+            // En caso de error, se quedarán en 0
+        }
+        finally
+        {
+            cargandoMetricas = false;
+        }
     }
 
     private async Task ToggleEditMode()

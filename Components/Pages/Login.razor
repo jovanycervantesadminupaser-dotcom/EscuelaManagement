@@ -9,16 +9,19 @@
 @inject UserSessionService UserSession
 
 <style>
-    /* Contenedor principal para ocupar toda la pantalla sin bordes */
+    /* Contenedor principal sin bordes */
     .login-wrapper {
         display: flex;
         min-height: 100vh;
         width: 100vw;
         margin: 0;
         padding: 0;
+        background-color: #f1f5f9; /* Fondo gris claro general M3 */
     }
     
-    /* Lado Izquierdo: Fotografía con Overlay */
+    /* ========================================================
+       LADO IZQUIERDO: FOTOGRAFÍA CON OVERLAY
+       ======================================================== */
     .login-left-side {
         width: 50%;
         position: relative;
@@ -30,11 +33,11 @@
         justify-content: center;
     }
     
-    /* La capa azul transparente sobre la foto */
+    /* Capa oscura/azulada sobre la foto */
     .login-left-side .overlay {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(0, 51, 102, 0.70); /* Azul institucional transparente */
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.70) 100%); /* Degradado índico M3 */
         z-index: 1;
     }
 
@@ -45,41 +48,60 @@
         padding: 2rem;
     }
     
-    /* Lado Derecho: Área de Trabajo Blanca */
+    /* ========================================================
+       LADO DERECHO: ÁREA DE TRABAJO Y FORMULARIO (M3 CARD)
+       ======================================================== */
     .login-right-side {
         width: 50%;
-        background-color: #FFFFFF;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 2rem;
+        background-color: #f8fafc;
     }
 
-    .form-container {
-        max-width: 420px;
+    /* Tarjeta Flotante M3 para el formulario */
+    .m3-login-card {
+        max-width: 460px;
         width: 100%;
+        background-color: #ffffff;
+        border-radius: 32px !important; /* Esquinas extra redondeadas M3 */
+        padding: 3rem 2.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        border: 1px solid #e2e8f0;
     }
 
-    /* Estilos de los inputs modernos (Cajas grises sin borde) */
+    /* Estilos de los inputs Material 3 Expressive */
     .modern-input .mud-input-outlined-border {
-        border: none !important;
+        border: 2px solid transparent !important;
+        transition: all 0.2s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: #F3F4F6 !important;
-        border-radius: 8px !important;
-        color: #1F2937 !important;
+        background-color: #f1f5f9 !important; /* Fondo gris claro */
+        border-radius: 16px !important;
+        color: #0f172a !important;
     }
     .modern-input .mud-input-slot {
         padding: 16px 14px !important; 
     }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-color: #3b82f6 !important; /* Borde azul vibrante al enfocar */
+        background-color: transparent !important;
+    }
 
-    /* Diseño Responsivo: Ocultar foto en celulares (Doble arroba para evitar error de C#) */
+    /* Diseño Responsivo: Ocultar foto en celulares */
     @@media (max-width: 960px) {
         .login-left-side {
             display: none !important; 
         }
         .login-right-side {
             width: 100%;
+            background-color: #ffffff; /* En móviles, fondo blanco puro */
+        }
+        .m3-login-card {
+            box-shadow: none; /* Sin sombra extra en móviles */
+            border: none;
+            padding: 2rem 1.5rem;
         }
     }
 
@@ -103,26 +125,28 @@
 <div class="login-wrapper @claseAnimacionSalida">
     
     <!-- Lado Izquierdo (Foto y Logo) -->
-    <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background-color: #003366;" : $"background-image: url('{backgroundLoginBase64}');")">
+    <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);" : $"background-image: url('{backgroundLoginBase64}');")">
         <div class="overlay"></div>
         <div class="left-content">
-            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: white;" Class="mb-4" />
-            <MudText Typo="Typo.h2" Class="font-weight-bold mb-2">UPASER</MudText>
-            <MudText Typo="Typo.h5" Style="opacity: 0.9;">@nombreEscuela</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: white; opacity: 0.9;" Class="mb-4" />
+            <MudText Typo="Typo.h2" Class="font-weight-bold mb-2" Style="letter-spacing: -1px;">UPASER</MudText>
+            <MudText Typo="Typo.h5" Style="opacity: 0.85; font-weight: 300;">@nombreEscuela</MudText>
         </div>
     </div>
 
-    <!-- Lado Derecho (Formulario Blanco) -->
+    <!-- Lado Derecho (Tarjeta M3 Blanca) -->
     <div class="login-right-side">
-        <div class="form-container">
+        <div class="m3-login-card">
             
-            <MudText Typo="Typo.h4" Class="font-weight-bold mb-1" Style="color: #1F2937;"> Hola, ¡Bienvenido!</MudText>
-            <MudText Typo="Typo.body1" Class="mb-8" Style="color: #6B7280;">Ingresa tus credenciales para acceder al sistema escolar.</MudText>
+            <div class="mb-8 text-center">
+                <MudText Typo="Typo.h4" Class="font-weight-bold mb-2" Style="color: #0f172a; letter-spacing: -0.5px;">¡Hola, Bienvenido!</MudText>
+                <MudText Typo="Typo.body2" Style="color: #64748b;">Ingresa tus credenciales para acceder al sistema escolar.</MudText>
+            </div>
 
             <MudForm @ref="form" @bind-IsValid="@success">
                 
                 <!-- Campo: Correo Electrónico -->
-                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Correo Electrónico</MudText>
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Correo Electrónico</MudText>
                 
                 <MudTextField T="string" @bind-Value="email" 
                               Placeholder="ejemplo@correo.com" 
@@ -132,10 +156,10 @@
                               InputType="InputType.Email" 
                               Adornment="Adornment.Start" 
                               AdornmentIcon="@Icons.Material.Filled.Email" 
-                              Class="mb-4 modern-input" />
+                              Class="mb-5 modern-input" />
 
                 <!-- Campo: Contraseña -->
-                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-1" Style="color: #1F2937;">Contraseña</MudText>
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Contraseña</MudText>
                 
                 <MudTextField T="string" @bind-Value="password" 
                               Placeholder="••••••••" 
@@ -151,8 +175,8 @@
             </MudForm>
 
             <!-- Enlace: Olvidaste tu contraseña -->
-            <div class="d-flex justify-end mb-8 mt-1">
-                <MudLink OnClick="RecuperarContrasena" Typo="Typo.body2" Style="color: #003366; cursor: pointer; text-decoration: none;">
+            <div class="d-flex justify-end mb-8 mt-2">
+                <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #3b82f6; cursor: pointer; text-decoration: none; font-weight: bold;">
                     ¿Olvidaste Tu Contraseña?
                 </MudLink>
             </div>
@@ -163,21 +187,21 @@
                        Variant="Variant.Filled" 
                        Size="Size.Large" 
                        FullWidth="true" 
-                       Class="rounded-lg py-3 font-weight-bold text-white" 
-                       Style="background-color: #003366; font-size: 16px; letter-spacing: 0.5px;">
+                       Class="rounded-xl py-3 font-weight-bold text-white shadow-md" 
+                       Style="background-color: #1e1b4b; font-size: 15px; letter-spacing: 0.5px; transition: all 0.3s ease;">
                 @if (cargando)
                 {
                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
-                    <MudText Class="ms-2" Style="color: white;">VERIFICANDO...</MudText>
+                    <MudText Class="ms-2 font-weight-bold" Style="color: white;">VERIFICANDO...</MudText>
                 }
                 else
                 {
-                    <MudText>INGRESAR AL SISTEMA</MudText>
+                    <MudText Class="font-weight-bold">INGRESAR AL SISTEMA</MudText>
                 }
             </MudButton>
 
-            <div class="text-center mt-12">
-                <MudText Typo="Typo.caption" Style="color: #9CA3AF;">UPASER. Todos los derechos reservados.</MudText>
+            <div class="text-center mt-8">
+                <MudText Typo="Typo.caption" Style="color: #94a3b8;">UPASER. Todos los derechos reservados.</MudText>
             </div>
 
         </div>
