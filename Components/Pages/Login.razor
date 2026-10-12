@@ -16,7 +16,7 @@
         width: 100vw;
         margin: 0;
         padding: 0;
-        background-color: #f1f5f9; /* Fondo gris claro general M3 */
+        background-color: #f1f5f9;
     }
     
     /* ========================================================
@@ -33,11 +33,10 @@
         justify-content: center;
     }
     
-    /* Capa oscura/azulada sobre la foto */
     .login-left-side .overlay {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.70) 100%); /* Degradado índico M3 */
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.70) 100%);
         z-index: 1;
     }
 
@@ -49,7 +48,7 @@
     }
     
     /* ========================================================
-       LADO DERECHO: ÁREA DE TRABAJO Y FORMULARIO (M3 CARD)
+       LADO DERECHO: TARJETA M3 Y ANIMACIONES VÍVIDAS
        ======================================================== */
     .login-right-side {
         width: 50%;
@@ -60,65 +59,85 @@
         background-color: #f8fafc;
     }
 
-    /* Tarjeta Flotante M3 para el formulario */
+    /* Tarjeta Flotante con sombra más profunda */
     .m3-login-card {
         max-width: 460px;
         width: 100%;
         background-color: #ffffff;
-        border-radius: 32px !important; /* Esquinas extra redondeadas M3 */
+        border-radius: 32px !important;
         padding: 3rem 2.5rem;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-        border: 1px solid #e2e8f0;
+        box-shadow: 0 25px 50px -12px rgba(30, 27, 75, 0.15);
+        border: 1px solid rgba(226, 232, 240, 0.8);
     }
 
-    /* Estilos de los inputs Material 3 Expressive */
+    /* --- ANIMACIONES EN LOS INPUTS (EFECTO POP-OUT) --- */
     .modern-input .mud-input-outlined-border {
         border: 2px solid transparent !important;
-        transition: all 0.2s ease-in-out;
+        transition: all 0.3s ease-in-out;
     }
+    
     .modern-input .mud-input {
-        background-color: #f1f5f9 !important; /* Fondo gris claro */
+        background-color: #f1f5f9 !important;
         border-radius: 16px !important;
         color: #0f172a !important;
+        /* Transición elástica para que se sienta fluido */
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; 
     }
+    
     .modern-input .mud-input-slot {
         padding: 16px 14px !important; 
     }
+
+    /* Estado cuando el usuario hace clic (Focus) */
+    .modern-input .mud-input.mud-input-focused {
+        background-color: #ffffff !important;
+        transform: scale(1.03) translateY(-2px); /* Escala y eleva el input */
+        box-shadow: 0 14px 25px -8px rgba(59, 130, 246, 0.35) !important; /* Resplandor azul */
+    }
+    
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-color: #3b82f6 !important; /* Borde azul vibrante al enfocar */
+        border-color: #3b82f6 !important;
         background-color: transparent !important;
     }
 
-    /* Diseño Responsivo: Ocultar foto en celulares */
+    /* --- ANIMACIÓN EN EL BOTÓN PRINCIPAL (VIVID GRADIENT) --- */
+    .btn-vivid {
+        background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important; /* Índico a Cian vibrante */
+        background-size: 200% auto !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border: none !important;
+    }
+    
+    .btn-vivid:hover {
+        background-position: right center !important; /* Anima el degradado */
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 30px -8px rgba(6, 182, 212, 0.5) !important; /* Resplandor cian */
+    }
+
+    /* Diseño Responsivo */
     @@media (max-width: 960px) {
         .login-left-side {
             display: none !important; 
         }
         .login-right-side {
             width: 100%;
-            background-color: #ffffff; /* En móviles, fondo blanco puro */
+            background-color: #ffffff;
         }
         .m3-login-card {
-            box-shadow: none; /* Sin sombra extra en móviles */
+            box-shadow: none;
             border: none;
             padding: 2rem 1.5rem;
         }
     }
 
-    /* --- Animación de salida (Cinematográfica) --- */
+    /* Animación de salida */
     .animacion-salida {
-        animation: fadeOutUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        animation: fadeOutUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
     }
 
     @@keyframes fadeOutUp {
-        0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-40px) scale(0.98);
-        }
+        0% { opacity: 1; transform: translateY(0) scale(1); }
+        100% { opacity: 0; transform: translateY(-40px) scale(0.98); filter: blur(4px); }
     }
 </style>
 
@@ -134,7 +153,7 @@
         </div>
     </div>
 
-    <!-- Lado Derecho (Tarjeta M3 Blanca) -->
+    <!-- Lado Derecho (Tarjeta M3) -->
     <div class="login-right-side">
         <div class="m3-login-card">
             
@@ -156,7 +175,7 @@
                               InputType="InputType.Email" 
                               Adornment="Adornment.Start" 
                               AdornmentIcon="@Icons.Material.Filled.Email" 
-                              Class="mb-5 modern-input" />
+                              Class="mb-6 modern-input" />
 
                 <!-- Campo: Contraseña -->
                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Contraseña</MudText>
@@ -175,20 +194,20 @@
             </MudForm>
 
             <!-- Enlace: Olvidaste tu contraseña -->
-            <div class="d-flex justify-end mb-8 mt-2">
-                <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #3b82f6; cursor: pointer; text-decoration: none; font-weight: bold;">
+            <div class="d-flex justify-end mb-8 mt-3">
+                <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #3b82f6; cursor: pointer; text-decoration: none; font-weight: bold; transition: color 0.2s;" Class="hover:text-cyan-500">
                     ¿Olvidaste Tu Contraseña?
                 </MudLink>
             </div>
 
-            <!-- Botón Principal -->
+            <!-- Botón Principal Vívido -->
             <MudButton OnClick="Ingresar" 
                        Disabled="@cargando"
                        Variant="Variant.Filled" 
                        Size="Size.Large" 
                        FullWidth="true" 
-                       Class="rounded-xl py-3 font-weight-bold text-white shadow-md" 
-                       Style="background-color: #1e1b4b; font-size: 15px; letter-spacing: 0.5px; transition: all 0.3s ease;">
+                       Class="rounded-xl py-4 font-weight-bold text-white shadow-md btn-vivid" 
+                       Style="font-size: 15px; letter-spacing: 0.5px;">
                 @if (cargando)
                 {
                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
@@ -282,7 +301,7 @@
                         // --- INICIA LA ANIMACIÓN ---
                         claseAnimacionSalida = "animacion-salida";
                         StateHasChanged();
-                        await Task.Delay(400); // Esperamos a que termine la animación
+                        await Task.Delay(400); 
                         
                         Navigation.NavigateTo("/inicio", forceLoad: false);
                     }
@@ -294,7 +313,6 @@
                         await UserSession.IniciarSesionAsync("Llave Maestra", email, "Administrador");
                         Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
                         
-                        // --- INICIA LA ANIMACIÓN ---
                         claseAnimacionSalida = "animacion-salida";
                         StateHasChanged();
                         await Task.Delay(400); 
