@@ -63,7 +63,8 @@
                             <MudTextField T="string" Label="Apellido Materno" @bind-Value="StudentToEdit.MaternalLastName" Variant="Variant.Outlined" Class="modern-input" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Class="modern-input" />
+                            <!-- AQUÍ AGREGUÉ T="DateTime?" AL DATEPICKER -->
+                            <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="FechaNacimiento" Variant="Variant.Outlined" Editable="true" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Class="modern-input" />
                         </MudItem>
                         <MudItem xs="12" md="6">
                             <MudTextField T="string" Label="Teléfono" @bind-Value="StudentToEdit.Phone" Variant="Variant.Outlined" Mask="@(new PatternMask("0000000000"))" Class="modern-input" />

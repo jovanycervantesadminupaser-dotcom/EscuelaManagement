@@ -4,9 +4,11 @@
 @using System.IO
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
+@using QuestPDF.Fluent
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
     
@@ -35,7 +37,7 @@
 
     @if (isLoading)
     {
-        @* EFECTO ESQUELETO MIENTRAS CARGA (SKELETON LOADER) *@
+        @* EFECTO ESQUELETO MIENTRAS CARGA *@
         <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
             <div class="d-flex justify-space-between mb-4">
                 <MudSkeleton SkeletonType="SkeletonType.Text" Width="250px" Height="40px" />
@@ -68,6 +70,7 @@
                         <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre Completo</MudTh>
                         <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Tutor / Parentesco</MudTh>
                         <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Cursos Inscritos</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Acciones</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="alumnoRow">
                         <MudTd style="text-align: center; cursor: pointer;">
@@ -85,11 +88,45 @@
                                 <MudChip @key="curso" T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold">@curso</MudChip>
                             }
                         </MudTd>
+                        <MudTd DataLabel="Acciones" Style="text-align: center;">
+                            @{
+                                var cursosDelAlumno = ObtenerCursosCompletosDeAlumno(alumnoRow?.Id ?? "");
+                                if (cursosDelAlumno.Count == 0)
+                                {
+                                    <MudTooltip Text="Sin cursos inscritos">
+                                        <MudIconButton Icon="@Icons.Material.Filled.PrintDisabled" Disabled="true" Size="Size.Small" />
+                                    </MudTooltip>
+                                }
+                                else if (cursosDelAlumno.Count == 1)
+                                {
+                                    <MudTooltip Text="Reimprimir Ficha de Inscripción" Arrow="true" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Print" Color="Color.Info" Size="Size.Small" OnClick="() => ReimprimirFicha(alumnoRow!, cursosDelAlumno.First())" />
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudMenu Icon="@Icons.Material.Filled.Print" Color="Color.Info" Size="Size.Small" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Tooltip="Reimprimir Fichas">
+                                        <div class="pa-2">
+                                            <MudText Typo="Typo.caption" Class="font-weight-bold px-2" Color="Color.Primary">Imprimir ficha de:</MudText>
+                                            @foreach (var curso in cursosDelAlumno)
+                                            {
+                                                <MudMenuItem OnClick="() => ReimprimirFicha(alumnoRow!, curso)">
+                                                    <div class="d-flex align-center gap-2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Size="Size.Small" Color="Color.Error" />
+                                                        <MudText Typo="Typo.body2">@curso.Name</MudText>
+                                                    </div>
+                                                </MudMenuItem>
+                                            }
+                                        </div>
+                                    </MudMenu>
+                                }
+                            }
+                        </MudTd>
                     </RowTemplate>
                     
                     <ChildRowContent Context="alumnoRow">
                         <MudTr Style="@(selectedStudent?.Id == alumnoRow?.Id ? "" : "display: none;")">
-                            <td colspan="4" style="padding: 16px; background-color: var(--mud-palette-background-grey);">
+                            <td colspan="5" style="padding: 16px; background-color: var(--mud-palette-background-grey);">
                                 <MudPaper Elevation="0" Class="pa-6 rounded-lg mx-2 my-2" Style="border: 1px solid var(--mud-palette-lines-default);">
                                     <MudGrid>
                                         <!-- FOTO DEL ALUMNO -->
@@ -139,7 +176,7 @@
                         </MudTr>
                     </ChildRowContent>
 
-                    @* ESTADO VACÍO (EMPTY STATE) *@
+                    @* ESTADO VACÍO *@
                     <NoRecordsContent>
                         <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
                             <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
@@ -148,7 +185,7 @@
                         </div>
                     </NoRecordsContent>
 
-                    @* PAGINACIÓN AGREGADA *@
+                    @* PAGINACIÓN *@
                     <PagerContent>
                         <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Alumnos por página:" InfoFormat="{first_item}-{last_item} de {all_items}" />
                     </PagerContent>
@@ -167,27 +204,11 @@
 </MudContainer>
 
 <style>
-    /* Estilos modernos para los inputs */
-    .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
-    }
-    .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
-    }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
-        border-color: var(--mud-palette-primary) !important;
-    }
-
-    /* Estilos limpios para la tabla */
-    .modern-table .mud-table-cell {
-        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
-    }
-    .modern-table .mud-table-root {
-        border: none !important;
-    }
+    .modern-input .mud-input-outlined-border { border-color: var(--mud-palette-lines-default) !important; }
+    .modern-input .mud-input { background-color: transparent !important; border-radius: 8px !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-width: 2px !important; border-color: var(--mud-palette-primary) !important; }
+    .modern-table .mud-table-cell { border-bottom: 1px solid var(--mud-palette-lines-default) !important; padding: 16px 12px !important; }
+    .modern-table .mud-table-root { border: none !important; }
 </style>
 
 @code {
@@ -197,17 +218,23 @@
     private List<Student> listaAlumnos = new();
     private List<Course> listaCursos = new();
     private List<Enrollment> listaInscripciones = new();
+    private ConfiguracionEscuela configuracionEscuela = new();
     private bool isLoading = true;
     private string filterName = "";
     private string filterCourseId = "";
 
-    protected override async Task OnInitializedAsync() => await RecargarDatosDirectorio();
+    protected override async Task OnInitializedAsync()
+    {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        await RecargarDatosDirectorio();
+    }
 
     private async Task RecargarDatosDirectorio()
     {
         isLoading = true;
         StateHasChanged();
         
+        configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
         listaAlumnos = await Firebase.GetAllStudentsAsync() ?? new();
         listaCursos = await Firebase.GetCoursesAsync() ?? new();
         listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
@@ -222,6 +249,9 @@
 
     private List<string> ObtenerCursosDeAlumno(string id) => 
         listaCursos.Where(c => listaInscripciones.Any(i => i.StudentId == id && i.CourseId == c.Id)).Select(c => c.Name ?? "").ToList();
+
+    private List<Course> ObtenerCursosCompletosDeAlumno(string id) => 
+        listaCursos.Where(c => listaInscripciones.Any(i => i.StudentId == id && i.CourseId == c.Id)).ToList();
 
     private async Task EditarExpediente(Student alumno)
     {
@@ -241,5 +271,126 @@
             selectedStudent = null;
             await RecargarDatosDirectorio();
         }
+    }
+
+    // --- LÓGICA DE REIMPRESIÓN DE FICHA ---
+    private async Task ReimprimirFicha(Student alumno, Course curso)
+    {
+        try
+        {
+            Snackbar.Add($"Preparando ficha de inscripción para {curso.Name}...", Severity.Info);
+            
+            var enrollment = listaInscripciones.FirstOrDefault(e => e.StudentId == alumno.Id && e.CourseId == curso.Id);
+            if (enrollment == null)
+            {
+                Snackbar.Add("No se encontraron los datos financieros de esta inscripción.", Severity.Warning);
+                return;
+            }
+
+            var pdfBytes = GenerarFichaPdf(alumno, curso, enrollment);
+            await DescargarPdf(pdfBytes, $"Ficha_Inscripcion_{alumno.Name}.pdf");
+            Snackbar.Add("Ficha descargada con éxito.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al generar la ficha: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private byte[] GenerarFichaPdf(Student student, Course currentCourse, Enrollment enrollment)
+    {
+        string turnoFinal = enrollment?.Turno ?? "No asignado";
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                page.PageColor(QuestPDF.Helpers.Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                {
+                    try
+                    {
+                        var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
+                            ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
+                            : configuracionEscuela.LogoBase64;
+                        var watermarkBytes = Convert.FromBase64String(base64Watermark);
+
+                        page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
+                    }
+                    catch { }
+                }
+
+                page.Header().Row(row =>
+                {
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    {
+                        var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
+                        var logoBytes = Convert.FromBase64String(base64Logo);
+                        row.ConstantItem(100).Image(logoBytes);
+                        row.ConstantItem(15);
+                    }
+
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                        col.Item().Text("FICHA DE INSCRIPCIÓN").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        col.Item().Text($"Fecha de reimpresión: {DateTime.Now:dd/MM/yyyy}").FontSize(9);
+                    });
+
+                    if (!string.IsNullOrEmpty(student.PhotoBase64))
+                    {
+                        try
+                        {
+                            var base64Data = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1) : student.PhotoBase64;
+                            var imageBytes = Convert.FromBase64String(base64Data);
+                            row.ConstantItem(65).Image(imageBytes);
+                        }
+                        catch { }
+                    }
+                });
+
+                page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
+                {
+                    x.Spacing(10);
+                    
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("1. Datos del Alumno").SemiBold();
+                    x.Item().Text($"Nombre: {student.Name} {student.PaternalLastName} {student.MaternalLastName}");
+                    x.Item().Text($"Teléfono Alumno: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
+                    x.Item().Text($"Escuela de Procedencia: {(string.IsNullOrEmpty(student.PreviousSchool) ? "No registrado" : student.PreviousSchool)}");
+                    
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("2. Tutor y Contacto").SemiBold();
+                    x.Item().Text($"Tutor: {student.Guardian?.Name} {student.Guardian?.PaternalLastName} ({student.Guardian?.Relationship})");
+                    x.Item().Text($"Teléfono Tutor: {(string.IsNullOrEmpty(student.Guardian?.Phone) ? "No registrado" : student.Guardian?.Phone)}");
+
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("3. Dirección").SemiBold();
+                    x.Item().Text($"{student.Address?.Street} {student.Address?.ExtNumber}, Col. {student.Address?.Neighborhood}, {student.Address?.Municipality}. CP: {student.Address?.ZipCode}");
+
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("4. Curso Inscrito y Plan Financiero").SemiBold();
+                    var nombreCurso = currentCourse?.Name ?? "No seleccionado";
+                    x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpper())}");
+                    
+                    if(enrollment != null)
+                    {
+                        x.Item().Text($"Esquema: {enrollment.TipoPlazo} | Plazos: {enrollment.NumeroPlazos} | Pago pactado: {enrollment.MontoPlazo.ToString("C")}");
+                        x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
+                        if(!string.IsNullOrEmpty(enrollment.AsesorAsignado))
+                        {
+                            x.Item().Text($"Asesor que inscribió: {enrollment.AsesorAsignado}").Italic().FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                        }
+                    }
+                });
+            });
+        }).GeneratePdf();
+    }
+
+    private async Task DescargarPdf(byte[] bytes, string fileName)
+    {
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
     }
 }
