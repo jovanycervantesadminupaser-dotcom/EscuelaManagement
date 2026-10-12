@@ -10,16 +10,21 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
     
-    <!-- Encabezado Limpio -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Ficha de Inscripción</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra un nuevo alumno o inscribe uno existente en la institución.</MudText>
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(59,130,246,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.PersonAddAlt1" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Ficha de Inscripción</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra un nuevo alumno o inscribe uno existente en la institución.</MudText>
+        </div>
     </div>
 
-    <!-- Módulo 1: Buscador de Alumnos -->
-    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+    <!-- MÓDULO 1: BUSCADOR DE ALUMNOS -->
+    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface);">
         <MudGrid Class="d-flex align-center">
             <MudItem xs="12" md="7">
                 <MudAutocomplete T="Student" 
@@ -38,28 +43,41 @@
             <MudItem xs="12" md="5">
                 @if (isExistingStudent)
                 {
-                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="w-100 rounded-lg">
-                        Alumno existente: Se creará un nuevo historial de curso para este perfil.
-                    </MudAlert>
+                    <div class="m3-alert m3-alert-info d-flex align-center pa-4 rounded-xl">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Alumno Existente</MudText>
+                            <MudText Typo="Typo.caption">Se creará un nuevo historial de curso para este perfil.</MudText>
+                        </div>
+                    </div>
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="w-100 rounded-lg">
-                        Modo: Nuevo Registro de Alumno.
-                    </MudAlert>
+                    <div class="m3-alert m3-alert-success d-flex align-center pa-4 rounded-xl">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Nuevo Registro</MudText>
+                            <MudText Typo="Typo.caption">Se registrará un alumno completamente nuevo.</MudText>
+                        </div>
+                    </div>
                 }
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-    <!-- Módulo 2: Formulario Principal -->
-    <MudForm @ref="form" Class="fade-in-up">
-        <MudPaper Elevation="0" Class="pa-8 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
-            
-            <!-- SECCIÓN: Asesor y Fotografía -->
+    <!-- FORMULARIO PRINCIPAL EN TARJETAS SEPARADAS -->
+    <MudForm @ref="form" Class="fade-in-up" Style="animation-delay: 0.1s;">
+        
+        <!-- SECCIÓN: ASESOR Y FOTOGRAFÍA -->
+        <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
             <MudGrid>
                 <MudItem xs="12" md="6">
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Asignación de Asesor</MudText>
+                    <div class="d-flex align-center mb-6">
+                        <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(59,130,246,0.15); color: #3b82f6;" Class="mr-3 rounded-lg">
+                            <MudIcon Icon="@Icons.Material.Filled.SupportAgent" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Asignación de Asesor</MudText>
+                    </div>
                     <MudSelect T="string" Label="Ejecutivo que realizó la inscripción" @bind-Value="enrollment.AsesorAsignado" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Clearable="true" Placeholder="Opcional: Seleccione un asesor" Class="modern-input">
                         @if(listaUsuarios != null && listaUsuarios.Any())
                         {
@@ -72,14 +90,20 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6" Class="d-flex flex-column align-center justify-center">
-                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Fotografía del Alumno</MudText>
+                    <div class="d-flex align-center mb-6 w-100 justify-center">
+                        <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(16,185,129,0.15); color: #10b981;" Class="mr-3 rounded-lg">
+                            <MudIcon Icon="@Icons.Material.Filled.CameraFront" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Fotografía del Alumno</MudText>
+                    </div>
+                    
                     @if (isCameraOpen)
                     {
                         <div class="fade-in-suave w-100 d-flex flex-column align-center">
-                            <video id="cameraVideo" width="100%" style="max-width: 320px; border-radius: 8px; background-color: black; border: 1px solid var(--mud-palette-lines-default);" autoplay></video>
-                            <div class="mt-3 d-flex gap-4">
-                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Tomar Foto</MudButton>
-                                <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold" Style="text-transform: none;">Cancelar</MudButton>
+                            <video id="cameraVideo" width="100%" style="max-width: 320px; border-radius: 16px; background-color: black; border: 4px solid var(--mud-palette-primary);" autoplay></video>
+                            <div class="mt-4 d-flex gap-4">
+                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-xl font-weight-bold px-6" Style="text-transform: none;">Tomar Foto</MudButton>
+                                <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold rounded-xl px-4" Style="text-transform: none;">Cancelar</MudButton>
                             </div>
                         </div>
                     }
@@ -88,30 +112,35 @@
                         <div class="d-flex align-center gap-6">
                             @if (!string.IsNullOrEmpty(student.PhotoBase64))
                             {
-                                <MudImage Src="@student.PhotoBase64" Width="120" Height="120" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);" />
+                                <MudImage Src="@student.PhotoBase64" Width="130" Height="130" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-xxl fade-in-suave" Style="border: 3px solid white;" />
                             }
                             else
                             {
-                                <MudPaper Width="120px" Height="120px" Class="d-flex align-center justify-center rounded-lg fade-in-suave" Elevation="0" Style="border: 1px dashed var(--mud-palette-lines-default); background-color: transparent;">
-                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
+                                <MudPaper Width="130px" Height="130px" Class="d-flex align-center justify-center rounded-xxl fade-in-suave" Elevation="0" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);">
+                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4.5rem; color: var(--mud-palette-text-disabled);" />
                                 </MudPaper>
                             }
                             
-                            <div class="d-flex flex-column gap-2">
-                                <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Subir Archivo</MudButton>
-                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-lg font-weight-bold" Style="text-transform: none;">Usar Cámara</MudButton>
+                            <div class="d-flex flex-column gap-3">
+                                <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none;">Subir Archivo</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">Usar Cámara</MudButton>
                             </div>
                             <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
                         </div>
                     }
                 </MudItem>
             </MudGrid>
-            
-            <MudDivider Class="my-8" />
+        </MudPaper>
 
-            <!-- SECCIÓN 1: Datos del Alumno -->
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">1. Datos del Alumno</MudText>
-            <MudGrid Class="mb-4">
+        <!-- SECCIÓN 1: DATOS DEL ALUMNO -->
+        <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+            <div class="d-flex align-center mb-6">
+                <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(245,158,11,0.15); color: #f59e0b;" Class="mr-3 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.Face" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">1. Datos del Alumno</MudText>
+            </div>
+            <MudGrid>
                 <MudItem xs="12" md="4">
                     <MudTextField T="string" Label="Nombre(s)" @bind-Value="student.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
@@ -134,12 +163,17 @@
                     <MudTextField T="string" Label="Escuela a Ingresar" @bind-Value="student.TargetSchool" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
             </MudGrid>
+        </MudPaper>
 
-            <MudDivider Class="my-8" />
-
-            <!-- SECCIÓN 2: Tutor -->
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">2. Datos del Tutor / Contacto</MudText>
-            <MudGrid Class="mb-4">
+        <!-- SECCIÓN 2: TUTOR / CONTACTO -->
+        <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+            <div class="d-flex align-center mb-6">
+                <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(139,92,246,0.15); color: #8b5cf6;" Class="mr-3 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.FamilyRestroom" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">2. Datos del Tutor / Contacto</MudText>
+            </div>
+            <MudGrid>
                 <MudItem xs="12" md="4">
                     <MudTextField T="string" Label="Nombre del Tutor" @bind-Value="student.Guardian.Name" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
@@ -156,12 +190,17 @@
                     <MudTextField T="string" Label="Correo Electrónico del Tutor" @bind-Value="student.Guardian.Email" Variant="Variant.Outlined" InputType="InputType.Email" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
             </MudGrid>
+        </MudPaper>
 
-            <MudDivider Class="my-8" />
-
-            <!-- SECCIÓN 3: Dirección -->
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">3. Dirección</MudText>
-            <MudGrid Class="mb-4">
+        <!-- SECCIÓN 3: DIRECCIÓN -->
+        <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+            <div class="d-flex align-center mb-6">
+                <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(236,72,153,0.15); color: #ec4899;" Class="mr-3 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.Home" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">3. Dirección</MudText>
+            </div>
+            <MudGrid>
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" Label="Calle" @bind-Value="student.Address.Street" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
@@ -184,11 +223,16 @@
                     <MudTextField T="string" Label="Código Postal" @bind-Value="student.Address.ZipCode" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
             </MudGrid>
+        </MudPaper>
 
-            <MudDivider Class="my-8" />
-
-            <!-- SECCIÓN 4: Esquema Financiero y Condiciones -->
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">4. Detalles de Inscripción y Esquema Financiero</MudText>
+        <!-- SECCIÓN 4: ESQUEMA FINANCIERO Y CONDICIONES -->
+        <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+            <div class="d-flex align-center mb-6">
+                <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(14,165,233,0.15); color: #0ea5e9;" Class="mr-3 rounded-lg">
+                    <MudIcon Icon="@Icons.Material.Filled.RequestQuote" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">4. Detalles de Inscripción y Esquema Financiero</MudText>
+            </div>
             <MudGrid>
                 <MudItem xs="12" md="4">
                     <MudSelect T="string" Label="Seleccionar Curso" Value="@enrollment.CourseId" ValueChanged="@OnCourseSelected" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
@@ -238,20 +282,20 @@
                 }
                 
                 <MudItem xs="12" Class="mt-6">
-                    <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: var(--mud-palette-background-grey);">
-                        <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" />
-                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Primary" />
-                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Primary" />
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xxl" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
+                        <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" Class="mb-2 font-weight-bold" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Secondary" Class="mb-2" />
+                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Secondary" />
                     </MudPaper>
                 </MudItem>
             </MudGrid>
 
-            <!-- Acciones Finales -->
-            <div class="d-flex justify-end mt-8 pt-4" style="border-top: 1px solid var(--mud-palette-lines-default);">
+            <!-- ACCIONES FINALES -->
+            <div class="d-flex justify-end mt-8 pt-6" style="border-top: 1px solid var(--mud-palette-lines-default);">
                 @if (!registroCompletado)
                 {
                     <div class="d-flex gap-4 fade-in-suave flex-wrap justify-end">
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Email" OnClick="GuardarYEnviarCorreo" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; border-width: 2px;">
                             @if (enviandoCorreo)
                             {
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -263,7 +307,7 @@
                             }
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                             Guardar y Descargar PDF
                         </MudButton>
                     </div>
@@ -271,15 +315,16 @@
                 else
                 {
                     <div class="d-flex flex-column align-end w-100 fade-in-suave">
-                        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-4 w-100 rounded-lg">
-                            ¡Operación completada exitosamente!
-                        </MudAlert>
+                        <div class="m3-alert m3-alert-success w-100 d-flex align-center pa-4 rounded-xl mb-6">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-3" />
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">¡Operación completada exitosamente!</MudText>
+                        </div>
                         
-                        <div class="d-flex gap-3 flex-wrap justify-end">
-                            <MudButton Variant="Variant.Filled" DisableElevation="true" Style="background-color: #25D366; color: white; text-transform: none;" StartIcon="@Icons.Custom.Brands.WhatsApp" Class="rounded-lg font-weight-bold px-6" OnClick="CompartirWhatsApp">
+                        <div class="d-flex gap-4 flex-wrap justify-end">
+                            <MudButton Variant="Variant.Filled" DisableElevation="true" Style="background-color: #25D366; color: white; text-transform: none;" StartIcon="@Icons.Custom.Brands.WhatsApp" Class="rounded-xl font-weight-bold px-8 py-3" OnClick="CompartirWhatsApp">
                                 Notificar WhatsApp
                             </MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="LimpiarFormulario" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="LimpiarFormulario" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; border-width: 2px;">
                                 Nueva Inscripción
                             </MudButton>
                         </div>
@@ -291,18 +336,45 @@
 </MudContainer>
 
 <style>
-    /* Estilos modernos para los inputs (Plantilla 3) */
+    /* Efecto Flotante para las Tarjetas por Sección */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .m3-section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Estilos modernos para los inputs (Efecto Pop-out) */
     .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
+        background-color: var(--mud-palette-background-grey) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15) !important;
     }
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
         border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
     }
+
+    /* Pastillas de Alerta M3 */
+    .m3-alert { border-left: 6px solid; }
+    .m3-alert-info { background-color: rgba(59,130,246,0.1); border-left-color: #3b82f6; color: #1e40af; }
+    .m3-alert-success { background-color: rgba(16,185,129,0.1); border-left-color: #10b981; color: #065f46; }
+
+    /* Fix para modo oscuro en alertas */
+    .mud-palette-dark .m3-alert-info { color: #60a5fa; }
+    .mud-palette-dark .m3-alert-success { color: #34d399; }
 </style>
 
 @code {
