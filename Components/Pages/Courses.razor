@@ -47,7 +47,7 @@
                         </MudItem>
 
                         <MudItem xs="12" Class="mt-2">
-                            <MudPaper Elevation="0" Class="pa-5 rounded-xl" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
+                            <MudPaper Elevation="0" Class="pa-5 rounded-xl" Style="background-color: var(--mud-palette-background); border: 1px dashed var(--mud-palette-lines-default);">
                                 <MudSwitch T="bool" @bind-Value="newCourse.AllowInstallments" Color="Color.Primary" Label="¿Ofrecer opción de pago a plazos?" Class="font-weight-bold" />
                             </MudPaper>
                         </MudItem>
@@ -198,19 +198,19 @@
     .m3-section-card {
         border: 1px solid var(--mud-palette-lines-default);
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
     }
     .m3-section-card:hover {
         box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
     }
 
-    /* Estilos modernos para los inputs (Efecto Pop-out) */
+    /* Inputs adaptables nativamente al Modo Oscuro */
     .modern-input .mud-input-outlined-border {
         border: 2px solid transparent !important;
         transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: var(--mud-palette-background-grey) !important;
+        background-color: var(--mud-palette-background) !important;
         border-radius: 16px !important;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     }
@@ -224,41 +224,37 @@
         background-color: transparent !important;
     }
 
-    /* Animación del botón guardar */
-    .btn-vivid {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-        transition: all 0.3s ease !important;
-    }
-    .btn-vivid:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3) !important;
-    }
-
-    /* Botones de acción en tabla */
+    /* Botones de acción en tablas */
     .action-btn {
-        background-color: var(--mud-palette-background-grey);
+        background-color: var(--mud-palette-background);
         transition: all 0.2s ease;
     }
-    .action-btn:hover {
-        transform: scale(1.1);
-    }
+    .action-btn:hover { transform: scale(1.1); }
 
     /* Estilos limpios para la tabla */
-    .transparent-table {
-        background-color: transparent !important;
-    }
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
         padding: 18px 12px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
-    }
+    .modern-table .mud-table-root { border: none !important; }
 
-    /* Pastillas de Alerta M3 */
-    .m3-alert { border-left: 5px solid; }
+    /* Pastillas de Alerta M3 y Modo Oscuro */
+    .m3-alert { border-left: 5px solid; transition: all 0.3s ease; }
     .m3-alert-info { background-color: rgba(59,130,246,0.1); border-left-color: #3b82f6; color: #1e40af; }
-    .mud-palette-dark .m3-alert-info { color: #60a5fa; }
+    .m3-alert-success { background-color: rgba(16,185,129,0.1); border-left-color: #10b981; color: #065f46; }
+    
+    /* Reglas específicas inyectadas por MudBlazor cuando el modo oscuro está activo */
+    .mud-palette-dark .m3-alert-info { background-color: rgba(59,130,246,0.15); color: #93c5fd; }
+    .mud-palette-dark .m3-alert-success { background-color: rgba(16,185,129,0.15); color: #6ee7b7; }
+
+    /* Animación de botones vívidos */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 5px 15px -3px rgba(0,0,0,0.2); }
+    .btn-vivid { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; transition: all 0.3s ease !important; color: white !important;}
+    .btn-vivid:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3) !important; }
+    .btn-vivid-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; transition: all 0.3s ease !important; color: white !important;}
+    .btn-vivid-success:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important; }
 </style>
 
 @code {

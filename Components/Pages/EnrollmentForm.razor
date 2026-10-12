@@ -112,18 +112,18 @@
                         <div class="d-flex align-center gap-6">
                             @if (!string.IsNullOrEmpty(student.PhotoBase64))
                             {
-                                <MudImage Src="@student.PhotoBase64" Width="130" Height="130" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-xxl fade-in-suave" Style="border: 3px solid white;" />
+                                <MudImage Src="@student.PhotoBase64" Width="130" Height="130" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-xxl fade-in-suave" Style="border: 3px solid var(--mud-palette-background);" />
                             }
                             else
                             {
-                                <MudPaper Width="130px" Height="130px" Class="d-flex align-center justify-center rounded-xxl fade-in-suave" Elevation="0" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);">
+                                <MudPaper Width="130px" Height="130px" Class="d-flex align-center justify-center rounded-xxl fade-in-suave" Elevation="0" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: var(--mud-palette-background);">
                                     <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 4.5rem; color: var(--mud-palette-text-disabled);" />
                                 </MudPaper>
                             }
                             
                             <div class="d-flex flex-column gap-3">
                                 <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none;">Subir Archivo</MudButton>
-                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">Usar Cámara</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">Usar Cámara</MudButton>
                             </div>
                             <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
                         </div>
@@ -282,7 +282,7 @@
                 }
                 
                 <MudItem xs="12" Class="mt-6">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-xxl" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
+                    <MudPaper Elevation="0" Class="pa-6 rounded-xxl" Style="background-color: var(--mud-palette-background); border: 1px dashed var(--mud-palette-lines-default);">
                         <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" Class="mb-2 font-weight-bold" />
                         <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Secondary" Class="mb-2" />
                         <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Secondary" />
@@ -307,7 +307,7 @@
                             }
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
                             Guardar y Descargar PDF
                         </MudButton>
                     </div>
@@ -336,24 +336,23 @@
 </MudContainer>
 
 <style>
-    /* Efecto Flotante para las Tarjetas por Sección */
+    /* Efecto Flotante M3 */
     .m3-section-card {
         border: 1px solid var(--mud-palette-lines-default);
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
     }
     .m3-section-card:hover {
-        transform: translateY(-2px);
         box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
     }
 
-    /* Estilos modernos para los inputs (Efecto Pop-out) */
+    /* Inputs adaptables nativamente al Modo Oscuro */
     .modern-input .mud-input-outlined-border {
         border: 2px solid transparent !important;
         transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: var(--mud-palette-background-grey) !important;
+        background-color: var(--mud-palette-background) !important;
         border-radius: 16px !important;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     }
@@ -367,14 +366,14 @@
         background-color: transparent !important;
     }
 
-    /* Pastillas de Alerta M3 */
-    .m3-alert { border-left: 6px solid; }
+    /* Pastillas de Alerta M3 y Modo Oscuro */
+    .m3-alert { border-left: 5px solid; transition: all 0.3s ease; }
     .m3-alert-info { background-color: rgba(59,130,246,0.1); border-left-color: #3b82f6; color: #1e40af; }
     .m3-alert-success { background-color: rgba(16,185,129,0.1); border-left-color: #10b981; color: #065f46; }
-
-    /* Fix para modo oscuro en alertas */
-    .mud-palette-dark .m3-alert-info { color: #60a5fa; }
-    .mud-palette-dark .m3-alert-success { color: #34d399; }
+    
+    /* Reglas específicas inyectadas por MudBlazor cuando el modo oscuro está activo */
+    .mud-palette-dark .m3-alert-info { background-color: rgba(59,130,246,0.15); color: #93c5fd; }
+    .mud-palette-dark .m3-alert-success { background-color: rgba(16,185,129,0.15); color: #6ee7b7; }
 </style>
 
 @code {
