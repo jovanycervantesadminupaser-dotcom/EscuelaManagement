@@ -19,10 +19,43 @@
     border-radius: 20px !important;
 }
 
-/* Estilo para los elementos del menú lateral activos en forma de pastilla */
+/* ========================================================
+   ESTILOS DE LA BARRA LATERAL (SIDEBAR M3 EXPRESSIVE)
+   ======================================================== */
+
+/* Contenedor principal de la barra lateral de Blazor */
+.sidebar {
+    background-color: #1e1b4b !important;
+    border-top-right-radius: 32px;
+    border-bottom-right-radius: 32px;
+    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Estilo general de los enlaces del menú */
+.mud-nav-link {
+    color: #94a3b8 !important;
+    border-radius: 14px !important;
+    transition: all 0.25s ease-in-out;
+    margin-bottom: 4px;
+}
+
+/* Efecto Hover al pasar el cursor sobre las opciones */
+.mud-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #f8fafc !important;
+}
+
+/* Elemento activo en forma de pastilla (Pill) */
 .mud-nav-link.active {
-    background: rgba(59, 130, 246, 0.15) !important;
+    background: rgba(59, 130, 246, 0.2) !important;
     color: #60a5fa !important;
     border-radius: 14px !important;
     font-weight: bold !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Estilos para los grupos desplegables */
+.mud-nav-group-text, 
+.mud-nav-group .mud-nav-link {
+    color: #cbd5e1 !important;
 }

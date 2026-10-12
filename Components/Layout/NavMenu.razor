@@ -1,51 +1,58 @@
 ﻿@using EscuelaManagement.Data.Services
 @inject UserSessionService UserSession
 
-<MudNavMenu>
-    <MudNavLink Href="/inicio" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Inicio</MudNavLink>
-    
-    @if (_cargando)
-    {
-        <div class="px-5 py-3">
-            <MudSkeleton Width="85%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
-            <MudSkeleton Width="70%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
-            <MudSkeleton Width="60%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
-        </div>
-    }
-    else
-    {
-        @if (UserSession.EsControlEscolar)
+<div class="pa-4">
+    <!-- TÍTULO DE LA MARCA EN LA BARRA LATERAL -->
+    <div class="d-flex align-center px-3 mb-4 mt-2">
+        <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: #ffffff; letter-spacing: -0.5px;">UPASER</MudText>
+    </div>
+
+    <MudNavMenu Class="m3-expressive-menu">
+        <MudNavLink Href="/inicio" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" Class="rounded-xl mb-1">Inicio</MudNavLink>
+        
+        @if (_cargando)
         {
-            <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Inscripciones</MudNavLink>
-            <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Cursos</MudNavLink>
-            <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Pagos</MudNavLink>
-            <MudNavLink Href="/cobranza" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountBalanceWallet">Cobranza y Saldos</MudNavLink>
+            <div class="px-3 py-3">
+                <MudSkeleton Width="85%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+                <MudSkeleton Width="70%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+                <MudSkeleton Width="60%" Height="18px" Class="my-3" SkeletonType="SkeletonType.Rectangle" />
+            </div>
         }
-
-        <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Alumnos</MudNavLink>
-
-        <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true">
-            
+        else
+        {
             @if (UserSession.EsControlEscolar)
             {
-                <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Materias</MudNavLink>
-                <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge">Credenciales</MudNavLink>
+                <MudNavLink Href="/inscripciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd" Class="rounded-xl mb-1">Inscripciones</MudNavLink>
+                <MudNavLink Href="/cursos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" Class="rounded-xl mb-1">Cursos</MudNavLink>
+                <MudNavLink Href="/pagos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" Class="rounded-xl mb-1">Pagos</MudNavLink>
+                <MudNavLink Href="/cobranza" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountBalanceWallet" Class="rounded-xl mb-1">Cobranza y Saldos</MudNavLink>
             }
 
-            <MudNavLink Href="/asistencia" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EventAvailable">Asistencia</MudNavLink>
+            <MudNavLink Href="/alumnos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People" Class="rounded-xl mb-1">Alumnos</MudNavLink>
 
-            <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote">Calificaciones</MudNavLink>
-            <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print">Boletas de Calificaciones</MudNavLink>
-        </MudNavGroup>
-        
-        @if (UserSession.EsAdministrador)
-        {
-            <MudNavLink Href="/metricas" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Dashboard de Ventas</MudNavLink>
-            <MudNavLink Href="/gastos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MoneyOff">Control de Gastos</MudNavLink>
-            <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Opciones Administrativas</MudNavLink>
+            <MudNavGroup Title="Control Escolar" Icon="@Icons.Material.Filled.School" Expanded="true" Class="my-2">
+                
+                @if (UserSession.EsControlEscolar)
+                {
+                    <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook" Class="rounded-xl mb-1">Materias</MudNavLink>
+                    <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge" Class="rounded-xl mb-1">Credenciales</MudNavLink>
+                }
+
+                <MudNavLink Href="/asistencia" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EventAvailable" Class="rounded-xl mb-1">Asistencia</MudNavLink>
+
+                <MudNavLink Href="/calificaciones" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EditNote" Class="rounded-xl mb-1">Calificaciones</MudNavLink>
+                <MudNavLink Href="/reportes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Print" Class="rounded-xl mb-1">Boletas de Calificaciones</MudNavLink>
+            </MudNavGroup>
+            
+            @if (UserSession.EsAdministrador)
+            {
+                <MudNavLink Href="/metricas" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart" Class="rounded-xl mb-1">Dashboard de Ventas</MudNavLink>
+                <MudNavLink Href="/gastos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MoneyOff" Class="rounded-xl mb-1">Control de Gastos</MudNavLink>
+                <MudNavLink Href="/configuracion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings" Class="rounded-xl mb-1">Opciones Administrativas</MudNavLink>
+            }
         }
-    }
-</MudNavMenu>
+    </MudNavMenu>
+</div>
 
 @code {
     private bool _cargando = true;
