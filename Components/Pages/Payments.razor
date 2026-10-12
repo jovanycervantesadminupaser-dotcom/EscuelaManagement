@@ -7,6 +7,7 @@
 @using QuestPDF.Fluent
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
@@ -150,7 +151,7 @@
                                 <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Fecha</MudTh>
                                 <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso / Concepto</MudTh>
                                 <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Monto</MudTh>
-                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Ticket</MudTh>
+                                <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Acciones</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Fecha" Style="white-space: nowrap;">
@@ -166,9 +167,12 @@
                                         @context.Amount.ToString("C")
                                     </MudChip>
                                 </MudTd>
-                                <MudTd DataLabel="Ticket" Style="text-align: center;">
+                                <MudTd DataLabel="Acciones" Style="text-align: center; white-space: nowrap;">
                                     <MudTooltip Text="Reimprimir Ticket (PDF)" Arrow="true" Placement="Placement.Top">
                                         <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary" Size="Size.Small" OnClick="(() => ReimprimirTicket(context))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Reversar Pago (Eliminar)" Arrow="true" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Error" Size="Size.Small" OnClick="(() => ConfirmarReverso(context))" />
                                     </MudTooltip>
                                 </MudTd>
                             </RowTemplate>
@@ -191,34 +195,36 @@
             </MudItem>
         </MudGrid>
     </div>
+
+    <!-- DIÁLOGO DE CONFIRMACIÓN DE REVERSO -->
+    <MudMessageBox @ref="reversoDialog" Title="Confirmar Reverso de Pago">
+        <MessageContent>
+            ¿Estás seguro que deseas <b>reversar (eliminar)</b> el pago por <b>@pagoAReversar?.Amount.ToString("C")</b>? <br /><br />
+            Esta acción ajustará los saldos pendientes del alumno y no se puede deshacer.
+        </MessageContent>
+        <YesButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Class="rounded-lg" Style="text-transform: none;">Sí, Reversar Pago</MudButton>
+        </YesButton>
+        <CancelButton>
+            <MudButton Variant="Variant.Text" Color="Color.Default" Class="rounded-lg" Style="text-transform: none;">Cancelar</MudButton>
+        </CancelButton>
+    </MudMessageBox>
+
 </MudContainer>
 
 <style>
     /* Estilos modernos para los inputs */
-    .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
-    }
-    .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
-    }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
-        border-color: var(--mud-palette-primary) !important;
-    }
-
-    /* Estilos limpios para la tabla */
-    .modern-table .mud-table-cell {
-        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
-    }
-    .modern-table .mud-table-root {
-        border: none !important;
-    }
+    .modern-input .mud-input-outlined-border { border-color: var(--mud-palette-lines-default) !important; }
+    .modern-input .mud-input { background-color: transparent !important; border-radius: 8px !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-width: 2px !important; border-color: var(--mud-palette-primary) !important; }
+    .modern-table .mud-table-cell { border-bottom: 1px solid var(--mud-palette-lines-default) !important; padding: 16px 12px !important; }
+    .modern-table .mud-table-root { border: none !important; }
 </style>
 
 @code {
     private MudForm form = default!;
+    private MudMessageBox reversoDialog = default!;
+    private Payment? pagoAReversar;
     private bool success;
     private bool enviandoCorreo = false;
 
@@ -455,6 +461,49 @@
         }
     }
 
+    // --- NUEVA LÓGICA DE REVERSO DE PAGO ---
+    private async Task ConfirmarReverso(Payment pago)
+    {
+        pagoAReversar = pago;
+        bool? result = await reversoDialog.ShowAsync();
+        
+        if (result == true)
+        {
+            await EjecutarReversoPago();
+        }
+    }
+
+    private async Task EjecutarReversoPago()
+    {
+        if (pagoAReversar == null || selectedStudent == null || string.IsNullOrEmpty(pagoAReversar.Id)) return;
+
+        try
+        {
+            // Borra el pago en Firebase
+            await Firebase.DeletePaymentAsync(pagoAReversar.Id);
+
+            Snackbar.Add("El pago ha sido reversado exitosamente.", Severity.Success);
+
+            // Refresca la tabla y los cálculos
+            historialPagos = await Firebase.GetPaymentsByStudentAsync(selectedStudent.Id);
+            
+            // Recalcula el saldo en pantalla basándose en el dropdown seleccionado
+            if (!string.IsNullOrEmpty(newPayment.CourseId))
+            {
+                CalcularSaldosCurso(newPayment.CourseId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al reversar el pago: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            pagoAReversar = null;
+            StateHasChanged();
+        }
+    }
+
     private async Task ReimprimirTicket(Payment pago)
     {
         if (selectedStudent == null) return;
@@ -510,7 +559,7 @@
                     {
                         col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken3);
                         col.Item().Text("COMPROBANTE OFICIAL DE PAGO").SemiBold().FontSize(14).FontColor(QuestPDF.Helpers.Colors.Green.Darken2);
-                        col.Item().Text($"Folio: {pago.Id.Substring(0, 8).ToUpper()}").FontSize(10);
+                        col.Item().Text($"Folio: {pago.Id?.Substring(0, 8).ToUpper() ?? "N/A"}").FontSize(10);
                         col.Item().Text($"Fecha: {pago.PaymentDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")}").FontSize(10);
                     });
                 });
@@ -556,7 +605,6 @@
                         costoTotal = curso.SinglePaymentCost;
                     }
 
-                    // CORRECCIÓN: Sumar el monto del pago actual para asegurar la precisión del primer recibo emitido.
                     double yaPagado = historialPagos.Where(p => p.CourseId == curso.Id && p.Id != pago.Id).Sum(p => p.Amount) + pago.Amount;
                     double restante = costoTotal - yaPagado;
                     if (restante < 0) restante = 0;

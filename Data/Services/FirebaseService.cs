@@ -166,6 +166,12 @@ public class FirebaseService
         }
     }
 
+    public async Task DeletePaymentAsync(string paymentId)
+    {
+        DocumentReference docRef = _db.Collection("payments").Document(paymentId);
+        await docRef.DeleteAsync();
+    }
+
     // ==========================================
     // --- MÉTODOS PARA MATERIAS ---
     // ==========================================
