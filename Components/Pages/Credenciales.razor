@@ -11,22 +11,35 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
-    <!-- Encabezado Limpio -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Módulo de Credenciales</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
+    
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(14,165,233,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Módulo de Credenciales</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Diseño y emisión de identificaciones PVC con calibración milimétrica.</MudText>
+        </div>
     </div>
 
-    <!-- TABS CON ESTILO PLANO -->
-    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Style="border-bottom: 1px solid var(--mud-palette-lines-default);">
+    <!-- TABS M3 EXPRESSIVE -->
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-8 fade-in-suave" Style="background-color: transparent;">
         
         @* --- PESTAÑA 1: EMISIÓN INDIVIDUAL --- *@
-        <MudTabPanel Text="Emisión Individual" Icon="@Icons.Material.Filled.Badge">
-            <MudPaper Elevation="0" Class="pa-6 rounded-lg fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+        <MudTabPanel Text="Emisión Individual" Icon="@Icons.Material.Filled.Person">
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex align-center mb-6">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(14,165,233,0.15); color: #0ea5e9;" Class="mr-3 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Configuración de Credencial</MudText>
+                </div>
+
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <MudAutocomplete T="Student" Label="1. Seleccionar Alumno" Value="selectedStudent" ValueChanged="OnStudentSelected"
+                        <MudAutocomplete T="Student" Label="1. Seleccionar Alumno*" Value="selectedStudent" ValueChanged="OnStudentSelected"
                                          SearchFunc="@SearchStudents" ToStringFunc="@DisplayAlumno"
                                          Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Clearable="true" Class="modern-input" />
                     </MudItem>
@@ -44,10 +57,8 @@
                     </MudItem>
                 </MudGrid>
                 
-                <MudDivider Class="my-6" Style="opacity: 0.5;" />
-                
-                <div class="d-flex justify-end">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Download" OnClick="GenerarPDF" Disabled="@(selectedStudent == null)" Class="rounded-lg font-weight-bold px-8" Style="text-transform: none;">
+                <div class="d-flex justify-end pt-6 mt-8" style="border-top: 1px solid var(--mud-palette-lines-default);">
+                    <MudButton T="string" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Download" OnClick="GenerarPDF" Disabled="@(selectedStudent == null)" Class="rounded-xl font-weight-bold px-8 py-3 btn-vivid" Style="text-transform: none; color: white;">
                         Descargar PDF PVC
                     </MudButton>
                 </div>
@@ -57,11 +68,15 @@
         @* --- PESTAÑA 2: EMISIÓN EN LOTE --- *@
         <MudTabPanel Text="Emisión en Lote" Icon="@Icons.Material.Filled.PeopleAlt">
             <div class="fade-in-suave">
-                <MudAlert Severity="Severity.Info" Class="mb-6 rounded-lg" Elevation="0" Style="border: 1px solid var(--mud-palette-info);">
-                    El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) con todos los encabezados (Curso, Vigencia, Director).
-                </MudAlert>
+                <div class="m3-alert m3-alert-info d-flex align-center pa-4 rounded-xl mb-6">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-3" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Información de Formato</MudText>
+                        <MudText Typo="Typo.body2">El sistema generará el <b>Anverso y Reverso</b> en formato Horizontal (8.6cm x 5.4cm) con todos los encabezados (Curso, Vigencia, Director).</MudText>
+                    </div>
+                </div>
 
-                <MudPaper Elevation="0" Class="pa-6 rounded-lg mb-6" Style="border: 1px solid var(--mud-palette-lines-default);">
+                <MudPaper Elevation="0" Class="pa-6 rounded-xxl mb-6 m3-section-card" Style="background-color: var(--mud-palette-surface);">
                     <MudGrid>
                         <MudItem xs="12" md="6">
                             <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
@@ -77,12 +92,17 @@
                     </MudGrid>
                 </MudPaper>
 
-                <MudPaper Elevation="0" Class="pa-6 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
-                    <MudTable T="AlumnoCredencialVM" Items="@AlumnosFiltradosLote" MultiSelection="true" @bind-SelectedItems="alumnosSeleccionados" Hover="true" Elevation="0" Class="modern-table">
+                <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+                    <MudTable T="AlumnoCredencialVM" Items="@AlumnosFiltradosLote" MultiSelection="true" @bind-SelectedItems="alumnosSeleccionados" Hover="true" Elevation="0" Class="modern-table transparent-table">
                         <ToolBarContent>
-                            <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Alumnos Disponibles para Imprimir</MudText>
+                            <div class="d-flex align-center">
+                                <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(139,92,246,0.15); color: #8b5cf6;" Class="mr-3 rounded-lg">
+                                    <MudIcon Icon="@Icons.Material.Filled.RecentActors" />
+                                </MudAvatar>
+                                <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Alumnos Disponibles para Imprimir</MudText>
+                            </div>
                             <MudSpacer />
-                            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" Disabled="@(!alumnosSeleccionados.Any() || generandoPdfLote)" OnClick="GenerarPDFLote" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                            <MudButton T="string" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Print" Disabled="@(!alumnosSeleccionados.Any() || generandoPdfLote)" OnClick="GenerarPDFLote" Class="rounded-xl font-weight-bold py-2 px-6 btn-vivid-success" Style="text-transform: none; color: white;">
                                 @if (generandoPdfLote)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
@@ -95,35 +115,35 @@
                             </MudButton>
                         </ToolBarContent>
                         <HeaderContent>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Foto</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre del Alumno</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Curso</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Foto</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Nombre del Alumno</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Curso</MudTh>
                         </HeaderContent>
-                        <RowTemplate>
+                        <RowTemplate Context="alumnoRow">
                             <MudTd DataLabel="Foto">
-                                @if (!string.IsNullOrEmpty(context.Student.PhotoBase64))
+                                @if (!string.IsNullOrEmpty(alumnoRow.Student.PhotoBase64))
                                 {
-                                    <MudAvatar Size="Size.Medium" Class="rounded-lg">
-                                        <MudImage Src="@context.Student.PhotoBase64" ObjectFit="ObjectFit.Cover" Width="40" Height="40" />
+                                    <MudAvatar Size="Size.Medium" Class="rounded-lg shadow-sm">
+                                        <MudImage Src="@alumnoRow.Student.PhotoBase64" ObjectFit="ObjectFit.Cover" Width="40" Height="40" />
                                     </MudAvatar>
                                 }
                                 else
                                 {
-                                    <MudAvatar Color="Color.Primary" Size="Size.Medium" Class="rounded-lg">@((context.Student.Name ?? "U").Substring(0, 1))</MudAvatar>
+                                    <MudAvatar Color="Color.Primary" Size="Size.Medium" Class="rounded-lg shadow-sm">@((alumnoRow.Student.Name ?? "U").Substring(0, 1))</MudAvatar>
                                 }
                             </MudTd>
                             <MudTd DataLabel="Nombre">
-                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Student.Name @context.Student.PaternalLastName</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@alumnoRow.Student.Name @alumnoRow.Student.PaternalLastName</MudText>
                             </MudTd>
                             <MudTd DataLabel="Curso">
-                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">@context.CourseName</MudChip>
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold shadow-sm rounded-lg px-3">@alumnoRow.CourseName</MudChip>
                             </MudTd>
                         </RowTemplate>
                         <NoRecordsContent>
-                            <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
-                                <MudIcon Icon="@Icons.Material.Filled.GroupOff" Color="Color.Default" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
-                                <MudText Typo="Typo.h6" Class="mb-1 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin resultados</MudText>
-                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">No se encontraron alumnos con los filtros actuales.</MudText>
+                            <div class="d-flex flex-column align-center justify-center pa-12 fade-in-suave">
+                                <MudIcon Icon="@Icons.Material.Filled.GroupOff" Color="Color.Default" Style="font-size: 6rem; opacity: 0.3;" Class="mb-4" />
+                                <MudText Typo="Typo.h5" Class="mb-2 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin resultados</MudText>
+                                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">No se encontraron alumnos con los filtros actuales.</MudText>
                             </div>
                         </NoRecordsContent>
                         <PagerContent>
@@ -136,35 +156,40 @@
 
         @* --- PESTAÑA 3: DISEÑADOR --- *@
         <MudTabPanel Text="Configurar Plantilla" Icon="@Icons.Material.Filled.Architecture">
-            <MudGrid Class="fade-in-suave">
+            <MudGrid Class="fade-in-suave mt-2">
                 <!-- COLUMNA IZQUIERDA: Formulario de Calibración -->
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-lg h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Calibración (mm)</MudText>
+                    <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card h-100" Style="background-color: var(--mud-palette-surface);">
+                        <div class="d-flex align-center mb-6">
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(245,158,11,0.15); color: #f59e0b;" Class="mr-3 rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.Tune" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Calibración (mm)</MudText>
+                        </div>
                         
-                        <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
-                            <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true" Class="font-weight-bold">
+                        <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="rounded-xl transparent-panels">
+                            <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true" Class="font-weight-bold m3-panel mb-3">
                                 <MudNumericField T="float" @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
                             
-                            <MudExpansionPanel Text="Textos Frente" Class="font-weight-bold">
+                            <MudExpansionPanel Text="Textos Frente" Class="font-weight-bold m3-panel mb-3">
                                 <MudNumericField T="float" @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
 
-                            <MudExpansionPanel Text="Reverso (Firma)" Class="font-weight-bold">
+                            <MudExpansionPanel Text="Reverso (Firma)" Class="font-weight-bold m3-panel">
                                 <MudNumericField T="float" @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField T="float" @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
                         </MudExpansionPanels>
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-8 w-100 py-3 rounded-lg font-weight-bold" StartIcon="@Icons.Material.Filled.Save" Style="text-transform: none;" OnClick="GuardarDiseno">
+                        <MudButton T="string" Variant="Variant.Filled" Color="Color.Success" Class="mt-8 w-100 py-3 rounded-xl font-weight-bold hover-lift" StartIcon="@Icons.Material.Filled.Save" Style="text-transform: none;" OnClick="GuardarDiseno">
                             Guardar Diseño
                         </MudButton>
                     </MudPaper>
@@ -172,13 +197,13 @@
 
                 <!-- COLUMNA DERECHA: Vista Previa -->
                 <MudItem xs="12" md="8">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-lg h-100" Style="border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);">
+                    <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card h-100" Style="background-color: var(--mud-palette-background);">
                         <MudGrid>
                             @* VISTA PREVIA ANVERSO *@
                             <MudItem xs="12" lg="6" Class="d-flex flex-column align-center">
-                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">ANVERSO (FRENTE)</MudText>
+                                <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-4" Color="Color.Primary">ANVERSO (FRENTE)</MudText>
                                 
-                                <div class="credencial-preview elevation-3" style="width: 325px; height: 204px; position: relative; border-radius: 8px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
+                                <div class="credencial-preview elevation-4" style="width: 325px; height: 204px; position: relative; border-radius: 12px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
                                     @if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
                                     {
                                         <img src="@diseno.PlantillaFrenteBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
@@ -201,15 +226,15 @@
                                     </div>
                                 </div>
                                 
-                                <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-4 rounded-lg font-weight-bold" Style="text-transform: none;">Cargar Anverso</MudButton>
+                                <MudButton HtmlTag="label" for="frenteFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-6 rounded-xl font-weight-bold px-6 py-2 hover-lift" Style="text-transform: none; border-width: 2px;">Cargar Anverso</MudButton>
                                 <InputFile id="frenteFile" OnChange="SubirFrente" style="display:none" accept=".jpg,.png"/>
                             </MudItem>
 
                             @* VISTA PREVIA REVERSO *@
                             <MudItem xs="12" lg="6" Class="d-flex flex-column align-center mt-8 mt-lg-0">
-                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4" Color="Color.Primary">REVERSO (ATRÁS)</MudText>
+                                <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-4" Color="Color.Primary">REVERSO (ATRÁS)</MudText>
                                 
-                                <div class="credencial-preview elevation-3" style="width: 325px; height: 204px; position: relative; border-radius: 8px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
+                                <div class="credencial-preview elevation-4" style="width: 325px; height: 204px; position: relative; border-radius: 12px; overflow: hidden; background: white; border: 1px solid var(--mud-palette-lines-default);">
                                     @if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
                                     {
                                         <img src="@diseno.PlantillaReversoBase64" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
@@ -223,7 +248,7 @@
                                     </div>
                                 </div>
                                 
-                                <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-4 rounded-lg font-weight-bold" Style="text-transform: none;">Cargar Reverso</MudButton>
+                                <MudButton HtmlTag="label" for="reversoFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="mt-6 rounded-xl font-weight-bold px-6 py-2 hover-lift" Style="text-transform: none; border-width: 2px;">Cargar Reverso</MudButton>
                                 <InputFile id="reversoFile" OnChange="SubirReverso" style="display:none" accept=".jpg,.png"/>
                             </MudItem>
                         </MudGrid>
@@ -235,27 +260,72 @@
 </MudContainer>
 
 <style>
-    /* Estilos modernos para los inputs */
+    /* Efecto Flotante M3 */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .m3-section-card:hover {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Inputs adaptables nativamente al Modo Oscuro */
     .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
+        background-color: var(--mud-palette-background-grey) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .mud-palette-dark .modern-input .mud-input {
+        background-color: var(--mud-palette-background) !important;
+    }
+    
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important;
     }
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
         border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
     }
 
     /* Estilos limpios para la tabla */
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
+        padding: 16px 16px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
+    .modern-table .mud-table-root { border: none !important; }
+
+    /* Pastillas de Alerta M3 */
+    .m3-alert { border-left: 5px solid; transition: all 0.3s ease; }
+    .m3-alert-info { background-color: rgba(14,165,233,0.1); border-left-color: #0ea5e9; color: #0369a1; }
+    .mud-palette-dark .m3-alert-info { background-color: rgba(14,165,233,0.15); color: #7dd3fc; }
+
+    /* Paneles de Expansión M3 */
+    .transparent-panels .mud-expand-panel { background-color: transparent !important; }
+    .m3-panel { border: 1px solid var(--mud-palette-lines-default); border-radius: 16px !important; overflow: hidden; }
+
+    /* Botones Vívidos y Efectos Lift */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
+    
+    .btn-vivid {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        transition: all 0.3s ease !important;
     }
+    .btn-vivid:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3) !important; }
+
+    .btn-vivid-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid-success:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important; }
 </style>
 
 @code {
