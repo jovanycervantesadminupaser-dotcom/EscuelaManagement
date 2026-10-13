@@ -6,22 +6,27 @@
 @inject FirebaseService Firebase
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
     
-    <!-- ENCABEZADO -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Captura de Calificaciones</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registro y evaluación del desempeño académico por bloque y materia.</MudText>
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(245,158,11,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Captura de Calificaciones</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registro y evaluación del desempeño académico por bloque y materia.</MudText>
+        </div>
     </div>
 
-    <!-- PANEL DE FILTROS -->
-    <MudPaper Elevation="0" Class="pa-6 mb-8 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+    <!-- PANEL DE FILTROS M3 -->
+    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface);">
         <MudGrid Class="align-center">
             <MudItem xs="12" md="4">
                 <MudSelect T="string" Label="1. Selecciona el Curso" ValueChanged="OnCursoChanged" Value="selectedCursoId" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
                     @foreach (var c in listaCursos)
                     {
-                        <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                        <MudSelectItem T="string" Value="@c.Id">@c.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -30,91 +35,136 @@
                 <MudSelect T="string" Label="2. Selecciona la Materia" @bind-Value="selectedMateriaId" Variant="Variant.Outlined" Disabled="@(string.IsNullOrEmpty(selectedCursoId))" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
                     @foreach (var m in materiasFiltradas)
                     {
-                        <MudSelectItem Value="@m.Id">@m.Nombre</MudSelectItem>
+                        <MudSelectItem T="string" Value="@m.Id">@m.Nombre</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
 
             <MudItem xs="12" md="4">
                 <MudSelect T="string" Label="3. Periodo a Evaluar" @bind-Value="selectedPeriodo" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="modern-input">
-                    <MudSelectItem Value="@("Bloque 1")">Bloque 1</MudSelectItem>
-                    <MudSelectItem Value="@("Bloque 2")">Bloque 2</MudSelectItem>
-                    <MudSelectItem Value="@("Bloque 3")">Bloque 3</MudSelectItem>
-                    <MudSelectItem Value="@("Promedio Final")">Promedio Final</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Bloque 1")">Bloque 1</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Bloque 2")">Bloque 2</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Bloque 3")">Bloque 3</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Promedio Final")">Promedio Final</MudSelectItem>
                 </MudSelect>
             </MudItem>
 
             <MudItem xs="12" Class="d-flex justify-end mt-4">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CargarListaAlumnos" Disabled="@(!FiltrosCompletos)" Class="rounded-lg font-weight-bold px-8 py-3" Style="text-transform: none;" StartIcon="@Icons.Material.Filled.FormatListNumbered">
+                <MudButton T="string" Variant="Variant.Filled" Color="Color.Primary" OnClick="CargarListaAlumnos" Disabled="@(!FiltrosCompletos)" Class="rounded-xl font-weight-bold px-8 py-3 btn-vivid" Style="text-transform: none; color: white;" StartIcon="@Icons.Material.Filled.FormatListNumbered">
                     Generar Lista de Captura
                 </MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-    <!-- ÁREA DE CAPTURA -->
-    @if (mostrarTabla)
-    {
-        <MudPaper Elevation="0" Class="pa-6 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
-            <div class="mb-4">
-                <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Alumnos a Evaluar</MudText>
-                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Ingresa la calificación y presiona "Guardar" en cada registro.</MudText>
-            </div>
+    <!-- ÁREA DE CAPTURA M3 -->
+    <div class="fade-in-suave" style="animation-delay: 0.1s;">
+        @if (mostrarTabla)
+        {
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex align-center mb-6">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(245,158,11,0.15); color: #f59e0b;" Class="mr-3 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.Draw" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Alumnos a Evaluar</MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Ingresa la calificación y presiona "Guardar" en cada registro.</MudText>
+                    </div>
+                </div>
 
-            <MudTable Items="@listaCaptura" Hover="true" Elevation="0" Class="modern-table">
-                <HeaderContent>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre del Alumno</MudTh>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Calificación (0 - 10)</MudTh>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:right;">Acción</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Nombre del Alumno">
-                        <MudText Typo="Typo.body1" Class="font-weight-bold">@context.NombreAlumno</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Calificación" Style="text-align: center;">
-                        <MudNumericField @bind-Value="context.Nota.Valor" Min="0" Max="10" Step="0.1" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mx-auto" Style="max-width: 140px;" />
-                    </MudTd>
-                    <MudTd DataLabel="Acciones" Style="text-align:right;">
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" OnClick="@(() => GuardarNota(context))" Class="rounded-lg font-weight-bold px-4" Style="text-transform: none;">
-                            Guardar
-                        </MudButton>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Elevation="0" Class="pa-12 rounded-xl d-flex flex-column align-center justify-center fade-in-suave" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
-            <MudIcon Icon="@Icons.Material.Filled.FactCheck" Style="font-size: 5rem; color: var(--mud-palette-text-secondary); opacity: 0.5;" Class="mb-4" />
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-secondary);">Listo para Capturar</MudText>
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Selecciona el curso, materia y periodo para comenzar a ingresar calificaciones.</MudText>
-        </MudPaper>
-    }
+                <MudTable T="RegistroCalificacion" Items="@listaCaptura" Hover="true" Elevation="0" Class="modern-table transparent-table">
+                    <HeaderContent>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Nombre del Alumno</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; text-align: center; border-bottom: 2px solid var(--mud-palette-lines-default);">Calificación (0 - 10)</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; text-align:right; border-bottom: 2px solid var(--mud-palette-lines-default);">Acción</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="alumnoRow">
+                        <MudTd DataLabel="Nombre del Alumno">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@alumnoRow.NombreAlumno</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Calificación" Style="text-align: center;">
+                            <MudNumericField T="double" @bind-Value="alumnoRow.Nota.Valor" Min="0" Max="10" Step="0.1" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mx-auto shadow-sm" Style="max-width: 140px;" />
+                        </MudTd>
+                        <MudTd DataLabel="Acciones" Style="text-align:right;">
+                            <MudButton T="string" Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" OnClick="@(() => GuardarNota(alumnoRow))" Class="rounded-xl font-weight-bold px-6 py-2 btn-vivid-success" Style="text-transform: none; color: white;">
+                                Guardar
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Elevation="0" Class="pa-12 rounded-xxl d-flex flex-column align-center justify-center fade-in-suave" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                <MudIcon Icon="@Icons.Material.Filled.FactCheck" Style="font-size: 6rem; color: var(--mud-palette-text-disabled);" Class="mb-4" />
+                <MudText Typo="Typo.h5" Class="font-weight-bold mb-2" Style="color: var(--mud-palette-text-secondary);">Listo para Capturar</MudText>
+                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Selecciona el curso, materia y periodo para comenzar a ingresar calificaciones.</MudText>
+            </MudPaper>
+        }
+    </div>
 
 </MudContainer>
 
 <style>
-    /* Estilos modernos para los inputs */
+    /* Efecto Flotante M3 */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .m3-section-card:hover {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Inputs adaptables nativamente al Modo Oscuro */
     .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
+        background-color: var(--mud-palette-background) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.15) !important;
     }
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
         border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
     }
 
     /* Estilos limpios para la tabla */
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
+        padding: 16px 16px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
+    .modern-table .mud-table-root { border: none !important; }
+
+    /* Botones Vívidos y Efectos Lift */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
+    
+    .btn-vivid {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3) !important;
+    }
+
+    .btn-vivid-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important;
     }
 </style>
 
@@ -164,7 +214,6 @@
         {
             var notaExistente = todasLasNotas.FirstOrDefault(n => n.AlumnoId == alumno.Id && n.MateriaId == selectedMateriaId && n.Periodo == selectedPeriodo);
 
-            // Control estricto de nulos para compilar con 0 advertencias
             listaCaptura.Add(new RegistroCalificacion
             {
                 AlumnoId = alumno.Id ?? "",

@@ -9,16 +9,21 @@
 @inject PdfService Pdf
 @inject IJSRuntime JS
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
     
-    <!-- ENCABEZADO -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Centro de Reportes y Boletas</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Genera e imprime las boletas oficiales de calificaciones por alumno.</MudText>
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(225,29,72,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.Summarize" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Centro de Reportes y Boletas</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Genera e imprime las boletas oficiales de calificaciones por alumno.</MudText>
+        </div>
     </div>
 
-    <!-- PANEL DE FILTROS -->
-    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
+    <!-- PANEL DE FILTROS M3 -->
+    <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface);">
         <MudGrid Class="align-center">
             <MudItem xs="12" md="4">
                 <MudSelect T="string" Label="1. Selecciona el Curso" 
@@ -50,83 +55,119 @@
             </MudItem>
             
             <MudItem xs="12" md="4" Class="d-flex align-center mt-2 mt-md-0">
-                <MudButton Variant="Variant.Filled" 
+                <MudButton T="string" Variant="Variant.Filled" 
                            Color="Color.Primary" 
                            StartIcon="@Icons.Material.Filled.PictureAsPdf" 
                            OnClick="@ImprimirBoleta" 
                            FullWidth="true" 
                            Disabled="@(!boletaPreview.Any())"
-                           Class="rounded-lg font-weight-bold py-3"
-                           Style="text-transform: none;">
+                           Class="rounded-xl font-weight-bold py-3 btn-vivid"
+                           Style="text-transform: none; color: white;">
                     Generar Boleta Oficial
                 </MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-    <!-- ÁREA DE VISTA PREVIA O ESTADO VACÍO -->
-    @if (boletaPreview.Any())
-    {
-        <MudPaper Elevation="0" Class="pa-6 rounded-xl fade-in-suave" Style="border: 1px solid var(--mud-palette-lines-default);">
-            <div class="mb-4">
-                <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Vista Previa de Boleta</MudText>
-                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Verifica que las calificaciones sean correctas antes de generar el documento PDF.</MudText>
-            </div>
-            
-            <MudTable T="FilaBoleta" Items="@boletaPreview" Hover="true" Elevation="0" Class="modern-table">
-                <HeaderContent>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Materia</MudTh>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Profesor</MudTh>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Periodo</MudTh>
-                    <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:center;">Calificación</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Materia">
-                        <MudText Typo="Typo.body1" Class="font-weight-bold">@context.NombreMateria</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Profesor">@context.Profesor</MudTd>
-                    <MudTd DataLabel="Periodo">@context.Periodo</MudTd>
-                    <MudTd DataLabel="Calificación" Style="text-align:center;">
-                        <MudChip T="string" Color="@ObtenerColorNota(context.Nota)" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold px-3">
-                            @context.Nota.ToString("0.0")
-                        </MudChip>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
-    else
-    {
-        <!-- EMPTY STATE (ESTADO VACÍO) -->
-        <MudPaper Elevation="0" Class="pa-12 rounded-xl d-flex flex-column align-center justify-center fade-in-suave" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
-            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: var(--mud-palette-text-secondary); opacity: 0.5;" Class="mb-4" />
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-secondary);">Generador de Boletas</MudText>
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Selecciona un curso y un alumno para previsualizar sus calificaciones y generar el documento oficial en PDF.</MudText>
-        </MudPaper>
-    }
+    <!-- ÁREA DE VISTA PREVIA O ESTADO VACÍO M3 -->
+    <div class="fade-in-suave" style="animation-delay: 0.1s;">
+        @if (boletaPreview.Any())
+        {
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex align-center mb-6">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(225,29,72,0.15); color: #e11d48;" Class="mr-3 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.Preview" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Vista Previa de Boleta</MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Verifica que las calificaciones sean correctas antes de generar el documento PDF.</MudText>
+                    </div>
+                </div>
+                
+                <MudTable T="FilaBoleta" Items="@boletaPreview" Hover="true" Elevation="0" Class="modern-table transparent-table">
+                    <HeaderContent>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Materia</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Profesor</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Periodo</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; text-align:center; border-bottom: 2px solid var(--mud-palette-lines-default);">Calificación</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="boletaRow">
+                        <MudTd DataLabel="Materia">
+                            <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@boletaRow.NombreMateria</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Profesor" Style="color: var(--mud-palette-text-secondary);">@boletaRow.Profesor</MudTd>
+                        <MudTd DataLabel="Periodo" Style="color: var(--mud-palette-text-secondary);">@boletaRow.Periodo</MudTd>
+                        <MudTd DataLabel="Calificación" Style="text-align:center;">
+                            <MudChip T="string" Color="@ObtenerColorNota(boletaRow.Nota)" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold px-4 shadow-sm rounded-lg">
+                                @boletaRow.Nota.ToString("0.0")
+                            </MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+        else
+        {
+            <!-- EMPTY STATE (ESTADO VACÍO) -->
+            <MudPaper Elevation="0" Class="pa-12 rounded-xxl d-flex flex-column align-center justify-center fade-in-suave" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 6rem; color: var(--mud-palette-text-disabled);" Class="mb-4" />
+                <MudText Typo="Typo.h5" Class="font-weight-bold mb-2" Style="color: var(--mud-palette-text-secondary);">Generador de Boletas</MudText>
+                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Selecciona un curso y un alumno para previsualizar sus calificaciones y generar el documento oficial en PDF.</MudText>
+            </MudPaper>
+        }
+    </div>
 </MudContainer>
 
 <style>
-    /* Estilos modernos para los inputs */
+    /* Efecto Flotante M3 */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .m3-section-card:hover {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Inputs adaptables nativamente al Modo Oscuro */
     .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
     }
     .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
+        background-color: var(--mud-palette-background) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.15) !important;
     }
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
         border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
     }
 
     /* Estilos limpios para la tabla */
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
         padding: 16px 24px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
+    .modern-table .mud-table-root { border: none !important; }
+
+    /* Botones Vívidos y Efectos Lift */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
+    
+    .btn-vivid {
+        background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.3) !important;
     }
 </style>
 
