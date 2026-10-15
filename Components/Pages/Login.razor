@@ -80,7 +80,6 @@
         background-color: #f1f5f9 !important;
         border-radius: 16px !important;
         color: #0f172a !important;
-        /* Transición elástica para que se sienta fluido */
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; 
     }
     
@@ -91,8 +90,8 @@
     /* Estado cuando el usuario hace clic (Focus) */
     .modern-input .mud-input.mud-input-focused {
         background-color: #ffffff !important;
-        transform: scale(1.03) translateY(-2px); /* Escala y eleva el input */
-        box-shadow: 0 14px 25px -8px rgba(59, 130, 246, 0.35) !important; /* Resplandor azul */
+        transform: scale(1.03) translateY(-2px);
+        box-shadow: 0 14px 25px -8px rgba(59, 130, 246, 0.35) !important;
     }
     
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
@@ -102,16 +101,49 @@
 
     /* --- ANIMACIÓN EN EL BOTÓN PRINCIPAL (VIVID GRADIENT) --- */
     .btn-vivid {
-        background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important; /* Índico a Cian vibrante */
+        background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important;
         background-size: 200% auto !important;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
         border: none !important;
     }
     
     .btn-vivid:hover {
-        background-position: right center !important; /* Anima el degradado */
+        background-position: right center !important;
         transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 30px -8px rgba(6, 182, 212, 0.5) !important; /* Resplandor cian */
+        box-shadow: 0 20px 30px -8px rgba(6, 182, 212, 0.5) !important;
+    }
+
+    /* ========================================================
+       CORTINILLA DE CARGA M3 EXPRESSIVE (OVERLAY)
+       ======================================================== */
+    .backdrop-blur .mud-overlay-scrim {
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        background-color: rgba(15, 23, 42, 0.65) !important;
+    }
+
+    .login-loader-card {
+        background-color: #ffffff !important;
+        border-radius: 32px !important;
+        padding: 2.5rem 3rem !important;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+        min-width: 320px;
+        animation: popInM3 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .loader-ring-container {
+        padding: 18px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @@keyframes popInM3 {
+        0% { opacity: 0; transform: scale(0.85) translateY(15px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     /* Diseño Responsivo */
@@ -140,6 +172,21 @@
         100% { opacity: 0; transform: translateY(-40px) scale(0.98); filter: blur(4px); }
     }
 </style>
+
+<!-- CORTINILLA DE INICIO DE SESIÓN -->
+<MudOverlay Visible="@iniciandoSesion" DarkBackground="true" Absolute="false" ZIndex="9999" Class="backdrop-blur">
+    <MudPaper Elevation="0" Class="d-flex flex-column align-center justify-center text-center login-loader-card">
+        <div class="loader-ring-container mb-5">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" StrokeWidth="4" />
+        </div>
+        <MudText Typo="Typo.h5" Class="font-weight-bold mb-1" Style="color: #0f172a; letter-spacing: -0.5px;">
+            Iniciando sesión...
+        </MudText>
+        <MudText Typo="Typo.body1" Style="color: #64748b;">
+            Por favor, espere.
+        </MudText>
+    </MudPaper>
+</MudOverlay>
 
 <div class="login-wrapper @claseAnimacionSalida">
     
@@ -201,22 +248,15 @@
             </div>
 
             <!-- Botón Principal Vívido -->
-            <MudButton OnClick="Ingresar" 
-                       Disabled="@cargando"
+            <MudButton T="string"
+                       OnClick="Ingresar" 
+                       Disabled="@(cargando || iniciandoSesion)"
                        Variant="Variant.Filled" 
                        Size="Size.Large" 
                        FullWidth="true" 
                        Class="rounded-xl py-4 font-weight-bold text-white shadow-md btn-vivid" 
                        Style="font-size: 15px; letter-spacing: 0.5px;">
-                @if (cargando)
-                {
-                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
-                    <MudText Class="ms-2 font-weight-bold" Style="color: white;">VERIFICANDO...</MudText>
-                }
-                else
-                {
-                    <MudText Class="font-weight-bold">INGRESAR AL SISTEMA</MudText>
-                }
+                <MudText Class="font-weight-bold" Style="color: white;">INGRESAR AL SISTEMA</MudText>
             </MudButton>
 
             <div class="text-center mt-8">
@@ -230,6 +270,7 @@
 @code {
     private bool success;
     private bool cargando = false;
+    private bool iniciandoSesion = false;
     private MudForm form = default!;
     private string email = "";
     private string password = "";
@@ -279,11 +320,14 @@
         await form.ValidateAsync();
         if (form.IsValid)
         {
-            cargando = true;
+            iniciandoSesion = true;
             StateHasChanged();
 
             try
             {
+                // Pausa breve para que la cortinilla se aprecie con fluidez
+                await Task.Delay(500);
+
                 var usuariosDB = await Firebase.GetUsuariosAsync();
                 var usuarioValido = usuariosDB.FirstOrDefault(u => u.Correo == email && u.Password == password);
 
@@ -291,6 +335,8 @@
                 {
                     if (!usuarioValido.Activo)
                     {
+                        iniciandoSesion = false;
+                        StateHasChanged();
                         Snackbar.Add("Tu cuenta está suspendida. Contacta a Dirección.", Severity.Warning);
                     }
                     else
@@ -298,7 +344,6 @@
                         await UserSession.IniciarSesionAsync(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
                         Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
                         
-                        // --- INICIA LA ANIMACIÓN ---
                         claseAnimacionSalida = "animacion-salida";
                         StateHasChanged();
                         await Task.Delay(400); 
@@ -321,18 +366,17 @@
                     }
                     else
                     {
+                        iniciandoSesion = false;
+                        StateHasChanged();
                         Snackbar.Add("Credenciales incorrectas. Verifica tu correo y contraseña.", Severity.Error);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error de conexión: {ex.Message}", Severity.Error);
-            }
-            finally
-            {
-                cargando = false;
+                iniciandoSesion = false;
                 StateHasChanged();
+                Snackbar.Add($"Error de conexión: {ex.Message}", Severity.Error);
             }
         }
     }
