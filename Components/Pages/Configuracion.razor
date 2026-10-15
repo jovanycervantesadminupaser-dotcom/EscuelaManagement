@@ -8,16 +8,21 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
     
-    <!-- ENCABEZADO -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Opciones Administrativas</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Configuración global del sistema, diseño de reportes y control de accesos.</MudText>
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #334155 0%, #0f172a 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(15,23,42,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.SettingsApplications" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Opciones Administrativas</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Configuración global del sistema, diseño de reportes y control de accesos.</MudText>
+        </div>
     </div>
 
-    <!-- TABS MODERNOS SIN FONDO PESADO -->
-    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="false" Color="Color.Primary" PanelClass="pt-6 fade-in-suave">
+    <!-- TABS M3 EXPRESSIVE -->
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="false" PanelClass="pt-8 fade-in-suave" Style="background-color: transparent;">
         
         @* ========================================== *@
         @* PESTAÑA 1: IDENTIDAD ESCOLAR               *@
@@ -27,9 +32,14 @@
                 
                 @* --- 1. NOMBRE DE LA INSTITUCIÓN --- *@
                 <MudItem xs="12">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Color="Color.Primary">Información Institucional</MudText>
-                        <MudTextField @bind-Value="config.NombreEscuela" 
+                    <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
+                        <div class="d-flex align-center mb-6">
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(99,102,241,0.15); color: #6366f1;" Class="mr-3 rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.Badge" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Información Institucional</MudText>
+                        </div>
+                        <MudTextField T="string" @bind-Value="config.NombreEscuela" 
                                       Label="Nombre de la Institución Educativa" 
                                       Variant="Variant.Outlined" 
                                       Required="true"
@@ -39,60 +49,64 @@
 
                 @* --- 2. LOGOTIPO OFICIAL --- *@
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-xl modern-card d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Logotipo Oficial</MudText>
+                    <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card d-flex flex-column align-center justify-center text-center h-100" Style="background-color: var(--mud-palette-surface);">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold mb-6" Style="color: var(--mud-palette-text-primary);">Logotipo Oficial</MudText>
                         
                         @if (!string.IsNullOrEmpty(config.LogoBase64))
                         {
-                            <MudImage Src="@config.LogoBase64" Width="180" Height="180" ObjectFit="ObjectFit.Contain" Elevation="0" Class="rounded-lg mb-4 pa-2" Style="border: 1px dashed var(--mud-palette-lines-default);" />
+                            <div class="image-preview-container rounded-xl mb-6 d-flex align-center justify-center">
+                                <MudImage Src="@config.LogoBase64" Width="180" Height="180" ObjectFit="ObjectFit.Contain" Elevation="0" />
+                            </div>
                         }
                         else
                         {
-                            <MudPaper Elevation="0" Width="180px" Height="180px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
-                                <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
-                            </MudPaper>
+                            <div class="image-preview-container empty-preview rounded-xl mb-6 d-flex align-center justify-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 5rem; color: var(--mud-palette-text-disabled);" />
+                            </div>
                         }
 
-                        <MudButton HtmlTag="label" for="logoInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                        <MudButton HtmlTag="label" for="logoInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-xl font-weight-bold px-6 py-2 hover-lift" Style="text-transform: none; border-width: 2px;">
                             Subir Logotipo
                         </MudButton>
                         <InputFile id="logoInput" OnChange="CambiarLogo" accept=".jpg,.jpeg,.png" style="display: none;" />
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);" Class="mt-2">Formatos sugeridos: PNG o JPG transparentes.</MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);" Class="mt-4">Formatos sugeridos: PNG o JPG transparentes.</MudText>
                     </MudPaper>
                 </MudItem>
 
                 @* --- 3. FONDO DE PANTALLA LOGIN --- *@
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-6 rounded-xl modern-card d-flex flex-column align-center justify-center text-center h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Fondo de Pantalla (Login)</MudText>
+                    <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card d-flex flex-column align-center justify-center text-center h-100" Style="background-color: var(--mud-palette-surface);">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold mb-6" Style="color: var(--mud-palette-text-primary);">Fondo de Pantalla (Login)</MudText>
                         
                         @if (!string.IsNullOrEmpty(config.BackgroundLoginBase64))
                         {
-                            <MudImage Src="@config.BackgroundLoginBase64" Width="280" Height="160" ObjectFit="ObjectFit.Cover" Elevation="0" Class="rounded-lg mb-4" Style="border: 1px solid var(--mud-palette-lines-default);" />
+                            <div class="image-preview-container rounded-xl mb-6 d-flex align-center justify-center" style="width: 100%; max-width: 320px; height: 180px; overflow: hidden;">
+                                <MudImage Src="@config.BackgroundLoginBase64" Style="width: 100%; height: 100%; object-fit: cover;" Elevation="0" />
+                            </div>
                         }
                         else
                         {
-                            <MudPaper Elevation="0" Width="280px" Height="160px" Class="d-flex align-center justify-center rounded-lg mb-4" Style="background-color: var(--mud-palette-background-grey); border: 1px dashed var(--mud-palette-lines-default);">
-                                <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 4rem; color: var(--mud-palette-text-secondary);" />
-                            </MudPaper>
+                            <div class="image-preview-container empty-preview rounded-xl mb-6 d-flex align-center justify-center" style="width: 100%; max-width: 320px; height: 180px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Wallpaper" Style="font-size: 5rem; color: var(--mud-palette-text-disabled);" />
+                            </div>
                         }
 
-                        <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-lg font-weight-bold" Style="text-transform: none;">
+                        <MudButton HtmlTag="label" for="bgInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera" Class="rounded-xl font-weight-bold px-6 py-2 hover-lift" Style="text-transform: none; border-width: 2px;">
                             Subir Imagen de Fondo
                         </MudButton>
                         <InputFile id="bgInput" OnChange="UploadBackground" accept=".jpg,.jpeg,.png" style="display: none;" />
-                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);" Class="mt-2">Formatos sugeridos: JPG o PNG de alta resolución.</MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);" Class="mt-4">Formatos sugeridos: JPG o PNG de alta resolución.</MudText>
                     </MudPaper>
                 </MudItem>
 
                 @* --- 4. BOTÓN DE GUARDAR AL FINAL --- *@
                 <MudItem xs="12" Class="d-flex justify-end mt-4">
-                    <MudButton Variant="Variant.Filled" 
+                    <MudButton T="string" Variant="Variant.Filled" 
                                Color="Color.Primary" 
                                StartIcon="@Icons.Material.Filled.Save" 
                                OnClick="GuardarAjustes"
-                               Class="rounded-lg font-weight-bold px-8 py-3"
-                               Style="text-transform: none;">
+                               Class="rounded-xl font-weight-bold px-8 py-3 btn-vivid"
+                               Style="text-transform: none; color: white;">
                         Guardar Configuración Visual
                     </MudButton>
                 </MudItem>
@@ -103,54 +117,60 @@
         @* PESTAÑA 2: USUARIOS Y ROLES                *@
         @* ========================================== *@
         <MudTabPanel Text="Usuarios y Roles" Icon="@Icons.Material.Filled.SupervisorAccount">
-            <MudPaper Elevation="0" Class="pa-6 rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card" Style="background-color: var(--mud-palette-surface);">
                 <div class="d-flex flex-wrap justify-space-between align-center mb-6 gap-4">
-                    <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Personal con Acceso al Sistema</MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AbrirDialogoNuevo" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">
+                    <div class="d-flex align-center">
+                        <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(14,165,233,0.15); color: #0ea5e9;" Class="mr-3 rounded-lg">
+                            <MudIcon Icon="@Icons.Material.Filled.Security" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Personal con Acceso al Sistema</MudText>
+                    </div>
+                    <MudButton T="string" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AbrirDialogoNuevo" Class="rounded-xl font-weight-bold px-6 py-2 btn-vivid" Style="text-transform: none; color: white;">
                         Nuevo Usuario
                     </MudButton>
                 </div>
 
                 @if (cargandoUsuarios)
                 {
-                    <div class="d-flex flex-column align-center justify-center py-8 fade-in-suave">
+                    <div class="d-flex flex-column align-center justify-center py-12 fade-in-suave">
                         <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="mb-4" />
-                        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Cargando directorio de accesos...</MudText>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Cargando directorio...</MudText>
+                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Recuperando información de accesos.</MudText>
                     </div>
                 }
                 else
                 {
-                    <MudTable Items="@listaUsuarios" Hover="true" Elevation="0" Class="modern-table">
+                    <MudTable T="Usuario" Items="@listaUsuarios" Hover="true" Elevation="0" Class="modern-table transparent-table">
                         <HeaderContent>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Usuario / Correo</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Nombre Completo</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Rol Asignado</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Estado</MudTh>
-                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align:right;">Acciones</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Usuario / Correo</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Nombre Completo</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Rol Asignado</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Estado</MudTh>
+                            <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default); text-align:right;">Acciones</MudTh>
                         </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Correo">@context.Correo</MudTd>
+                        <RowTemplate Context="usuarioRow">
+                            <MudTd DataLabel="Correo" Style="color: var(--mud-palette-text-secondary);">@usuarioRow.Correo</MudTd>
                             <MudTd DataLabel="Nombre">
-                                <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Nombre</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@usuarioRow.Nombre</MudText>
                             </MudTd>
                             <MudTd DataLabel="Rol">
-                                <MudChip T="string" Color="@(context.Rol == "Administrador" ? Color.Error : Color.Info)" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold px-3">
-                                    @context.Rol
+                                <MudChip T="string" Color="@(usuarioRow.Rol == "Administrador" ? Color.Error : Color.Info)" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold px-4 rounded-lg shadow-sm">
+                                    @usuarioRow.Rol
                                 </MudChip>
                             </MudTd>
                             <MudTd DataLabel="Estado">
-                                @if(context.Activo)
+                                @if(usuarioRow.Activo)
                                 {
-                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">Activo</MudChip>
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold rounded-lg px-3" Style="border-width: 2px;">Activo</MudChip>
                                 }
                                 else
                                 {
-                                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">Inactivo</MudChip>
+                                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold rounded-lg px-3" Style="border-width: 2px;">Inactivo</MudChip>
                                 }
                             </MudTd>
                             <MudTd DataLabel="Acciones" Style="text-align:right;">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" Class="mr-2" OnClick="@(() => AbrirDialogoEditar(context))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => EliminarUsuario(context))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" Class="mr-2 rounded-lg hover-lift" OnClick="@(() => AbrirDialogoEditar(usuarioRow))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" Class="rounded-lg hover-lift" OnClick="@(() => EliminarUsuario(usuarioRow))" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -162,68 +182,125 @@
 </MudContainer>
 
 <!-- ========================================== -->
-<!-- DIÁLOGO PARA CREAR/EDITAR USUARIO          -->
+<!-- DIÁLOGO PARA CREAR/EDITAR USUARIO M3       -->
 <!-- ========================================== -->
-<MudDialog @bind-Visible="dialogoVisible" Options="dialogOptions">
+<MudDialog @bind-Visible="dialogoVisible" Options="dialogOptions" Class="m3-dialog rounded-xxl" Style="background-color: var(--mud-palette-surface);">
     <TitleContent>
-        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">
-            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2 mb-1"/> @(editando ? "Editar Usuario" : "Registrar Nuevo Usuario")
-        </MudText>
+        <div class="d-flex align-center pb-2" style="border-bottom: 1px solid var(--mud-palette-lines-default);">
+            <MudAvatar Variant="Variant.Filled" Size="Size.Small" Style="background-color: rgba(14,165,233,0.15); color: #0ea5e9;" Class="mr-3 rounded-sm">
+                <MudIcon Icon="@Icons.Material.Filled.Person" />
+            </MudAvatar>
+            <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">
+                @(editando ? "Editar Usuario" : "Registrar Nuevo Usuario")
+            </MudText>
+        </div>
     </TitleContent>
     <DialogContent>
-        <div class="pa-2">
-            <MudTextField @bind-Value="usuarioActual.Nombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" />
-            <MudTextField @bind-Value="usuarioActual.Correo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" InputType="InputType.Email" />
-            <MudTextField @bind-Value="usuarioActual.Password" Label="Contraseña de Acceso" Required="true" Variant="Variant.Outlined" Class="mb-4 modern-input" InputType="InputType.Text" HelperText="Guarda esta contraseña; el usuario la necesitará para entrar." />
+        <div class="pa-4 pt-6">
+            <MudTextField T="string" @bind-Value="usuarioActual.Nombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" Class="mb-5 modern-input" />
+            <MudTextField T="string" @bind-Value="usuarioActual.Correo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" Class="mb-5 modern-input" InputType="InputType.Email" />
+            <MudTextField T="string" @bind-Value="usuarioActual.Password" Label="Contraseña de Acceso" Required="true" Variant="Variant.Outlined" Class="mb-5 modern-input" InputType="InputType.Text" HelperText="Guarda esta contraseña; el usuario la necesitará para entrar." />
             
             <MudSelect T="string" Label="Rol Asignado" @bind-Value="usuarioActual.Rol" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-6 modern-input">
-                <MudSelectItem Value="@("Administrador")">Administrador (Acceso Total)</MudSelectItem>
-                <MudSelectItem Value="@("Control Escolar")">Control Escolar (Pagos y Calificaciones)</MudSelectItem>
-                <MudSelectItem Value="@("Docente")">Docente (Solo Lectura/Captura)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Administrador")">Administrador (Acceso Total)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Control Escolar")">Control Escolar (Pagos y Calificaciones)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Docente")">Docente (Solo Lectura/Captura)</MudSelectItem>
             </MudSelect>
 
             <MudSwitch T="bool" @bind-Value="usuarioActual.Activo" Label="@(usuarioActual.Activo ? "Usuario Activo y Permitido" : "Usuario Suspendido")" Color="@(usuarioActual.Activo ? Color.Success : Color.Error)" />
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="CerrarDialogo" Variant="Variant.Text" Class="rounded-lg font-weight-bold mr-2" Style="text-transform: none;">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUsuario" Class="rounded-lg font-weight-bold px-6" Style="text-transform: none;">Guardar Usuario</MudButton>
+        <div class="pa-4 pt-0 w-100 d-flex justify-end gap-3">
+            <MudButton T="string" OnClick="CerrarDialogo" Variant="Variant.Outlined" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; border-width: 2px;">Cancelar</MudButton>
+            <MudButton T="string" Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUsuario" Class="rounded-xl font-weight-bold px-6 py-2 btn-vivid" Style="text-transform: none; color: white;">Guardar Usuario</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 
 <style>
-    /* Efecto de tarjetas */
-    .modern-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Efecto Flotante M3 */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+    }
+    .m3-section-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        border-color: var(--mud-palette-primary) !important;
+    }
+
+    /* Contenedores de Imágenes Adaptables */
+    .image-preview-container {
+        border: 2px dashed var(--mud-palette-lines-default);
+        background-color: var(--mud-palette-background); /* Se adapta al modo oscuro */
+        padding: 16px;
+        transition: all 0.3s ease;
+    }
+    .image-preview-container.empty-preview {
         background-color: var(--mud-palette-background-grey);
     }
-    .modern-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
-        background-color: var(--mud-palette-surface);
-        border-color: var(--mud-palette-primary) !important;
+    .mud-palette-dark .image-preview-container.empty-preview {
+        background-color: rgba(255,255,255,0.02);
     }
 
-    /* Estilos modernos para los inputs */
+    /* Solución Definitiva para Modo Oscuro en Inputs M3 */
     .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
     }
+    
     .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
+        background-color: var(--mud-palette-background-grey) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
-        border-color: var(--mud-palette-primary) !important;
+    
+    .mud-palette-dark .modern-input .mud-input {
+        background-color: var(--mud-palette-background) !important;
+    }
+    
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.15) !important;
+    }
+    
+    .mud-palette-dark .modern-input .mud-input.mud-input-focused {
+        box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important;
     }
 
-    /* Estilos limpios para la tabla */
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Estilos limpios para la tabla M3 */
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
+        padding: 18px 16px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
+    .modern-table .mud-table-root { border: none !important; }
+
+    /* Estilos para Diálogos M3 */
+    .m3-dialog {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* Botones Vívidos y Efectos Lift */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
+    
+    .btn-vivid {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3) !important; 
     }
 </style>
 

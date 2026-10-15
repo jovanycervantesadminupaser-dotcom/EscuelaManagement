@@ -7,34 +7,44 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
     
-    <!-- ENCABEZADO -->
-    <div class="mb-8">
-        <MudText Typo="Typo.h4" Class="font-weight-bold mb-1">Control de Gastos y Egresos</MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra y monitorea las salidas de dinero (renta, nómina, servicios, etc.)</MudText>
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(239,68,68,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Control de Gastos y Egresos</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra y monitorea las salidas de dinero (renta, nómina, servicios, etc.)</MudText>
+        </div>
     </div>
 
     @* --- TARJETA DE RESUMEN DEL MES --- *@
     <MudGrid Class="mb-6 fade-in-suave">
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="0" Class="pa-6 modern-card rounded-xl" Style="border: 1px solid var(--mud-palette-lines-default);">
-                <div class="d-flex justify-space-between align-center mb-2">
-                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Total Gastos (Este Mes)</MudText>
-                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(var(--mud-palette-error-rgb), 0.1); color: var(--mud-palette-error);" Class="rounded-lg">
+            <MudPaper Elevation="0" Class="pa-8 m3-section-card rounded-xxl" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Total Gastos (Este Mes)</MudText>
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(239,68,68,0.15); color: #ef4444;" Class="rounded-lg">
                         <MudIcon Icon="@Icons.Material.Filled.TrendingDown" />
                     </MudAvatar>
                 </div>
-                <MudText Typo="Typo.h3" Class="font-weight-bold" Color="Color.Error">@totalGastosMes.ToString("C")</MudText>
+                <MudText Typo="Typo.h3" Class="font-weight-bold" Style="color: #ef4444;">@totalGastosMes.ToString("C")</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <MudGrid Class="fade-in-suave">
+    <MudGrid Class="fade-in-suave" style="animation-delay: 0.1s;">
         @* --- FORMULARIO PARA AGREGAR NUEVO GASTO --- *@
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
-                <MudText Typo="Typo.h6" Class="font-weight-bold mb-6" Color="Color.Primary">Registrar Salida</MudText>
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card h-100" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex align-center mb-6">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(239,68,68,0.15); color: #ef4444;" Class="mr-3 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.AddShoppingCart" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Registrar Salida</MudText>
+                </div>
                 
                 <MudForm @ref="form" @bind-IsValid="success">
                     <MudTextField T="string" @bind-Value="nuevoGasto.Concepto" Label="Concepto (Ej. Pago de Luz)" Required="true" RequiredError="El concepto es obligatorio" Variant="Variant.Outlined" Class="mb-4 modern-input" />
@@ -54,7 +64,7 @@
                     
                     <MudTextField T="string" @bind-Value="nuevoGasto.Notas" Label="Notas adicionales (Opcional)" Lines="3" Variant="Variant.Outlined" Class="mb-6 modern-input" />
                     
-                    <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Add" FullWidth="true" Class="rounded-lg font-weight-bold py-3" Style="text-transform: none;" OnClick="GuardarGasto" Disabled="@guardando">
+                    <MudButton T="string" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Add" FullWidth="true" Class="rounded-xl font-weight-bold py-3 btn-vivid-error hover-lift" Style="text-transform: none; color: white;" OnClick="GuardarGasto" Disabled="@guardando">
                         @if (guardando) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> } Guardar Gasto
                     </MudButton>
                 </MudForm>
@@ -63,48 +73,53 @@
 
         @* --- TABLA DE HISTORIAL DE GASTOS --- *@
         <MudItem xs="12" md="8">
-            <MudPaper Elevation="0" Class="pa-6 rounded-xl h-100" Style="border: 1px solid var(--mud-palette-lines-default);">
-                <MudTable T="Gasto" Items="@listaGastos" Hover="true" Elevation="0" Class="modern-table" Filter="new Func<Gasto,bool>(FilterFunc)">
+            <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card h-100" Style="background-color: var(--mud-palette-surface);">
+                <MudTable T="Gasto" Items="@listaGastos" Hover="true" Elevation="0" Class="modern-table transparent-table" Filter="new Func<Gasto,bool>(FilterFunc)">
                     <ToolBarContent>
-                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">Historial de Movimientos</MudText>
+                        <div class="d-flex align-center">
+                            <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(99,102,241,0.15); color: #6366f1;" Class="mr-3 rounded-lg">
+                                <MudIcon Icon="@Icons.Material.Filled.History" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Historial de Movimientos</MudText>
+                        </div>
                         <MudSpacer />
                         <MudTextField T="string" @bind-Value="searchString" Placeholder="Buscar concepto..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 modern-input" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Style="max-width: 300px;" />
                     </ToolBarContent>
                     <HeaderContent>
-                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Fecha</MudTh>
-                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Concepto</MudTh>
-                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary);">Categoría</MudTh>
-                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: right;">Monto</MudTh>
-                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); text-align: center;">Acciones</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Fecha</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Concepto</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default);">Categoría</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default); text-align: right;">Monto</MudTh>
+                        <MudTh Style="font-weight: bold; text-transform: uppercase; color: var(--mud-palette-text-secondary); font-size: 0.75rem; border-bottom: 2px solid var(--mud-palette-lines-default); text-align: center;">Acciones</MudTh>
                     </HeaderContent>
-                    <RowTemplate>
+                    <RowTemplate Context="gastoRow">
                         <MudTd DataLabel="Fecha">
-                            <MudText Typo="Typo.body2">@context.Fecha.ToLocalTime().ToString("dd/MMM/yyyy")</MudText>
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">@gastoRow.Fecha.ToLocalTime().ToString("dd/MMM/yyyy")</MudText>
                         </MudTd>
                         <MudTd DataLabel="Concepto">
-                            <MudText Typo="Typo.body1" Class="font-weight-bold">@context.Concepto</MudText>
-                            @if(!string.IsNullOrEmpty(context.Notas))
+                            <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">@gastoRow.Concepto</MudText>
+                            @if(!string.IsNullOrEmpty(gastoRow.Notas))
                             {
-                                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary); display:block;">@context.Notas</MudText>
+                                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-disabled); display:block;">@gastoRow.Notas</MudText>
                             }
                         </MudTd>
                         <MudTd DataLabel="Categoría">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="font-weight-bold">@context.Categoria</MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold rounded-lg shadow-sm" Style="background-color: var(--mud-palette-background-grey); color: var(--mud-palette-text-primary);">@gastoRow.Categoria</MudChip>
                         </MudTd>
                         <MudTd DataLabel="Monto" Style="text-align: right;">
-                            <MudText Typo="Typo.body1" Class="font-weight-bold" Color="Color.Error">- @context.Monto.ToString("C")</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold" Style="color: #ef4444;">@gastoRow.Monto.ToString("C")</MudText>
                         </MudTd>
                         <MudTd DataLabel="Acciones" Style="text-align: center;">
                             <MudTooltip Text="Eliminar Gasto" Arrow="true" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarGasto(context))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarGasto(gastoRow))" Class="rounded-lg hover-lift" />
                             </MudTooltip>
                         </MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
-                        <div class="d-flex flex-column align-center justify-center pa-8 fade-in-suave">
-                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" Style="font-size: 5rem; opacity: 0.4;" Class="mb-4" />
-                            <MudText Typo="Typo.h6" Class="mb-1 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin Movimientos</MudText>
-                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary);">Aún no hay gastos registrados que coincidan con tu búsqueda.</MudText>
+                        <div class="d-flex flex-column align-center justify-center pa-12 fade-in-suave">
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" Style="font-size: 6rem; opacity: 0.3;" Class="mb-4" />
+                            <MudText Typo="Typo.h5" Class="mb-2 font-weight-bold" Style="color: var(--mud-palette-text-secondary);">Sin Movimientos</MudText>
+                            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Aún no hay gastos registrados que coincidan con tu búsqueda.</MudText>
                         </div>
                     </NoRecordsContent>
                     <PagerContent>
@@ -117,38 +132,68 @@
 </MudContainer>
 
 <style>
-    /* Efecto de tarjetas principales */
-    .modern-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background-color: var(--mud-palette-background-grey);
+    /* Efecto Flotante M3 */
+    .m3-section-card {
+        border: 1px solid var(--mud-palette-lines-default);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
     }
-    .modern-card:hover {
+    .m3-section-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15) !important;
-        background-color: var(--mud-palette-surface);
-        border-color: var(--mud-palette-error) !important;
-    }
-
-    /* Estilos modernos para los inputs */
-    .modern-input .mud-input-outlined-border {
-        border-color: var(--mud-palette-lines-default) !important;
-    }
-    .modern-input .mud-input {
-        background-color: transparent !important;
-        border-radius: 8px !important;
-    }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-width: 2px !important;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
         border-color: var(--mud-palette-primary) !important;
     }
 
-    /* Estilos limpios para la tabla */
+    /* Solución Definitiva para Modo Oscuro en Inputs M3 */
+    .modern-input .mud-input-outlined-border {
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .modern-input .mud-input {
+        background-color: var(--mud-palette-background-grey) !important;
+        border-radius: 16px !important;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    
+    .mud-palette-dark .modern-input .mud-input {
+        background-color: var(--mud-palette-background) !important;
+    }
+    
+    .modern-input .mud-input.mud-input-focused {
+        background-color: var(--mud-palette-surface) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.15) !important;
+    }
+    
+    .mud-palette-dark .modern-input .mud-input.mud-input-focused {
+        box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
+        border-color: var(--mud-palette-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Estilos limpios para la tabla M3 */
+    .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell {
         border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 12px !important;
+        padding: 18px 16px !important;
     }
-    .modern-table .mud-table-root {
-        border: none !important;
+    .modern-table .mud-table-root { border: none !important; }
+
+    /* Botones Vívidos y Efectos Lift */
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
+    
+    .btn-vivid-error {
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-vivid-error:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3) !important; 
     }
 </style>
 
