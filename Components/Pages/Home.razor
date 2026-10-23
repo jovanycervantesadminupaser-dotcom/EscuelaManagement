@@ -14,8 +14,9 @@
     <!-- BANNER DE BIENVENIDA / HERO -->
     <div class="d-flex justify-space-between align-center mb-8 flex-wrap gap-4 fade-in-suave">
         <div>
+            <!-- AQUÍ CAMBIAMOS EL SALUDO PARA MOSTRAR EL NOMBRE REAL -->
             <MudText Typo="Typo.h3" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">
-                ¡Hola, @(string.IsNullOrWhiteSpace(UserSession.Nombre) ? "Administrador" : UserSession.Nombre)! 👋
+                ¡Hola, @(string.IsNullOrWhiteSpace(UserSession.Nombre) ? "Usuario" : UserSession.Nombre)! 👋
             </MudText>
             <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);" Class="mt-1">
                 Bienvenido a tu panel de control central. Aquí tienes tu resumen operativo y actividades de hoy.
@@ -204,8 +205,8 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => isAddDialogOpen = false" Variant="Variant.Text" Class="rounded-xl font-weight-bold">Cancelar</MudButton>
-        <MudButton OnClick="SaveCard" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-xl font-weight-bold px-6">Agregar Botón</MudButton>
+        <MudButton T="string" OnClick="() => isAddDialogOpen = false" Variant="Variant.Text" Class="rounded-xl font-weight-bold">Cancelar</MudButton>
+        <MudButton T="string" OnClick="SaveCard" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-xl font-weight-bold px-6">Agregar Botón</MudButton>
     </DialogActions>
 </MudDialog>
 
