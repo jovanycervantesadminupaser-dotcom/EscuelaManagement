@@ -325,7 +325,7 @@
         }
     }
 
-    // --- LÓGICA DE REIMPRESIÓN DE FICHA ---
+    // --- LÓGICA DE REIMPRESIÓN DE FICHA Y PÓLIZA ---
     private async Task ReimprimirFicha(Student alumno, Course curso)
     {
         try
@@ -355,6 +355,9 @@
 
         return Document.Create(container =>
         {
+            // ==========================================
+            // PÁGINA 1: FICHA DE INSCRIPCIÓN
+            // ==========================================
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
@@ -370,7 +373,6 @@
                             ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
                             : configuracionEscuela.LogoBase64;
                         var watermarkBytes = Convert.FromBase64String(base64Watermark);
-
                         page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                     }
                     catch { }
@@ -435,7 +437,66 @@
                         }
                     }
                 });
+                
+                page.Footer().AlignCenter().Text(x => { x.Span("Página "); x.CurrentPageNumber(); x.Span(" de "); x.TotalPages(); });
             });
+
+            // ==========================================
+            // PÁGINA 2: PÓLIZA DE GARANTÍA (Condicionada)
+            // ==========================================
+            if (enrollment != null && enrollment.AceptaPolizaGarantia) 
+            {
+                container.Page(page =>
+                {
+                    page.Size(QuestPDF.Helpers.PageSizes.Letter);
+                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.PageColor(QuestPDF.Helpers.Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    {
+                        try
+                        {
+                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
+                            page.Background().AlignCenter().AlignMiddle().Width(350).Image(Convert.FromBase64String(base64Watermark));
+                        }
+                        catch { }
+                    }
+
+                    page.Header().AlignCenter().Text("PÓLIZA DE GARANTÍA EDUCATIVA").Bold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                    
+                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
+                    {
+                        x.Spacing(10);
+                        x.Item().Text($"Conste por el presente documento que el alumno(a) {student.Name} {student.PaternalLastName} {student.MaternalLastName}, inscrito en el curso {currentCourse?.Name}, cuenta con la Póliza de Garantía activa según los términos y condiciones de {configuracionEscuela.NombreEscuela}.");
+                        
+                        x.Item().PaddingTop(15).Text("TÉRMINOS Y CONDICIONES").SemiBold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        x.Item().Text("1. El alumno deberá cumplir con un mínimo del 90% de asistencia durante el periodo del curso.");
+                        x.Item().Text("2. Entregar en tiempo y forma el 100% de los trabajos, tareas y evaluaciones asignadas por los docentes.");
+                        x.Item().Text("3. En caso de no aprobar el examen de admisión, la institución se compromete a brindar un curso de regularización sin costo adicional, siempre y cuando se hayan cumplido los puntos anteriores.");
+                        x.Item().Text("4. Esta póliza es personal, intransferible y válida únicamente para el ciclo escolar vigente.");
+
+                        x.Item().PaddingTop(80).Row(row =>
+                        {
+                            row.RelativeItem().AlignCenter().Column(c =>
+                            {
+                                c.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Black);
+                                c.Item().PaddingTop(5).Text("Firma del Alumno / Tutor").FontSize(9).Bold();
+                            });
+                            
+                            row.ConstantItem(50); 
+                            
+                            row.RelativeItem().AlignCenter().Column(c =>
+                            {
+                                c.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Black);
+                                c.Item().PaddingTop(5).Text("Firma y Sello de Dirección").FontSize(9).Bold();
+                            });
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Text(x => { x.Span("Página "); x.CurrentPageNumber(); x.Span(" de "); x.TotalPages(); });
+                });
+            }
         }).GeneratePdf();
     }
 

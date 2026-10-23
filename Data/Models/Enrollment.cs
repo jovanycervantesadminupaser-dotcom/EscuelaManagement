@@ -44,4 +44,11 @@ public class Enrollment
 
     [FirestoreProperty]
     public string AsesorAsignado { get; set; } = ""; // Guardará el nombre del empleado que realizó la inscripción
+
+    // ==============================================================
+    // PÓLIZA DE GARANTÍA
+    // ==============================================================
+    
+    [FirestoreProperty]
+    public bool AceptaPolizaGarantia { get; set; } // Determina si se imprime la segunda hoja de póliza
 }
