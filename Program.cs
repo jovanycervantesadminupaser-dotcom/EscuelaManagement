@@ -34,6 +34,7 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<EscuelaManagement.Data.Services.FirebaseService>();
 builder.Services.AddScoped<EscuelaManagement.Data.Services.PdfService>();
 builder.Services.AddScoped<EscuelaManagement.Data.Services.UserSessionService>();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

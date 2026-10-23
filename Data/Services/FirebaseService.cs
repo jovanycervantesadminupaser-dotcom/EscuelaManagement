@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EscuelaManagement.Data.Services;
 
@@ -13,9 +14,17 @@ public class FirebaseService
 {
     private const string ProjectId = "escuelamanager-d1fba";
     private readonly FirestoreDb _db;
+    private readonly IMemoryCache _cache; // Inyección del Cache
 
-    public FirebaseService()
+    // Tiempos de vida en caché configurables
+    private readonly TimeSpan _cacheDurationConfig = TimeSpan.FromHours(12);
+    private readonly TimeSpan _cacheDurationCourses = TimeSpan.FromMinutes(10);
+    private readonly TimeSpan _cacheDurationMaterias = TimeSpan.FromMinutes(10);
+
+    // Modificamos el constructor para inyectar IMemoryCache
+    public FirebaseService(IMemoryCache cache)
     {
+        _cache = cache;
         string? base64Env = Environment.GetEnvironmentVariable("FIREBASE_CONFIG_BASE64");
 
         if (!string.IsNullOrEmpty(base64Env))
@@ -26,8 +35,6 @@ public class FirebaseService
             byte[] data = Convert.FromBase64String(base64Env);
             string jsonCreds = Encoding.UTF8.GetString(data);
 
-            // SOLUCIÓN DEFINITIVA: Guardar en un archivo temporal seguro
-            // Esto evita cualquier advertencia de seguridad o métodos obsoletos de Google
             string tempAuthFile = Path.Combine(Path.GetTempPath(), "firebase_auth_render.json");
             File.WriteAllText(tempAuthFile, jsonCreds);
 
@@ -41,7 +48,6 @@ public class FirebaseService
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "firebase-credentials.json");
         }
 
-        // Construcción nativa recomendada. Google leerá la variable de entorno automáticamente.
         _db = FirestoreDb.Create(ProjectId);
     }
 
@@ -73,7 +79,7 @@ public class FirebaseService
     }
 
     // ==========================================
-    // --- MÉTODOS PARA CURSOS ---
+    // --- MÉTODOS PARA CURSOS (Caché Aplicado) ---
     // ==========================================
     public async Task AddCourseAsync(Course course)
     {
@@ -84,18 +90,33 @@ public class FirebaseService
 
         DocumentReference docRef = _db.Collection("courses").Document(course.Id);
         await docRef.SetAsync(course);
+        
+        // Limpiamos caché al insertar para mantener datos frescos
+        _cache.Remove("Global_Courses"); 
     }
 
     public async Task<List<Course>> GetCoursesAsync()
     {
+        // 1. Buscamos en caché primero
+        if (_cache.TryGetValue("Global_Courses", out List<Course>? cachedCourses))
+        {
+            return cachedCourses ?? new List<Course>();
+        }
+
+        // 2. Si no existe, buscamos en Firestore
         QuerySnapshot snapshot = await _db.Collection("courses").GetSnapshotAsync();
-        return snapshot.Documents.Select(d => d.ConvertTo<Course>()).ToList();
+        var courses = snapshot.Documents.Select(d => d.ConvertTo<Course>()).ToList();
+
+        // 3. Guardamos en caché
+        _cache.Set("Global_Courses", courses, _cacheDurationCourses);
+        return courses;
     }
 
     public async Task DeleteCourseAsync(string id)
     {
         DocumentReference docRef = _db.Collection("courses").Document(id);
         await docRef.DeleteAsync();
+        _cache.Remove("Global_Courses"); 
     }
 
     // ==========================================
@@ -162,7 +183,7 @@ public class FirebaseService
         }
         catch
         {
-            return []; // Inicialización de colección simplificada
+            return new List<Payment>(); 
         }
     }
 
@@ -173,7 +194,7 @@ public class FirebaseService
     }
 
     // ==========================================
-    // --- MÉTODOS PARA MATERIAS ---
+    // --- MÉTODOS PARA MATERIAS (Caché Aplicado) ---
     // ==========================================
     public async Task AddMateriaAsync(Materia materia)
     {
@@ -184,18 +205,28 @@ public class FirebaseService
 
         DocumentReference docRef = _db.Collection("materias").Document(materia.Id);
         await docRef.SetAsync(materia);
+        _cache.Remove("Global_Materias");
     }
 
     public async Task<List<Materia>> GetMateriasAsync()
     {
+        if (_cache.TryGetValue("Global_Materias", out List<Materia>? cachedMaterias))
+        {
+            return cachedMaterias ?? new List<Materia>();
+        }
+
         QuerySnapshot snapshot = await _db.Collection("materias").GetSnapshotAsync();
-        return snapshot.Documents.Select(d => d.ConvertTo<Materia>()).ToList();
+        var materias = snapshot.Documents.Select(d => d.ConvertTo<Materia>()).ToList();
+        
+        _cache.Set("Global_Materias", materias, _cacheDurationMaterias);
+        return materias;
     }
 
     public async Task DeleteMateriaAsync(string id)
     {
         DocumentReference docRef = _db.Collection("materias").Document(id);
         await docRef.DeleteAsync();
+        _cache.Remove("Global_Materias");
     }
 
     // ==========================================
@@ -226,26 +257,33 @@ public class FirebaseService
     }
 
     // ==========================================
-    // --- MÉTODOS DE CONFIGURACIÓN GLOBAL ---
+    // --- MÉTODOS DE CONFIGURACIÓN GLOBAL (Caché Alto Nivel) ---
     // ==========================================
     public async Task<ConfiguracionEscuela> GetConfiguracionAsync()
     {
+        // Esta es la consulta que más recursos consumía (logo en base64).
+        if (_cache.TryGetValue("Global_Config", out ConfiguracionEscuela? cachedConfig))
+        {
+            return cachedConfig ?? new ConfiguracionEscuela();
+        }
+
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
-        if (snapshot.Exists)
-        {
-            return snapshot.ConvertTo<ConfiguracionEscuela>();
-        }
-        return new();
+        ConfiguracionEscuela config = snapshot.Exists ? snapshot.ConvertTo<ConfiguracionEscuela>() : new ConfiguracionEscuela();
+        
+        _cache.Set("Global_Config", config, _cacheDurationConfig); // 12 horas en memoria
+        return config;
     }
 
     public async Task SaveConfiguracionAsync(ConfiguracionEscuela config)
     {
         config.Id = "global";
         DocumentReference docRef = _db.Collection("configuracion").Document("global");
-        // Agregamos SetOptions.MergeAll para que actualice los botones sin borrar tu Logo u otros datos
         await docRef.SetAsync(config, SetOptions.MergeAll); 
+        
+        // Eliminamos caché para que se actualice la vista al instante
+        _cache.Remove("Global_Config");
     }
 
     public async Task AddUsuarioAsync(Usuario usuario)
@@ -280,18 +318,23 @@ public class FirebaseService
     {
         DocumentReference docRef = _db.Collection("configuraciones").Document(diseno.Id);
         await docRef.SetAsync(diseno);
+        _cache.Remove("Global_CredencialDiseno");
     }
 
     public async Task<CredencialDiseno> GetDisenoCredencialAsync()
     {
+        if (_cache.TryGetValue("Global_CredencialDiseno", out CredencialDiseno? cachedDiseno))
+        {
+            return cachedDiseno ?? new CredencialDiseno();
+        }
+
         DocumentReference docRef = _db.Collection("configuraciones").Document("config_diseno_credencial");
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
-        if (snapshot.Exists)
-        {
-            return snapshot.ConvertTo<CredencialDiseno>();
-        }
-        return new();
+        var diseno = snapshot.Exists ? snapshot.ConvertTo<CredencialDiseno>() : new CredencialDiseno();
+        _cache.Set("Global_CredencialDiseno", diseno, _cacheDurationConfig);
+        
+        return diseno;
     }
 
     // ==========================================
@@ -306,7 +349,7 @@ public class FirebaseService
         }
         catch
         {
-            return []; // Inicialización de colección simplificada
+            return new List<Gasto>(); 
         }
     }
 
@@ -348,7 +391,7 @@ public class FirebaseService
         }
         catch
         {
-            return [];
+            return new List<Asistencia>();
         }
     }
 
