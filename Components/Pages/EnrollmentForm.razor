@@ -102,7 +102,7 @@
                         <div class="fade-in-suave w-100 d-flex flex-column align-center">
                             <video id="cameraVideo" width="100%" style="max-width: 320px; border-radius: 16px; background-color: black; border: 4px solid var(--mud-palette-primary);" autoplay></video>
                             <div class="mt-4 d-flex gap-4">
-                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-xl font-weight-bold px-6" Style="text-transform: none;">Tomar Foto</MudButton>
+                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" DropShadow="false" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-xl font-weight-bold px-6" Style="text-transform: none;">Tomar Foto</MudButton>
                                 <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold rounded-xl px-4" Style="text-transform: none;">Cancelar</MudButton>
                             </div>
                         </div>
@@ -123,7 +123,7 @@
                             
                             <div class="d-flex flex-column gap-3">
                                 <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none;">Subir Archivo</MudButton>
-                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DisableElevation="true" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">Usar Cámara</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DropShadow="false" Class="rounded-xl font-weight-bold px-6 py-2" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">Usar Cámara</MudButton>
                             </div>
                             <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
                         </div>
@@ -151,7 +151,7 @@
                     <MudTextField T="string" Label="Apellido Materno" @bind-Value="student.MaternalLastName" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudDatePicker T="DateTime?" Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
+                    <MudDatePicker Label="Fecha de Nacimiento" @bind-Date="tempDate" Variant="Variant.Outlined" Disabled="@isExistingStudent" Class="modern-input" />
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudTextField T="string" Label="Teléfono del Alumno" @bind-Value="student.Phone" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" HelperText="10 dígitos" Disabled="@isExistingStudent" Class="modern-input" />
@@ -251,7 +251,7 @@
                     </MudSelect>
                 </MudItem>
 
-                @if (turnoSeleccionado == "OTRO")
+                @if (string.Equals(turnoSeleccionado, "OTRO", StringComparison.OrdinalIgnoreCase))
                 {
                     <MudItem xs="12" md="4" Class="fade-in-suave">
                         <MudTextField T="string" Label="Especifique el Turno" @bind-Value="turnoManual" Variant="Variant.Outlined" Class="modern-input" />
@@ -271,7 +271,7 @@
                     </MudSelect>
                 </MudItem>
 
-                @if (enrollment.TipoPlazo != "Una Sola Exhibición" && !string.IsNullOrEmpty(enrollment.TipoPlazo))
+                @if (!string.Equals(enrollment.TipoPlazo, "Una Sola Exhibición", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(enrollment.TipoPlazo))
                 {
                     <MudItem xs="6" md="4" Class="fade-in-suave">
                         <MudNumericField T="int" Label="Cantidad de Plazos" @bind-Value="enrollment.NumeroPlazos" Variant="Variant.Outlined" Min="1" ReadOnly="true" Class="modern-input" />
@@ -284,8 +284,7 @@
                 <MudItem xs="12" Class="mt-6">
                     <MudPaper Elevation="0" Class="pa-6 rounded-xxl" Style="background-color: var(--mud-palette-background); border: 1px dashed var(--mud-palette-lines-default);">
                         <MudCheckBox T="bool" @bind-Value="aceptaRetiroSinTutor" Label="Autorización para que el alumno se retire del plantel sin el tutor" Color="Color.Primary" Class="mb-2 font-weight-bold" />
-                        <MudCheckBox T="bool" @bind-Value="imprimirTerminos" Label="Imprimir Términos y Condiciones" Color="Color.Secondary" Class="mb-2" />
-                        <MudCheckBox T="bool" @bind-Value="imprimirGarantia" Label="Imprimir Póliza de Garantía" Color="Color.Secondary" />
+                        <MudCheckBox T="bool" @bind-Value="enrollment.AceptaPolizaGarantia" Label="El alumno cuenta con Póliza de Garantía de Aprendizaje y Términos Adicionales" Color="Color.Secondary" />
                     </MudPaper>
                 </MudItem>
             </MudGrid>
@@ -307,7 +306,7 @@
                             }
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" Size="Size.Large" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="GuardarYDescargar" Disabled="@enviandoCorreo" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
                             Guardar y Descargar PDF
                         </MudButton>
                     </div>
@@ -321,7 +320,7 @@
                         </div>
                         
                         <div class="d-flex gap-4 flex-wrap justify-end">
-                            <MudButton Variant="Variant.Filled" DisableElevation="true" Style="background-color: #25D366; color: white; text-transform: none;" StartIcon="@Icons.Custom.Brands.WhatsApp" Class="rounded-xl font-weight-bold px-8 py-3" OnClick="CompartirWhatsApp">
+                            <MudButton Variant="Variant.Filled" DropShadow="false" Style="background-color: #25D366; color: white; text-transform: none;" StartIcon="@Icons.Custom.Brands.WhatsApp" Class="rounded-xl font-weight-bold px-8 py-3" OnClick="CompartirWhatsApp">
                                 Notificar WhatsApp
                             </MudButton>
                             <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="LimpiarFormulario" Class="rounded-xl font-weight-bold px-8 py-3" Style="text-transform: none; border-width: 2px;">
@@ -395,8 +394,6 @@
     private bool isCameraOpen = false;
 
     private bool aceptaRetiroSinTutor = false;
-    private bool imprimirTerminos = false;
-    private bool imprimirGarantia = false;
     private string turnoSeleccionado = "";
     private string turnoManual = "";
 
@@ -467,14 +464,14 @@
 
         double factorDescuento = 1 - (enrollment.DiscountAmount / 100.0);
 
-        if (enrollment.TipoPlazo == "Una Sola Exhibición")
+        if (string.Equals(enrollment.TipoPlazo, "Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
         {
             enrollment.NumeroPlazos = 1;
             enrollment.MontoPlazo = currentCourse.SinglePaymentCost * factorDescuento;
         }
         else
         {
-            var opcionSeleccionada = currentCourse.InstallmentOptions.FirstOrDefault(o => o.InstallmentPeriod == enrollment.TipoPlazo);
+            var opcionSeleccionada = currentCourse.InstallmentOptions.FirstOrDefault(o => string.Equals(o.InstallmentPeriod, enrollment.TipoPlazo, StringComparison.OrdinalIgnoreCase));
             if (opcionSeleccionada != null)
             {
                 enrollment.NumeroPlazos = opcionSeleccionada.InstallmentCount;
@@ -533,8 +530,6 @@
         availablePaymentPlans.Clear();
         isExistingStudent = false;
         aceptaRetiroSinTutor = false;
-        imprimirTerminos = false;
-        imprimirGarantia = false;
         turnoSeleccionado = "";
         turnoManual = "";
         registroCompletado = false;
@@ -622,9 +617,9 @@
 
             enrollment.StudentId = student.Id;
             enrollment.EnrollmentDate = DateTime.UtcNow; 
-            enrollment.Turno = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
+            enrollment.Turno = string.Equals(turnoSeleccionado, "OTRO", StringComparison.OrdinalIgnoreCase) ? turnoManual : turnoSeleccionado;
 
-            if (enrollment.TipoPlazo == "Una Sola Exhibición")
+            if (string.Equals(enrollment.TipoPlazo, "Una Sola Exhibición", StringComparison.OrdinalIgnoreCase))
             {
                 var curso = cursosDisponibles.FirstOrDefault(c => c.Id == enrollment.CourseId);
                 if (curso != null)
@@ -641,7 +636,7 @@
             
             await DescargarPdf(pdfBytes, $"Ficha_{(string.IsNullOrEmpty(student.Name) ? "Alumno" : student.Name)}.pdf");
 
-            if (tipoAccion == "correo")
+            if (string.Equals(tipoAccion, "correo", StringComparison.OrdinalIgnoreCase))
             {
                 await CompartirCorreoHibrido();
             }
@@ -710,44 +705,51 @@
 
     private byte[] GeneratePdfDocument()
     {
-        string turnoFinal = turnoSeleccionado == "OTRO" ? turnoManual : turnoSeleccionado;
+        string turnoFinal = string.Equals(turnoSeleccionado, "OTRO", StringComparison.OrdinalIgnoreCase) ? turnoManual : turnoSeleccionado;
+        byte[]? logoBytes = null;
+        byte[]? watermarkBytes = null;
+
+        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+        {
+            try
+            {
+                var base64Logo = configuracionEscuela.LogoBase64.Contains(',', StringComparison.Ordinal) 
+                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(',', StringComparison.Ordinal) + 1) 
+                    : configuracionEscuela.LogoBase64;
+                logoBytes = Convert.FromBase64String(base64Logo);
+                watermarkBytes = logoBytes;
+            }
+            catch { }
+        }
 
         return Document.Create(container =>
         {
+            // ==========================================
+            // PÁGINA 1: FICHA DE INSCRIPCIÓN Y AUTORIZACIÓN
+            // ==========================================
             container.Page(page =>
             {
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
-                page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                page.Margin(1.5f, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                if (watermarkBytes != null)
                 {
-                    try
-                    {
-                        var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                            ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                            : configuracionEscuela.LogoBase64;
-                        var watermarkBytes = Convert.FromBase64String(base64Watermark);
-
-                        page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                    }
-                    catch { }
+                    page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
                 }
 
                 page.Header().Row(row =>
                 {
-                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+                    if (logoBytes != null)
                     {
-                        var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
-                        var logoBytes = Convert.FromBase64String(base64Logo);
-                        row.ConstantItem(100).Image(logoBytes);
+                        row.ConstantItem(90).Image(logoBytes);
                         row.ConstantItem(15);
                     }
 
                     row.RelativeItem().Column(col =>
                     {
-                        col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                        col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
                         col.Item().Text("FICHA DE INSCRIPCIÓN").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                         col.Item().Text($"Fecha de registro: {DateTime.Now:dd/MM/yyyy}").FontSize(9);
                     });
@@ -756,9 +758,10 @@
                     {
                         try
                         {
-                            var base64Data = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(",") + 1) : student.PhotoBase64;
-                            var imageBytes = Convert.FromBase64String(base64Data);
-                            row.ConstantItem(65).Image(imageBytes);
+                            var base64Data = student.PhotoBase64.Contains(',', StringComparison.Ordinal) 
+                                ? student.PhotoBase64.Substring(student.PhotoBase64.IndexOf(',', StringComparison.Ordinal) + 1) 
+                                : student.PhotoBase64;
+                            row.ConstantItem(60).Image(Convert.FromBase64String(base64Data));
                         }
                         catch { }
                     }
@@ -766,26 +769,27 @@
 
                 page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(x =>
                 {
-                    x.Spacing(10);
+                    x.Spacing(8);
                     
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("1. Datos del Alumno").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(4).Text("1. Datos del Alumno").SemiBold();
                     x.Item().Text($"Nombre: {student.Name} {student.PaternalLastName} {student.MaternalLastName}");
                     x.Item().Text($"Teléfono Alumno: {(string.IsNullOrEmpty(student.Phone) ? "No registrado" : student.Phone)}");
                     x.Item().Text($"Escuela de Procedencia: {(string.IsNullOrEmpty(student.PreviousSchool) ? "No registrado" : student.PreviousSchool)}");
                     x.Item().Text($"Escuela a Ingresar: {(string.IsNullOrEmpty(student.TargetSchool) ? "No registrado" : student.TargetSchool)}");
                     
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("2. Tutor y Contacto").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(4).Text("2. Tutor y Contacto").SemiBold();
                     x.Item().Text($"Tutor: {student.Guardian.Name} {student.Guardian.PaternalLastName} ({student.Guardian.Relationship})");
                     x.Item().Text($"Teléfono Tutor: {(string.IsNullOrEmpty(student.Guardian.Phone) ? "No registrado" : student.Guardian.Phone)}");
                     x.Item().Text($"Correo Tutor: {(string.IsNullOrEmpty(student.Guardian.Email) ? "No registrado" : student.Guardian.Email)}");
 
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("3. Dirección").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(4).Text("3. Dirección").SemiBold();
                     x.Item().Text($"{student.Address.Street} {student.Address.ExtNumber}, Col. {student.Address.Neighborhood}, {student.Address.Municipality}, {student.Address.State}. CP: {student.Address.ZipCode}");
 
-                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(5).Text("4. Curso Inscrito y Plan Financiero").SemiBold();
+                    x.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten3).Padding(4).Text("4. Curso Inscrito y Plan Financiero").SemiBold();
                     var nombreCurso = currentCourse?.Name ?? "No seleccionado";
-                    x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpper())}");
-                    x.Item().Text($"Esquema: {enrollment.TipoPlazo} | Plazos: {enrollment.NumeroPlazos} | Pago pactado: {enrollment.MontoPlazo.ToString("C")}");
+                    x.Item().Text($"Curso: {nombreCurso} | Turno: {(string.IsNullOrEmpty(turnoFinal) ? "No asignado" : turnoFinal.ToUpperInvariant())}");
+                    
+                    x.Item().Text($"Esquema: {enrollment.TipoPlazo} | Plazos: {enrollment.NumeroPlazos} | Pago pactado: {enrollment.MontoPlazo.ToString("C", System.Globalization.CultureInfo.CurrentCulture)}");
                     x.Item().Text($"Descuento Aplicado: {enrollment.DiscountAmount}%");
                     
                     if(!string.IsNullOrEmpty(enrollment.AsesorAsignado))
@@ -795,7 +799,7 @@
 
                     if (aceptaRetiroSinTutor)
                     {
-                        x.Item().PaddingTop(20).Text(t => 
+                        x.Item().PaddingTop(15).Text(t => 
                         {
                             t.Span("AUTORIZACIÓN DE RETIRO").Bold().Underline();
                             t.EmptyLine();
@@ -812,112 +816,139 @@
                 });
             });
 
-            if (imprimirGarantia)
+            // ==========================================
+            // PÁGINA 2: PÓLIZA DE GARANTÍA Y TÉRMINOS
+            // ==========================================
+            if (enrollment.AceptaPolizaGarantia) 
             {
                 container.Page(page =>
                 {
                     page.Size(QuestPDF.Helpers.PageSizes.Letter);
-                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.Margin(1.5f, QuestPDF.Infrastructure.Unit.Centimetre);
                     page.PageColor(QuestPDF.Helpers.Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                    page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Arial"));
 
-                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
-                    {
-                        try
-                        {
-                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                                : configuracionEscuela.LogoBase64;
-                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
-
-                            page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                        }
-                        catch { }
-                    }
+                    if (watermarkBytes != null) page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
 
                     page.Header().Row(row =>
                     {
-                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
-                        {
-                            var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
-                            var logoBytes = Convert.FromBase64String(base64Logo);
-                            row.ConstantItem(100).Image(logoBytes);
-                            row.ConstantItem(15);
-                        }
-
+                        if (logoBytes != null) { row.ConstantItem(80).Image(logoBytes); row.ConstantItem(15); }
                         row.RelativeItem().Column(col =>
                         {
-                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
-                            col.Item().Text("PÓLIZA DE GARANTÍA").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
                         });
                     });
-
-                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
-                        c.Item().PaddingTop(10);
-                        c.Item().Text("DERECHOS").Bold();
-                        c.Item().Text("a) Recibir sus clases conforme lo señale su horario y fecha de evaluación.");
-                        c.Item().Text("b) Conocer anticipadamente temarios, formas de trabajo y criterios de evaluación.");
+                    
+                    page.Content().PaddingVertical(10).Column(x =>
+                    {
+                        x.Spacing(6);
                         
-                        c.Item().PaddingTop(10).Text("OBLIGACIONES").Bold();
-                        c.Item().Text("a) Asistir a sus clases conforme al horario establecido.");
-                        c.Item().Text("b) Cumplir en tiempo y forma con los pagos estipulados.");
+                        x.Item().AlignCenter().Text("PÓLIZA DE GARANTÍA").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                        
+                        x.Item().Text("DERECHOS").SemiBold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        x.Item().Text("a) Recibir sus clases conforme lo señale su horario y fecha de evaluación.");
+                        x.Item().Text("b) Conocer anticipadamente temarios, formas de trabajo y criterios de evaluación de cada una de las asignaturas.");
+                        x.Item().Text("c) Ser tratado por sus docentes y autoridades educativas con cortesía, respeto y amabilidad.");
+                        
+                        x.Item().Text("OBLIGACIONES").SemiBold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        x.Item().Text("a) Asistir a sus clases conforme al horario establecido, teniendo como margen de tiempo 10 min. Después de haber iniciado la clase, dos retardos equivalen a una falta.");
+                        x.Item().Text("b) Respetar el tiempo de receso otorgado (30 min.).");
+                        x.Item().Text("c) Ser respetuoso con sus compañeros, docentes y personal en general.");
+                        x.Item().Text("d) Mantener orden y disciplina.");
+                        x.Item().Text("e) Cumplir con tareas e investigaciones encomendados.");
+                        x.Item().Text("f) Conservar y cuidar la institución.");
+                        x.Item().Text("g) Cumplir en tiempo y forma con los pagos estipulados.");
+                        x.Item().Text("El incumplimiento de cualquiera de las obligaciones es motivo de la perdida de garantía.").Italic();
 
-                        c.Item().PaddingTop(40).Row(row => {
-                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
-                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Alumno"); });
+                        x.Item().Text("ANULACIÓN DE LA GARANTÍA").SemiBold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        x.Item().Text("• Tener menos del 90% de asistencias, tomando en cuenta que por día se pueden ver una o más clases; lo que equivale a una falta por materia.");
+                        x.Item().Text("• Tener menos del 90% en entregas de tareas y actividades asignadas por el docente.");
+                        x.Item().Text("• No a ver liquidado el total del curso antes de que finalice el mismo.");
+                        x.Item().Text("• Tener menos de 80% en las evaluaciones que se harán por parte de UPASER.");
+                        
+                        x.Item().Text(t =>
+                        {
+                            t.Span("NOTA. ").Bold();
+                            t.Span("El alumno podrá solicitar su garantía siempre y cuando cumpla con los requisitos antes mencionados.");
                         });
+
+                        x.Item().Text("CLAUSULA PARA USO DE MARKETING").SemiBold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                        x.Item().Text("El alumno autoriza expresamente a UPASER a captar, reproducir y utilizar su imagen, nombre y/o voz a través de fotografías, grabaciones de video o cualquier otro medio audiovisual, con fines exclusivamente publicitarios, institucionales, informativos y/o académicos relacionados con las actividades de la institución.");
+                        x.Item().Text("Dicha autorización se concede de manera gratuita, sin limitación territorial ni temporal, y comprende su difusión en medios digitales, electrónicos y redes sociales oficiales de UPASER, así como en cualquier otra plataforma en línea utilizada por la institución.");
+
                     });
                 });
-            }
-
-            if (imprimirTerminos)
-            {
+                
+                // ==========================================
+                // PÁGINA 3: TÉRMINOS Y CONDICIONES
+                // ==========================================
                 container.Page(page =>
                 {
                     page.Size(QuestPDF.Helpers.PageSizes.Letter);
-                    page.Margin(2, QuestPDF.Infrastructure.Unit.Centimetre);
+                    page.Margin(1.5f, QuestPDF.Infrastructure.Unit.Centimetre);
                     page.PageColor(QuestPDF.Helpers.Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                    page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Arial"));
 
-                    if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
-                    {
-                        try
-                        {
-                            var base64Watermark = configuracionEscuela.LogoBase64.Contains(",") 
-                                ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) 
-                                : configuracionEscuela.LogoBase64;
-                            var watermarkBytes = Convert.FromBase64String(base64Watermark);
-
-                            page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
-                        }
-                        catch { }
-                    }
+                    if (watermarkBytes != null) page.Background().AlignCenter().AlignMiddle().Width(350).Image(watermarkBytes);
 
                     page.Header().Row(row =>
                     {
-                        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
-                        {
-                            var base64Logo = configuracionEscuela.LogoBase64.Contains(",") ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(",") + 1) : configuracionEscuela.LogoBase64;
-                            var logoBytes = Convert.FromBase64String(base64Logo);
-                            row.ConstantItem(100).Image(logoBytes);
-                            row.ConstantItem(15);
-                        }
-
+                        if (logoBytes != null) { row.ConstantItem(80).Image(logoBytes); row.ConstantItem(15); }
                         row.RelativeItem().Column(col =>
                         {
-                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(18).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
-                            col.Item().Text("TÉRMINOS Y CONDICIONES").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                            col.Item().Text(configuracionEscuela.NombreEscuela).SemiBold().FontSize(16).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
                         });
                     });
+                    
+                    page.Content().PaddingVertical(10).Column(x =>
+                    {
+                        x.Spacing(8);
+                        x.Item().AlignCenter().Text("TÉRMINOS Y CONDICIONES").Bold().FontSize(12).FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                        
+                        x.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso, para que conozcas tus derechos y obligaciones como alumno UPASER.");
+                        
+                        x.Item().Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras 5 opciones que seleccione en el concurso ECOEMS/103 Municipios/EXAMEN DE INGRESO A UNIVERSIDAD (UNAM, IPN, UAM, UAEMex, ETC), asegurando que nuestro curso es competente bajo nuestro método de enseñanza.");
+                        
+                        x.Item().Text("Antes de efectuar el pago, el usuario deberá aceptar la Política de Privacidad, una vez confirmado el pago del curso seleccionado por el aspirante este no podrá solicitar reembolso.");
 
-                    page.Content().PaddingVertical(1, QuestPDF.Infrastructure.Unit.Centimetre).Column(c => {
-                        c.Item().PaddingTop(10);
-                        c.Item().Text("Es de suma importancia leer cuidadosamente este apartado antes de iniciar tu curso.").Bold();
-                        c.Item().PaddingTop(5).Text("La Unidad Profesional de Asesoría y Regularización (UPASER) tiene como garantía que el alumno se quede en sus primeras opciones.");
+                        x.Item().Text(t =>
+                        {
+                            t.Span("I. Clases: ").Bold();
+                            t.Span("Están sujetas a modificaciones, UPASER se reserva el derecho de cancelar o cambiar cualquier clase, se les notificara a los alumnos o participantes cualquier cambio a través de los grupos de WhatsApp oficiales. UPASER esta obligado a reponer la clase cancelada, si este fuera el caso.");
+                        });
 
-                        c.Item().PaddingTop(40).Row(row => {
-                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Padre o Tutor"); });
-                            row.RelativeItem().AlignCenter().Column(col => { col.Item().BorderBottom(1).Width(60, QuestPDF.Infrastructure.Unit.Millimetre).Text(""); col.Item().Text("Firma del Alumno"); });
+                        x.Item().Text(t =>
+                        {
+                            t.Span("II. Comportamiento: ").Bold();
+                            t.Span("UPASER se reserva el derecho de retirar a cualquier persona registrada en el curso, cuyo comportamiento sea considerado inapropiado, por parte de UPASER o sus docentes. En estas circunstancias UPASER no reembolsara ninguna tarifa.");
+                        });
+
+                        x.Item().Text(t =>
+                        {
+                            t.Span("III. Plazo para registrarse: ").Bold();
+                            t.Span("Estamos contentos de apoyar a nuestros alumnos con el proceso de registro en las plataformas oficiales COMIPEMS/103 MUNICIPIOS, sin embargo, es responsabilidad total del aspirante. En caso de que el aspirante no se registre en las fechas que la convocatoria este abierta no habrá ningún tipo de reembolso por el pago efectuado al curso de capacitación.");
+                        });
+
+                        x.Item().Text(t =>
+                        {
+                            t.Span("IV. Talleres opcionales: ").Bold();
+                            t.Span("UPASER programara talleres a lo largo del curso de capacitación, estos talleres son considerados un plus CON COSTO para cualquier alumno UPASER.");
+                        });
+
+                        // Firmas Finales
+                        x.Item().PaddingTop(60).Row(row =>
+                        {
+                            row.RelativeItem().AlignCenter().Column(c =>
+                            {
+                                c.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Black);
+                                c.Item().PaddingTop(5).Text("Firma del Padre o Tutor").FontSize(9).Bold().AlignCenter();
+                            });
+                            row.ConstantItem(40); 
+                            row.RelativeItem().AlignCenter().Column(c =>
+                            {
+                                c.Item().LineHorizontal(1).LineColor(QuestPDF.Helpers.Colors.Black);
+                                c.Item().PaddingTop(5).Text("Firma del Alumno").FontSize(9).Bold().AlignCenter();
+                            });
                         });
                     });
                 });
