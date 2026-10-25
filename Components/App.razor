@@ -11,6 +11,15 @@
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
+    
+    <!-- ========================================== -->
+    <!-- --- ETIQUETAS PWA --- -->
+    <!-- ========================================== -->
+    <link href="manifest.json" rel="manifest" />
+    <meta name="theme-color" content="#003366" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
@@ -80,6 +89,21 @@
 
         // Creamos un alias para que los métodos DescargarPdf de Cobranza, Pagos y Métricas funcionen sin problemas
         window.descargarArchivoPdf = window.downloadFileFromStream;
+        
+        // ==========================================
+        // --- REGISTRO DEL SERVICE WORKER (PWA) ---
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Fallo al registrar el Service Worker:', error);
+                    });
+            });
+        }
     </script>
 </body>
 

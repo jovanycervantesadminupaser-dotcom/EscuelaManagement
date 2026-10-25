@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UPASER - Sin Conexión</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 90%;
+        }
+        h1 { color: #003366; margin-bottom: 10px; }
+        p { color: #64748b; margin-bottom: 25px; }
+        .btn-retry {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Puedes poner un icono en base64 o una imagen aquí -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#003366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 15px;"><path d="M10.707 10.707L13.293 13.293M13.293 10.707L10.707 13.293"/><path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12z"/></svg>
+        <h1>Sin conexión a internet</h1>
+        <p>Parece que has perdido la conexión. Conéctate a una red Wi-Fi o datos móviles para continuar usando el sistema UPASER.</p>
+        <button class="btn-retry" onclick="window.location.reload()">Reintentar conexión</button>
+    </div>
+</body>
+</html>
