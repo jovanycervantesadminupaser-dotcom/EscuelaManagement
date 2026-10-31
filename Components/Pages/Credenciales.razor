@@ -468,6 +468,7 @@
         {
             container.Page(page =>
             {
+                // Configuramos la página en tamaño carta para que quepan varias credenciales
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
                 page.Margin(1, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
@@ -475,119 +476,128 @@
 
                 page.Content().Inlined(inlined =>
                 {
-                    inlined.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre); 
+                    inlined.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre);
 
                     foreach (var alumnoVM in alumnosSeleccionados)
                     {
                         var student = alumnoVM.Student;
 
-                        // =====================================
-                        // ANVERSO (FRENTE) HORIZONTAL 86x54 mm
-                        // =====================================
-                        inlined.Item().Width(86, QuestPDF.Infrastructure.Unit.Millimetre).Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
-                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2) 
-                            .Layers(layers =>
-                            {
-                                // 1. Fondo de Plantilla
-                                layers.PrimaryLayer().Element(e =>
+                        // Agrupamos el Anverso y el Reverso en un solo contenedor para este alumno
+                        inlined.Item().Row(credencialCompleta => 
+                        {
+                            // =====================================
+                            // ANVERSO (FRENTE) 86x54 mm
+                            // =====================================
+                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                                .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                                .Layers(layers =>
                                 {
-                                    if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
+                                    // 1. Fondo de Plantilla
+                                    layers.PrimaryLayer().Element(e =>
                                     {
-                                        var base64Data = diseno.PlantillaFrenteBase64.Contains(",") ? diseno.PlantillaFrenteBase64.Split(',')[1] : diseno.PlantillaFrenteBase64;
-                                        e.Image(Convert.FromBase64String(base64Data)).FitArea();
-                                    }
-                                    else
-                                    {
-                                        e.Background(QuestPDF.Helpers.Colors.White);
-                                    }
-                                });
+                                        if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
+                                        {
+                                            var base64Data = diseno.PlantillaFrenteBase64.Contains(",") ? diseno.PlantillaFrenteBase64.Split(',')[1] : diseno.PlantillaFrenteBase64;
+                                            e.Image(Convert.FromBase64String(base64Data)).FitArea();
+                                        }
+                                        else
+                                        {
+                                            e.Background(QuestPDF.Helpers.Colors.White);
+                                        }
+                                    });
 
-                                // 2. Foto del alumno
-                                if (!string.IsNullOrEmpty(student.PhotoBase64))
-                                {
-                                    var photoData = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
+                                    // 2. Foto del alumno
+                                    if (!string.IsNullOrEmpty(student.PhotoBase64))
+                                    {
+                                        var photoData = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
+                                        layers.Layer()
+                                            .PaddingLeft(diseno.FotoX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                            .PaddingTop(diseno.FotoY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                            .Width(diseno.FotoW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                            .Height(diseno.FotoH, QuestPDF.Infrastructure.Unit.Millimetre)
+                                            .Image(Convert.FromBase64String(photoData)).FitArea();
+                                    }
+
+                                    // 3. Bloque de Nombre Completo
                                     layers.Layer()
-                                        .PaddingLeft(diseno.FotoX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.FotoY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Width(diseno.FotoW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Height(diseno.FotoH, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Image(Convert.FromBase64String(photoData)).FitArea();
-                                }
+                                        .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Column(c =>
+                                        {
+                                            c.Item().Text("ALUMNO(A):").FontSize(6).Bold().FontColor("#003366");
+                                            c.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}".Trim()).FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
 
-                                // 3. Bloque de Nombre Completo
-                                layers.Layer()
-                                    .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Column(c =>
-                                    {
-                                        c.Item().Text("ALUMNO(A):").FontSize(6).Bold().FontColor("#003366");
-                                        c.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}".Trim()).FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                    });
-                                
-                                // 4. Bloque de Datos (Matrícula, Curso, Vigencia)
-                                layers.Layer()
-                                    .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Column(c =>
-                                    {
-                                        c.Item().Text(t =>
+                                    // 4. Bloque de Datos (Matrícula, Curso, Vigencia)
+                                    layers.Layer()
+                                        .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Column(c =>
                                         {
-                                            t.Span("MATRÍCULA: ").FontSize(6).Bold().FontColor("#003366");
-                                            t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                            c.Item().Text(t =>
+                                            {
+                                                t.Span("MATRÍCULA: ").FontSize(6).Bold().FontColor("#003366");
+                                                t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                            });
+                                            c.Item().Text(t =>
+                                            {
+                                                t.Span("CURSO: ").FontSize(6).Bold().FontColor("#003366");
+                                                t.Span(alumnoVM.CourseName).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                            });
+                                            c.Item().Text(t =>
+                                            {
+                                                t.Span("VIGENCIA: ").FontSize(6).Bold().FontColor("#003366");
+                                                t.Span(vigenciaInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                            });
                                         });
-                                        c.Item().Text(t =>
-                                        {
-                                            t.Span("CURSO: ").FontSize(6).Bold().FontColor("#003366");
-                                            t.Span(alumnoVM.CourseName).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                        });
-                                        c.Item().Text(t =>
-                                        {
-                                            t.Span("VIGENCIA: ").FontSize(6).Bold().FontColor("#003366");
-                                            t.Span(vigenciaInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                        });
-                                    });
-                            });
-
-                        // =====================================
-                        // REVERSO (ATRÁS) HORIZONTAL 86x54 mm
-                        // =====================================
-                        inlined.Item().Width(86, QuestPDF.Infrastructure.Unit.Millimetre).Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
-                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2) 
-                            .Layers(layers =>
-                            {
-                                // 1. Fondo de Plantilla Reverso
-                                layers.PrimaryLayer().Element(e =>
-                                {
-                                    if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
-                                    {
-                                        var base64Data = diseno.PlantillaReversoBase64.Contains(",") ? diseno.PlantillaReversoBase64.Split(',')[1] : diseno.PlantillaReversoBase64;
-                                        e.Image(Convert.FromBase64String(base64Data)).FitArea();
-                                    }
-                                    else
-                                    {
-                                        e.Background(QuestPDF.Helpers.Colors.White);
-                                    }
                                 });
 
-                                // 2. Línea de Firma
-                                layers.Layer()
-                                    .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.FirmaLineaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Height(0.5f, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Background(QuestPDF.Helpers.Colors.Black);
+                            // Espacio central (opcional) de 2 mm para separar o facilitar el recorte/doblado
+                            credencialCompleta.ConstantItem(2, QuestPDF.Infrastructure.Unit.Millimetre);
 
-                                // 3. Textos de Firma (Nombre Director y Cargo)
-                                layers.Layer()
-                                    .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .PaddingTop(diseno.FirmaLineaY + 1, QuestPDF.Infrastructure.Unit.Millimetre) // Bajamos 1mm desde la línea
-                                    .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                    .Column(c =>
+                            // =====================================
+                            // REVERSO (ATRÁS) 86x54 mm
+                            // =====================================
+                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                                .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                                .Layers(layers =>
+                                {
+                                    // 1. Fondo de Plantilla Reverso
+                                    layers.PrimaryLayer().Element(e =>
                                     {
-                                        c.Item().AlignCenter().Text(directorInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                        c.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Black);
+                                        if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
+                                        {
+                                            var base64Data = diseno.PlantillaReversoBase64.Contains(",") ? diseno.PlantillaReversoBase64.Split(',')[1] : diseno.PlantillaReversoBase64;
+                                            e.Image(Convert.FromBase64String(base64Data)).FitArea();
+                                        }
+                                        else
+                                        {
+                                            e.Background(QuestPDF.Helpers.Colors.White);
+                                        }
                                     });
-                            });
+
+                                    // 2. Línea de Firma
+                                    layers.Layer()
+                                        .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .PaddingTop(diseno.FirmaLineaY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Height(0.5f, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Background(QuestPDF.Helpers.Colors.Black);
+
+                                    // 3. Textos de Firma (Nombre Director y Cargo)
+                                    layers.Layer()
+                                        .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .PaddingTop(diseno.FirmaLineaY + 1, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Column(c =>
+                                        {
+                                            c.Item().AlignCenter().Text(directorInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                            c.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                });
+                        });
                     }
                 });
             });
