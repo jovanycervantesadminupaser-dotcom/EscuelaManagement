@@ -24,7 +24,7 @@
     </div>
 
     <MudGrid>
-        <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+        <!-- COLUMNA IZQUIERDA: FORMULARIO DETALLADO -->
         <MudItem xs="12" md="8">
             <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface);">
                 <div class="d-flex align-center mb-6">
@@ -35,14 +35,48 @@
                 </div>
 
                 <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Nombre Completo" @bind-Value="nuevoDocente.NombreCompleto" Variant="Variant.Outlined" Class="modern-input" Required="true" />
+                    <!-- Datos Personales y Académicos -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2" Style="color: var(--mud-palette-text-secondary);">Datos Personales y Académicos</MudText>
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField T="string" Label="Especialidad o Carrera" @bind-Value="nuevoDocente.EspecialidadCarrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" />
+                        <MudTextField T="string" Label="Nombre Completo" @bind-Value="nuevoDocente.NombreCompleto" Variant="Variant.Outlined" Class="modern-input" Required="true" RequiredError="Requerido" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Especialidad o Carrera" @bind-Value="nuevoDocente.EspecialidadCarrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" RequiredError="Requerido" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField T="string" Label="Dirección" @bind-Value="nuevoDocente.Direccion" Variant="Variant.Outlined" Class="modern-input" />
+                        <MudTextField T="string" Label="Universidad de Egreso" @bind-Value="nuevoDocente.UniversidadEgreso" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. UNAM, IPN" />
+                    </MudItem>
+
+                    <!-- Domicilio Detallado -->
+                    <MudItem xs="12" Class="mt-2">
+                        <MudDivider />
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mt-4 mb-2" Style="color: var(--mud-palette-text-secondary);">Domicilio</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Calle" @bind-Value="nuevoDocente.Calle" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="6" md="3">
+                        <MudTextField T="string" Label="No. Ext." @bind-Value="nuevoDocente.NumeroExterior" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="6" md="3">
+                        <MudTextField T="string" Label="No. Int. (Opcional)" @bind-Value="nuevoDocente.NumeroInterior" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="5">
+                        <MudTextField T="string" Label="Colonia" @bind-Value="nuevoDocente.Colonia" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField T="string" Label="Municipio/Alcaldía" @bind-Value="nuevoDocente.Municipio" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudTextField T="string" Label="C.P." @bind-Value="nuevoDocente.CodigoPostal" Variant="Variant.Outlined" MaxLength="5" Class="modern-input" />
+                    </MudItem>
+
+                    <!-- Contacto -->
+                    <MudItem xs="12" Class="mt-2">
+                        <MudDivider />
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mt-4 mb-2" Style="color: var(--mud-palette-text-secondary);">Contacto</MudText>
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudTextField T="string" Label="Teléfono" @bind-Value="nuevoDocente.Telefono" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" Class="modern-input" />
@@ -141,9 +175,12 @@
                 <RowTemplate Context="docente">
                     <MudTd DataLabel="Profesor">
                         <div class="d-flex align-center gap-3">
+                            <!-- CORRECCIÓN APLICADA AQUÍ -->
                             @if (!string.IsNullOrEmpty(docente.FotoBase64))
                             {
-                                <MudAvatar Src="@docente.FotoBase64" Size="Size.Medium" />
+                                <MudAvatar Size="Size.Medium">
+                                    <MudImage Src="@docente.FotoBase64" ObjectFit="ObjectFit.Cover" Width="40" Height="40" />
+                                </MudAvatar>
                             }
                             else
                             {
@@ -262,7 +299,13 @@
         {
             Id = docente.Id,
             NombreCompleto = docente.NombreCompleto,
-            Direccion = docente.Direccion,
+            Calle = docente.Calle,
+            NumeroExterior = docente.NumeroExterior,
+            NumeroInterior = docente.NumeroInterior,
+            Colonia = docente.Colonia,
+            Municipio = docente.Municipio,
+            CodigoPostal = docente.CodigoPostal,
+            UniversidadEgreso = docente.UniversidadEgreso,
             Telefono = docente.Telefono,
             CorreoElectronico = docente.CorreoElectronico,
             EspecialidadCarrera = docente.EspecialidadCarrera,
@@ -388,8 +431,6 @@
 
         return Document.Create(container =>
         {
-            // Tamaño estándar de credencial PVC (CR80) es aprox 5.4 cm x 8.6 cm. 
-            // Usaremos diseño Vertical.
             container.Page(page =>
             {
                 page.Size(5.4f, 8.6f, QuestPDF.Infrastructure.Unit.Centimetre);
@@ -399,7 +440,6 @@
 
                 page.Content().Column(col =>
                 {
-                    // Encabezado Azul
                     col.Item().Background("#003366").Height(1.5f, QuestPDF.Infrastructure.Unit.Centimetre).Row(row =>
                     {
                         if (logoBytes != null)
@@ -413,7 +453,6 @@
                         });
                     });
 
-                    // Fotografía
                     col.Item().PaddingTop(5).AlignCenter().Container().Width(2.5f, QuestPDF.Infrastructure.Unit.Centimetre).Height(3f, QuestPDF.Infrastructure.Unit.Centimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
                     {
                         if (fotoBytes != null)
@@ -426,14 +465,12 @@
                         }
                     });
 
-                    // Datos del Docente
                     col.Item().PaddingTop(5).PaddingHorizontal(5).Column(c =>
                     {
                         c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
                         c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
                     });
 
-                    // Pie de Credencial
                     col.Item().PaddingTop(10).Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
                 });
             });
