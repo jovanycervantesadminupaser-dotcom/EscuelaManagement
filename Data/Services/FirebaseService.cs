@@ -411,4 +411,49 @@ public class FirebaseService
             await docRef.SetAsync(item);
         }
     }
+
+    // ==========================================
+    // --- MÉTODOS PARA MAESTROS / DOCENTES ---
+    // ==========================================
+    public async Task AddTeacherAsync(Teacher teacher)
+    {
+        if (string.IsNullOrEmpty(teacher.Id))
+        {
+            teacher.Id = Guid.NewGuid().ToString();
+        }
+        
+        // Si la fecha no es UTC, la convertimos para evitar errores de Firestore
+        if (teacher.FechaRegistro.Kind == DateTimeKind.Unspecified || teacher.FechaRegistro.Kind == DateTimeKind.Local)
+        {
+            teacher.FechaRegistro = teacher.FechaRegistro.ToUniversalTime();
+        }
+
+        DocumentReference docRef = _db.Collection("teachers").Document(teacher.Id);
+        await docRef.SetAsync(teacher);
+    }
+
+    public async Task UpdateTeacherAsync(Teacher teacher)
+    {
+        DocumentReference docRef = _db.Collection("teachers").Document(teacher.Id);
+        await docRef.SetAsync(teacher);
+    }
+
+    public async Task<List<Teacher>> GetAllTeachersAsync()
+    {
+        try
+        {
+            QuerySnapshot snapshot = await _db.Collection("teachers").GetSnapshotAsync();
+            return snapshot.Documents.Select(d => d.ConvertTo<Teacher>()).OrderBy(t => t.NombreCompleto).ToList();
+        }
+        catch
+        {
+            return new List<Teacher>();
+        }
+    }
+
+    public async Task DeleteTeacherAsync(string id)
+    {
+        DocumentReference docRef = _db.Collection("teachers").Document(id);
+        await docRef.DeleteAsync();
+    }
 }

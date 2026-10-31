@@ -1,0 +1,449 @@
+@page "/control-escolar/docentes"
+@rendermode RenderMode.InteractiveServer
+@using MudBlazor
+@using System.IO
+@using EscuelaManagement.Data.Models
+@using EscuelaManagement.Data.Services
+@using QuestPDF.Fluent
+@inject FirebaseService Firebase
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12" Style="min-height: 100vh;">
+    
+    <!-- ENCABEZADO M3 EXPRESSIVE -->
+    <div class="mb-8 d-flex align-center gap-4 fade-in-suave">
+        <MudAvatar Size="Size.Large" Style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; width: 64px; height: 64px; box-shadow: 0 10px 15px -3px rgba(14,165,233,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.CoPresent" Size="Size.Large" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -1px;">Directorio de Docentes</MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">Registra el expediente de los profesores y genera sus credenciales institucionales.</MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+        <MudItem xs="12" md="8">
+            <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface);">
+                <div class="d-flex align-center mb-6">
+                    <MudAvatar Variant="Variant.Filled" Size="Size.Medium" Style="background-color: rgba(14,165,233,0.15); color: #0ea5e9;" Class="mr-3 rounded-lg">
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Expediente del Profesor</MudText>
+                </div>
+
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Nombre Completo" @bind-Value="nuevoDocente.NombreCompleto" Variant="Variant.Outlined" Class="modern-input" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Especialidad o Carrera" @bind-Value="nuevoDocente.EspecialidadCarrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField T="string" Label="Dirección" @bind-Value="nuevoDocente.Direccion" Variant="Variant.Outlined" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Teléfono" @bind-Value="nuevoDocente.Telefono" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" Class="modern-input" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Correo Electrónico" @bind-Value="nuevoDocente.CorreoElectronico" Variant="Variant.Outlined" InputType="InputType.Email" Class="modern-input" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <!-- COLUMNA DERECHA: FOTOGRAFÍA Y GUARDAR -->
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="0" Class="pa-8 mb-8 rounded-xxl m3-section-card fade-in-up" Style="background-color: var(--mud-palette-surface); animation-delay: 0.1s;">
+                <div class="d-flex flex-column align-center justify-center w-100">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4" Style="color: var(--mud-palette-text-primary);">Fotografía Oficial</MudText>
+                    
+                    @if (isCameraOpen)
+                    {
+                        <div class="fade-in-suave w-100 d-flex flex-column align-center">
+                            <video id="cameraVideo" width="100%" style="max-width: 240px; border-radius: 16px; background-color: black; border: 4px solid var(--mud-palette-primary);" autoplay></video>
+                            <div class="mt-4 d-flex gap-2 w-100 justify-center">
+                                <MudButton OnClick="CapturarFoto" Color="Color.Success" Variant="Variant.Filled" DropShadow="false" StartIcon="@Icons.Material.Filled.Camera" Class="rounded-xl font-weight-bold px-4" Style="text-transform: none;">Tomar</MudButton>
+                                <MudButton OnClick="CerrarCamara" Color="Color.Error" Variant="Variant.Text" Class="font-weight-bold rounded-xl px-4" Style="text-transform: none;">Cancelar</MudButton>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-center gap-4 w-100">
+                            @if (!string.IsNullOrEmpty(nuevoDocente.FotoBase64))
+                            {
+                                <MudImage Src="@nuevoDocente.FotoBase64" Width="160" Height="160" ObjectFit="ObjectFit.Cover" Elevation="4" Class="rounded-xxl fade-in-suave" Style="border: 3px solid var(--mud-palette-background);" />
+                            }
+                            else
+                            {
+                                <MudPaper Width="160px" Height="160px" Class="d-flex align-center justify-center rounded-xxl fade-in-suave" Elevation="0" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: var(--mud-palette-background);">
+                                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Style="font-size: 5rem; color: var(--mud-palette-text-disabled);" />
+                                </MudPaper>
+                            }
+                            
+                            <div class="d-flex gap-2 w-100 justify-center">
+                                <MudButton HtmlTag="label" for="fileInput" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-xl font-weight-bold px-4 py-2" Style="text-transform: none;">Subir</MudButton>
+                                <MudButton OnClick="AbrirCamara" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CameraAlt" DropShadow="false" Class="rounded-xl font-weight-bold px-4 py-2" Style="text-transform: none; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white;">Cámara</MudButton>
+                            </div>
+                            <InputFile id="fileInput" OnChange="UploadPhoto" accept=".jpg,.jpeg,.png" style="display: none;" />
+                        </div>
+                    }
+
+                    <MudDivider Class="my-6 w-100" />
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" FullWidth="true" OnClick="GuardarDocente" Disabled="@guardando" StartIcon="@Icons.Material.Filled.Save" Class="rounded-xl font-weight-bold py-3" DropShadow="false" Style="text-transform: none;">
+                        @if (guardando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span>Guardar Expediente</span>
+                        }
+                    </MudButton>
+                    
+                    @if (!string.IsNullOrEmpty(nuevoDocente.Id))
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" OnClick="LimpiarFormulario" Class="mt-2 rounded-xl font-weight-bold" Style="text-transform: none;">
+                            Nueva Captura
+                        </MudButton>
+                    }
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- TABLA DE DIRECTORIO DE DOCENTES -->
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center pa-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <MudPaper Elevation="0" Class="pa-8 rounded-xxl m3-section-card fade-in-suave" Style="background-color: var(--mud-palette-surface);">
+            <div class="d-flex align-center justify-space-between mb-6">
+                <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--mud-palette-text-primary);">Docentes Registrados (@listaDocentes.Count)</MudText>
+            </div>
+
+            <MudTable Items="@listaDocentes" Hover="true" Elevation="0" Class="modern-table transparent-table" Striped="true">
+                <HeaderContent>
+                    <MudTh Style="font-weight: bold; color: var(--mud-palette-text-secondary); text-transform: uppercase;">Profesor</MudTh>
+                    <MudTh Style="font-weight: bold; color: var(--mud-palette-text-secondary); text-transform: uppercase;">Especialidad</MudTh>
+                    <MudTh Style="font-weight: bold; color: var(--mud-palette-text-secondary); text-transform: uppercase;">Contacto</MudTh>
+                    <MudTh Style="font-weight: bold; color: var(--mud-palette-text-secondary); text-transform: uppercase; text-align: center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="docente">
+                    <MudTd DataLabel="Profesor">
+                        <div class="d-flex align-center gap-3">
+                            @if (!string.IsNullOrEmpty(docente.FotoBase64))
+                            {
+                                <MudAvatar Src="@docente.FotoBase64" Size="Size.Medium" />
+                            }
+                            else
+                            {
+                                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">@docente.NombreCompleto.FirstOrDefault()</MudAvatar>
+                            }
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@docente.NombreCompleto</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Especialidad">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text" Class="font-weight-bold">@docente.EspecialidadCarrera</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Contacto">
+                        <MudText Typo="Typo.body2">@docente.Telefono</MudText>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">@docente.CorreoElectronico</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Acciones" Style="text-align: center;">
+                        <MudTooltip Text="Generar Credencial PDF" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.Badge" Color="Color.Info" OnClick="() => GenerarCredencial(docente)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar Datos" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="() => EditarDocente(docente)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Dar de Baja" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => EliminarDocente(docente)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center">Aún no hay docentes registrados.</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" RowsPerPageString="Docentes por página:" />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+<MudMessageBox @ref="mbox" Title="Confirmar Baja">
+    <MessageContent>
+        ¿Estás seguro de que deseas eliminar permanentemente el expediente de este profesor?
+    </MessageContent>
+    <YesButton><MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Class="rounded-xl px-4 py-2" Style="text-transform: none;">Eliminar</MudButton></YesButton>
+    <CancelButton><MudButton Variant="Variant.Text" Class="rounded-xl px-4 py-2" Style="text-transform: none;">Cancelar</MudButton></CancelButton>
+</MudMessageBox>
+
+<style>
+    .m3-section-card { border: 1px solid var(--mud-palette-lines-default); transition: box-shadow 0.3s ease; }
+    .m3-section-card:hover { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); }
+    .modern-input .mud-input-outlined-border { border: 2px solid transparent !important; transition: all 0.3s ease-in-out; }
+    .modern-input .mud-input { background-color: var(--mud-palette-background) !important; border-radius: 12px !important; }
+    .modern-input .mud-input.mud-input-focused { background-color: var(--mud-palette-surface) !important; box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-color: #0ea5e9 !important; }
+    .transparent-table { background-color: transparent !important; }
+    .modern-table .mud-table-cell { border-bottom: 1px solid var(--mud-palette-lines-default) !important; padding: 12px 16px !important; }
+</style>
+
+@code {
+    private Teacher nuevoDocente = new();
+    private List<Teacher> listaDocentes = new();
+    private ConfiguracionEscuela configuracionEscuela = new();
+    
+    private MudMessageBox mbox = default!;
+    private bool isCameraOpen = false;
+    private bool isLoading = true;
+    private bool guardando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        configuracionEscuela = await Firebase.GetConfiguracionAsync() ?? new();
+        await CargarDirectorio();
+    }
+
+    private async Task CargarDirectorio()
+    {
+        isLoading = true;
+        StateHasChanged();
+        listaDocentes = await Firebase.GetAllTeachersAsync();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task GuardarDocente()
+    {
+        if (string.IsNullOrWhiteSpace(nuevoDocente.NombreCompleto) || string.IsNullOrWhiteSpace(nuevoDocente.EspecialidadCarrera))
+        {
+            Snackbar.Add("El nombre completo y la especialidad son obligatorios.", Severity.Warning);
+            return;
+        }
+
+        guardando = true;
+        StateHasChanged();
+
+        try
+        {
+            await Firebase.AddTeacherAsync(nuevoDocente);
+            Snackbar.Add("Expediente del docente guardado con éxito.", Severity.Success);
+            LimpiarFormulario();
+            await CargarDirectorio();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            guardando = false;
+            StateHasChanged();
+        }
+    }
+
+    private void EditarDocente(Teacher docente)
+    {
+        nuevoDocente = new Teacher
+        {
+            Id = docente.Id,
+            NombreCompleto = docente.NombreCompleto,
+            Direccion = docente.Direccion,
+            Telefono = docente.Telefono,
+            CorreoElectronico = docente.CorreoElectronico,
+            EspecialidadCarrera = docente.EspecialidadCarrera,
+            FotoBase64 = docente.FotoBase64,
+            Activo = docente.Activo,
+            FechaRegistro = docente.FechaRegistro
+        };
+        Snackbar.Add("Modifica los datos y presiona Guardar Expediente.", Severity.Info);
+    }
+
+    private async Task EliminarDocente(Teacher docente)
+    {
+        if (await mbox.ShowAsync() == true)
+        {
+            try
+            {
+                await Firebase.DeleteTeacherAsync(docente.Id);
+                Snackbar.Add("Expediente eliminado.", Severity.Success);
+                await CargarDirectorio();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void LimpiarFormulario()
+    {
+        nuevoDocente = new Teacher();
+        isCameraOpen = false;
+        StateHasChanged();
+    }
+
+    // --- CÁMARA E IMÁGENES ---
+    private async Task AbrirCamara()
+    {
+        isCameraOpen = true;
+        StateHasChanged();
+        await Task.Delay(100); 
+        await JSRuntime.InvokeVoidAsync("cameraHelper.startCamera", "cameraVideo");
+    }
+
+    private async Task CapturarFoto()
+    {
+        try
+        {
+            var base64 = await JSRuntime.InvokeAsync<string>("cameraHelper.takeSnapshot", "cameraVideo");
+            nuevoDocente.FotoBase64 = base64;
+            await CerrarCamara();
+            Snackbar.Add("Fotografía capturada.", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Error al tomar la foto.", Severity.Error);
+            await CerrarCamara();
+        }
+    }
+
+    private async Task CerrarCamara()
+    {
+        await JSRuntime.InvokeVoidAsync("cameraHelper.stopCamera");
+        isCameraOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task UploadPhoto(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
+            nuevoDocente.FotoBase64 = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        }
+    }
+
+    // --- GENERACIÓN DE CREDENCIAL EN PDF CON QUESTPDF ---
+    private async Task GenerarCredencial(Teacher docente)
+    {
+        try
+        {
+            Snackbar.Add("Preparando diseño de credencial...", Severity.Info);
+            var pdfBytes = GenerarCredencialPdf(docente);
+            await DescargarPdf(pdfBytes, $"Credencial_{docente.NombreCompleto}.pdf");
+            Snackbar.Add("Credencial descargada correctamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al generar credencial: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private byte[] GenerarCredencialPdf(Teacher docente)
+    {
+        byte[]? logoBytes = null;
+        if (!string.IsNullOrEmpty(configuracionEscuela.LogoBase64))
+        {
+            try
+            {
+                var base64Logo = configuracionEscuela.LogoBase64.Contains(',', StringComparison.Ordinal) 
+                    ? configuracionEscuela.LogoBase64.Substring(configuracionEscuela.LogoBase64.IndexOf(',', StringComparison.Ordinal) + 1) 
+                    : configuracionEscuela.LogoBase64;
+                logoBytes = Convert.FromBase64String(base64Logo);
+            }
+            catch { }
+        }
+
+        byte[]? fotoBytes = null;
+        if (!string.IsNullOrEmpty(docente.FotoBase64))
+        {
+            try
+            {
+                var base64Foto = docente.FotoBase64.Contains(',', StringComparison.Ordinal) 
+                    ? docente.FotoBase64.Substring(docente.FotoBase64.IndexOf(',', StringComparison.Ordinal) + 1) 
+                    : docente.FotoBase64;
+                fotoBytes = Convert.FromBase64String(base64Foto);
+            }
+            catch { }
+        }
+
+        return Document.Create(container =>
+        {
+            // Tamaño estándar de credencial PVC (CR80) es aprox 5.4 cm x 8.6 cm. 
+            // Usaremos diseño Vertical.
+            container.Page(page =>
+            {
+                page.Size(5.4f, 8.6f, QuestPDF.Infrastructure.Unit.Centimetre);
+                page.Margin(0);
+                page.PageColor(QuestPDF.Helpers.Colors.White);
+                page.DefaultTextStyle(x => x.FontFamily("Arial"));
+
+                page.Content().Column(col =>
+                {
+                    // Encabezado Azul
+                    col.Item().Background("#003366").Height(1.5f, QuestPDF.Infrastructure.Unit.Centimetre).Row(row =>
+                    {
+                        if (logoBytes != null)
+                        {
+                            row.ConstantItem(1.2f, QuestPDF.Infrastructure.Unit.Centimetre).Padding(2).Image(logoBytes);
+                        }
+                        row.RelativeItem().PaddingTop(5).Column(c =>
+                        {
+                            c.Item().Text("UPASER").Bold().FontColor(QuestPDF.Helpers.Colors.White).FontSize(11).AlignCenter();
+                            c.Item().Text("DOCENTE").SemiBold().FontColor(QuestPDF.Helpers.Colors.Yellow.Lighten2).FontSize(7).AlignCenter();
+                        });
+                    });
+
+                    // Fotografía
+                    col.Item().PaddingTop(5).AlignCenter().Container().Width(2.5f, QuestPDF.Infrastructure.Unit.Centimetre).Height(3f, QuestPDF.Infrastructure.Unit.Centimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
+                    {
+                        if (fotoBytes != null)
+                        {
+                            e.Image(fotoBytes).FitArea();
+                        }
+                        else
+                        {
+                            e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                        }
+                    });
+
+                    // Datos del Docente
+                    col.Item().PaddingTop(5).PaddingHorizontal(5).Column(c =>
+                    {
+                        c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
+                        c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                    });
+
+                    // Pie de Credencial
+                    col.Item().PaddingTop(10).Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                });
+            });
+        }).GeneratePdf();
+    }
+
+    private async Task DescargarPdf(byte[] bytes, string fileName)
+    {
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("descargarArchivoPdf", fileName, streamRef);
+    }
+}

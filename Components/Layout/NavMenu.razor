@@ -34,6 +34,7 @@
                 
                 @if (UserSession.EsControlEscolar)
                 {
+                    <MudNavLink Href="/control-escolar/docentes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CoPresent">Directorio Docentes</MudNavLink>
                     <MudNavLink Href="/materias" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook" Class="rounded-xl mb-1">Materias</MudNavLink>
                     <MudNavLink Href="/credenciales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Badge" Class="rounded-xl mb-1">Credenciales</MudNavLink>
                 }
