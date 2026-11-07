@@ -47,13 +47,13 @@
                                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2" Style="color: var(--mud-palette-text-secondary);">Datos Personales y Académicos</MudText>
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="Nombre Completo" @bind-Value="nuevoDocente.NombreCompleto" Variant="Variant.Outlined" Class="modern-input" Required="true" RequiredError="Requerido" />
+                                <MudTextField @bind-Value="nuevoDocente.NombreCompleto" Label="Nombre Completo" Variant="Variant.Outlined" Class="modern-input" Required="true" RequiredError="Requerido" />
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="Especialidad o Carrera" @bind-Value="nuevoDocente.EspecialidadCarrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" RequiredError="Requerido" />
+                                <MudTextField @bind-Value="nuevoDocente.EspecialidadCarrera" Label="Especialidad o Carrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" RequiredError="Requerido" />
                             </MudItem>
                             <MudItem xs="12">
-                                <MudTextField T="string" Label="Universidad de Egreso" @bind-Value="nuevoDocente.UniversidadEgreso" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. UNAM, IPN" />
+                                <MudTextField @bind-Value="nuevoDocente.UniversidadEgreso" Label="Universidad de Egreso" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. UNAM, IPN" />
                             </MudItem>
 
                             <!-- Domicilio Detallado -->
@@ -62,22 +62,22 @@
                                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mt-4 mb-2" Style="color: var(--mud-palette-text-secondary);">Domicilio</MudText>
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="Calle" @bind-Value="nuevoDocente.Calle" Variant="Variant.Outlined" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.Calle" Label="Calle" Variant="Variant.Outlined" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="6" md="3">
-                                <MudTextField T="string" Label="No. Ext." @bind-Value="nuevoDocente.NumeroExterior" Variant="Variant.Outlined" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.NumeroExterior" Label="No. Ext." Variant="Variant.Outlined" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="6" md="3">
-                                <MudTextField T="string" Label="No. Int. (Opcional)" @bind-Value="nuevoDocente.NumeroInterior" Variant="Variant.Outlined" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.NumeroInterior" Label="No. Int. (Opcional)" Variant="Variant.Outlined" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="12" md="5">
-                                <MudTextField T="string" Label="Colonia" @bind-Value="nuevoDocente.Colonia" Variant="Variant.Outlined" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.Colonia" Label="Colonia" Variant="Variant.Outlined" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="12" md="4">
-                                <MudTextField T="string" Label="Municipio/Alcaldía" @bind-Value="nuevoDocente.Municipio" Variant="Variant.Outlined" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.Municipio" Label="Municipio/Alcaldía" Variant="Variant.Outlined" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="12" md="3">
-                                <MudTextField T="string" Label="C.P." @bind-Value="nuevoDocente.CodigoPostal" Variant="Variant.Outlined" MaxLength="5" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.CodigoPostal" Label="C.P." Variant="Variant.Outlined" MaxLength="5" Class="modern-input" />
                             </MudItem>
 
                             <!-- Contacto -->
@@ -86,10 +86,10 @@
                                 <MudText Typo="Typo.subtitle2" Class="font-weight-bold mt-4 mb-2" Style="color: var(--mud-palette-text-secondary);">Contacto</MudText>
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="Teléfono" @bind-Value="nuevoDocente.Telefono" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.Telefono" Label="Teléfono" Variant="Variant.Outlined" MaxLength="10" InputType="InputType.Telephone" Class="modern-input" />
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="Correo Electrónico" @bind-Value="nuevoDocente.CorreoElectronico" Variant="Variant.Outlined" InputType="InputType.Email" Class="modern-input" />
+                                <MudTextField @bind-Value="nuevoDocente.CorreoElectronico" Label="Correo Electrónico" Variant="Variant.Outlined" InputType="InputType.Email" Class="modern-input" />
                             </MudItem>
                         </MudGrid>
                     </MudPaper>
@@ -239,7 +239,7 @@
                 <MudPaper Elevation="0" Class="pa-6 rounded-xxl mb-6 m3-section-card" Style="background-color: var(--mud-palette-surface);">
                     <MudGrid>
                         <MudItem xs="12" md="6">
-                            <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
+                            <MudTextField @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
                         </MudItem>
                     </MudGrid>
                 </MudPaper>
@@ -318,24 +318,20 @@
 </MudMessageBox>
 
 <style>
-    .m3-section-card { border: 1px solid var(--mud-palette-lines-default); transition: box-shadow 0.3s ease; }
+    .m3-section-card { border: 1px solid var(--mud-palette-lines-default); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; }
     .m3-section-card:hover { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); }
     .modern-input .mud-input-outlined-border { border: 2px solid transparent !important; transition: all 0.3s ease-in-out; }
-    .modern-input .mud-input { background-color: var(--mud-palette-background) !important; border-radius: 12px !important; }
-    .modern-input .mud-input.mud-input-focused { background-color: var(--mud-palette-surface) !important; box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important; }
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-color: #0ea5e9 !important; }
+    .modern-input .mud-input { background-color: var(--mud-palette-background) !important; border-radius: 12px !important; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+    .modern-input .mud-input.mud-input-focused { background-color: var(--mud-palette-surface) !important; transform: scale(1.02) translateY(-2px); box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-color: var(--mud-palette-primary) !important; background-color: transparent !important; }
     .transparent-table { background-color: transparent !important; }
     .modern-table .mud-table-cell { border-bottom: 1px solid var(--mud-palette-lines-default) !important; padding: 12px 16px !important; }
 
-    /* Estilos copiados de Credenciales.razor para que se vea igual */
     .m3-alert { border-left: 5px solid; transition: all 0.3s ease; }
     .m3-alert-info { background-color: rgba(14,165,233,0.1); border-left-color: #0ea5e9; color: #0369a1; }
     .mud-palette-dark .m3-alert-info { background-color: rgba(14,165,233,0.15); color: #7dd3fc; }
 
-    .btn-vivid-success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        transition: all 0.3s ease !important;
-    }
+    .btn-vivid-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; transition: all 0.3s ease !important; }
     .btn-vivid-success:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important; }
 </style>
 
@@ -450,7 +446,6 @@
         StateHasChanged();
     }
 
-    // --- CÁMARA E IMÁGENES ---
     private async Task AbrirCamara()
     {
         isCameraOpen = true;
@@ -494,10 +489,7 @@
             nuevoDocente.FotoBase64 = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
         }
     }
-
-    // --- GENERACIÓN DE CREDENCIAL EN PDF CON QUESTPDF ---
     
-    // Método para la Pestaña 1 (Generar de a 1, desde la tabla original)
     private async Task GenerarCredencialIndividual(Teacher docente)
     {
         try
@@ -513,7 +505,6 @@
         }
     }
 
-    // Método para la Pestaña 2 (Generar en Lote)
     private async Task GenerarPDFLote()
     {
         if (!docentesSeleccionados.Any()) return;
@@ -544,7 +535,6 @@
         }
     }
 
-    // Lógica Central de Generación
     private byte[] CrearPdfCredencialesDocentes(List<Teacher> docentesAImprimir)
     {
         byte[]? logoBytes = null;
@@ -590,11 +580,9 @@
 
                         inlined.Item().Row(credencialCompleta => 
                         {
-                            // =====================================
-                            // ANVERSO (FRENTE) HORIZONTAL 86x54 mm
-                            // =====================================
-                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                            // ANVERSO
+                            credencialCompleta.ConstantItem(5.4f, QuestPDF.Infrastructure.Unit.Centimetre)
+                                .Height(8.6f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
                                 .Column(col =>
                                 {
@@ -611,43 +599,38 @@
                                         });
                                     });
 
-                                    col.Item().Row(cuerpoRow =>
+                                    col.Item().PaddingTop(5).AlignCenter().Container().Width(2.5f, QuestPDF.Infrastructure.Unit.Centimetre).Height(3f, QuestPDF.Infrastructure.Unit.Centimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
                                     {
-                                        cuerpoRow.ConstantItem(2.5f, QuestPDF.Infrastructure.Unit.Centimetre).PaddingTop(5).PaddingLeft(5).Container().Width(2.5f, QuestPDF.Infrastructure.Unit.Centimetre).Height(3f, QuestPDF.Infrastructure.Unit.Centimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
+                                        if (fotoBytes != null)
                                         {
-                                            if (fotoBytes != null)
-                                            {
-                                                e.Image(fotoBytes).FitArea();
-                                            }
-                                            else
-                                            {
-                                                e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
-                                            }
-                                        });
-
-                                        cuerpoRow.RelativeItem().PaddingTop(10).PaddingHorizontal(5).Column(c =>
+                                            e.Image(fotoBytes).FitArea();
+                                        }
+                                        else
                                         {
-                                            c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
-                                            c.Item().PaddingTop(5).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
-                                        });
+                                            e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                                        }
                                     });
 
-                                    col.Item().PaddingTop(3.5f, QuestPDF.Infrastructure.Unit.Millimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
+                                    col.Item().PaddingTop(5).PaddingHorizontal(5).Column(c =>
+                                    {
+                                        c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
+                                        c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                                    });
+
+                                    col.Item().PaddingTop(10).Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
                                 });
 
                             credencialCompleta.ConstantItem(2, QuestPDF.Infrastructure.Unit.Millimetre);
 
-                            // =====================================
-                            // REVERSO (ATRÁS) HORIZONTAL 86x54 mm
-                            // =====================================
-                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                            // REVERSO
+                            credencialCompleta.ConstantItem(5.4f, QuestPDF.Infrastructure.Unit.Centimetre)
+                                .Height(8.6f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
                                 .Layers(layers =>
                                 {
                                     if (logoBytes != null)
                                     {
-                                        layers.PrimaryLayer().AlignCenter().AlignMiddle().Width(3.5f, QuestPDF.Infrastructure.Unit.Centimetre).Image(logoBytes);
+                                        layers.PrimaryLayer().AlignCenter().AlignMiddle().Width(3.0f, QuestPDF.Infrastructure.Unit.Centimetre).Image(logoBytes);
                                     }
                                     
                                     layers.Layer().Column(col =>
@@ -665,7 +648,7 @@
                                             });
                                         });
 
-                                        col.Item().PaddingTop(2f, QuestPDF.Infrastructure.Unit.Centimetre).PaddingHorizontal(10).Column(c =>
+                                        col.Item().PaddingTop(3.5f, QuestPDF.Infrastructure.Unit.Centimetre).PaddingHorizontal(5).Column(c =>
                                         {
                                             c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
                                             c.Item().PaddingTop(2).Text("DIRECCIÓN ACADÉMICA").Bold().FontSize(6).AlignCenter();

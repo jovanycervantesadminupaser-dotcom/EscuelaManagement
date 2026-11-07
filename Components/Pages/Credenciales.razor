@@ -44,16 +44,16 @@
                                          Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Clearable="true" Class="modern-input" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField T="string" @bind-Value="cursoInput" Label="Curso Asignado (Automático)" Variant="Variant.Outlined" ReadOnly="true" Class="modern-input" />
+                        <MudTextField @bind-Value="cursoInput" Label="Curso Asignado (Automático)" Variant="Variant.Outlined" ReadOnly="true" Class="modern-input" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" @bind-Value="matriculaInput" Label="Matrícula" Variant="Variant.Outlined" Class="modern-input" />
+                        <MudTextField @bind-Value="matriculaInput" Label="Matrícula" Variant="Variant.Outlined" Class="modern-input" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" @bind-Value="vigenciaInput" Label="Vigencia" Variant="Variant.Outlined" Class="modern-input" />
+                        <MudTextField @bind-Value="vigenciaInput" Label="Vigencia" Variant="Variant.Outlined" Class="modern-input" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudTextField T="string" @bind-Value="directorInput" Label="Nombre del Director" Variant="Variant.Outlined" Class="modern-input" />
+                        <MudTextField @bind-Value="directorInput" Label="Nombre del Director" Variant="Variant.Outlined" Class="modern-input" />
                     </MudItem>
                 </MudGrid>
                 
@@ -79,13 +79,13 @@
                 <MudPaper Elevation="0" Class="pa-6 rounded-xxl mb-6 m3-section-card" Style="background-color: var(--mud-palette-surface);">
                     <MudGrid>
                         <MudItem xs="12" md="6">
-                            <MudTextField T="string" @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
+                            <MudTextField @bind-Value="searchStringLote" Label="Buscar por nombre..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="modern-input" />
                         </MudItem>
                         <MudItem xs="12" md="6">
                             <MudSelect T="string" Label="Filtrar por Curso" @bind-Value="filterCourseIdLote" Variant="Variant.Outlined" Clearable="true" Class="modern-input" AnchorOrigin="Origin.BottomCenter">
                                 @foreach (var curso in listaCursos) 
                                 { 
-                                    <MudSelectItem T="string" Value="@curso.Id">@curso.Name</MudSelectItem> 
+                                    <MudSelectItem Value="@curso.Id">@curso.Name</MudSelectItem> 
                                 }
                             </MudSelect>
                         </MudItem>
@@ -169,23 +169,23 @@
                         
                         <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="rounded-xl transparent-panels">
                             <MudExpansionPanel Text="Fotografía (Anverso)" Expanded="true" Class="font-weight-bold m3-panel mb-3">
-                                <MudNumericField T="float" @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                                <MudNumericField @bind-Value="diseno.FotoX" Label="X (Izq)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.FotoY" Label="Y (Arriba)" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.FotoW" Label="Ancho" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.FotoH" Label="Alto" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
                             
                             <MudExpansionPanel Text="Textos Frente" Class="font-weight-bold m3-panel mb-3">
-                                <MudNumericField T="float" @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                                <MudNumericField @bind-Value="diseno.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.MatriculaX" Label="Matrícula X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.MatriculaY" Label="Matrícula Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
 
                             <MudExpansionPanel Text="Reverso (Firma)" Class="font-weight-bold m3-panel">
-                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField T="float" @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                                <MudNumericField @bind-Value="diseno.FirmaLineaX" Label="Firma X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.FirmaLineaY" Label="Firma Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="diseno.FirmaLineaW" Label="Ancho Firma" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
                         </MudExpansionPanels>
 
@@ -260,82 +260,26 @@
 </MudContainer>
 
 <style>
-    /* Efecto Flotante M3 */
-    .m3-section-card {
-        border: 1px solid var(--mud-palette-lines-default);
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-    }
-    .m3-section-card:hover {
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-    }
-
-    /* Solución Modo Oscuro para Inputs */
-    .modern-input .mud-input-outlined-border {
-        border: 2px solid transparent !important;
-        transition: all 0.3s ease-in-out;
-    }
-    
-    /* El input usará el color 'background' de la paleta */
-    .modern-input .mud-input {
-        background-color: var(--mud-palette-background) !important;
-        border-radius: 16px !important;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    }
-    
-    /* Al hacer foco, se eleva usando 'surface' */
-    .modern-input .mud-input.mud-input-focused {
-        background-color: var(--mud-palette-surface) !important;
-        transform: scale(1.02) translateY(-2px);
-        box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important;
-    }
-    
-    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-color: var(--mud-palette-primary) !important;
-        background-color: transparent !important;
-    }
-
-    /* Estilos limpios para la tabla */
+    .m3-section-card { border: 1px solid var(--mud-palette-lines-default); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; }
+    .m3-section-card:hover { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); }
+    .modern-input .mud-input-outlined-border { border: 2px solid transparent !important; transition: all 0.3s ease-in-out; }
+    .modern-input .mud-input { background-color: var(--mud-palette-background) !important; border-radius: 16px !important; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+    .modern-input .mud-input.mud-input-focused { background-color: var(--mud-palette-surface) !important; transform: scale(1.02) translateY(-2px); box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15) !important; }
+    .modern-input .mud-input.mud-input-focused .mud-input-outlined-border { border-color: var(--mud-palette-primary) !important; background-color: transparent !important; }
     .transparent-table { background-color: transparent !important; }
-    .modern-table .mud-table-cell {
-        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
-        padding: 16px 16px !important;
-    }
+    .modern-table .mud-table-cell { border-bottom: 1px solid var(--mud-palette-lines-default) !important; padding: 16px 16px !important; }
     .modern-table .mud-table-root { border: none !important; }
-
-    /* Pastillas de Alerta M3 */
     .m3-alert { border-left: 5px solid; transition: all 0.3s ease; }
     .m3-alert-info { background-color: rgba(14,165,233,0.1); border-left-color: #0ea5e9; color: #0369a1; }
     .mud-palette-dark .m3-alert-info { background-color: rgba(14,165,233,0.15); color: #7dd3fc; }
-
-    /* Paneles de Expansión M3 - Ajuste para Modo Oscuro */
     .transparent-panels .mud-expand-panel { background-color: transparent !important; }
-    .m3-panel { 
-        border: 1px solid var(--mud-palette-lines-default); 
-        border-radius: 16px !important; 
-        overflow: hidden; 
-        background-color: var(--mud-palette-background) !important; 
-    }
-
-    /* Corrección de color en contenedor de vista previa para Modo Oscuro */
-    .preview-container {
-        background-color: var(--mud-palette-background) !important; 
-    }
-
-    /* Botones Vívidos y Efectos Lift */
+    .m3-panel { border: 1px solid var(--mud-palette-lines-default); border-radius: 16px !important; overflow: hidden; background-color: var(--mud-palette-background) !important; }
+    .preview-container { background-color: var(--mud-palette-background) !important; }
     .hover-lift { transition: all 0.3s ease; }
     .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.15); }
-    
-    .btn-vivid {
-        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
-        transition: all 0.3s ease !important;
-    }
+    .btn-vivid { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important; transition: all 0.3s ease !important; }
     .btn-vivid:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3) !important; }
-
-    .btn-vivid-success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        transition: all 0.3s ease !important;
-    }
+    .btn-vivid-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; transition: all 0.3s ease !important; }
     .btn-vivid-success:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important; }
 </style>
 
@@ -382,7 +326,6 @@
         listaInscripciones = await Firebase.GetAllEnrollmentsAsync() ?? new();
         diseno = await Firebase.GetDisenoCredencialAsync() ?? new();
 
-        // Llenar lista para la pestaña en Lote
         foreach (var alumno in listaAlumnos)
         {
             var inscripcion = listaInscripciones.FirstOrDefault(i => i.StudentId == alumno.Id);
@@ -397,7 +340,6 @@
         return $"{s.Name ?? ""} {s.PaternalLastName ?? ""} {s.MaternalLastName ?? ""}".Trim();
     }
 
-    // --- MÉTODOS PESTAÑA 1 (INDIVIDUAL) ---
     private Task<IEnumerable<Student>> SearchStudents(string value, CancellationToken token)
     {
         if (string.IsNullOrEmpty(value)) return Task.FromResult<IEnumerable<Student>>(listaAlumnos.Take(5));
@@ -427,7 +369,6 @@
         await JS.InvokeVoidAsync("downloadFileFromStream", $"Credencial_{selectedStudent.Name}.pdf", streamRef);
     }
 
-    // --- MÉTODOS PESTAÑA 2 (LOTE HORIZONTAL CON TEXTOS COMPLETOS) ---
     private IEnumerable<AlumnoCredencialVM> AlumnosFiltradosLote => listaAlumnosVM.Where(x => 
         (string.IsNullOrEmpty(searchStringLote) || $"{(x.Student.Name ?? "")} {(x.Student.PaternalLastName ?? "")}".Contains(searchStringLote, StringComparison.OrdinalIgnoreCase)) &&
         (string.IsNullOrEmpty(filterCourseIdLote) || x.CourseName == listaCursos.FirstOrDefault(c => c.Id == filterCourseIdLote)?.Name));
@@ -468,143 +409,138 @@
         {
             container.Page(page =>
             {
-                // Configuramos la página en tamaño carta para que quepan varias credenciales
                 page.Size(QuestPDF.Helpers.PageSizes.Letter);
                 page.Margin(1, QuestPDF.Infrastructure.Unit.Centimetre);
                 page.PageColor(QuestPDF.Helpers.Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(10));
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-                page.Content().Inlined(inlined =>
+                page.Content().Grid(grid =>
                 {
-                    inlined.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre);
+                    grid.Columns(2); 
+                    grid.Spacing(5, QuestPDF.Infrastructure.Unit.Millimetre);
 
                     foreach (var alumnoVM in alumnosSeleccionados)
                     {
                         var student = alumnoVM.Student;
-
-                        // Agrupamos el Anverso y el Reverso en un solo contenedor para este alumno
-                        inlined.Item().Row(credencialCompleta => 
+                        
+                        byte[]? fotoBytes = null;
+                        if (!string.IsNullOrEmpty(student.PhotoBase64))
                         {
-                            // =====================================
-                            // ANVERSO (FRENTE) 86x54 mm
-                            // =====================================
-                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
-                                .Layers(layers =>
-                                {
-                                    // 1. Fondo de Plantilla
-                                    layers.PrimaryLayer().Element(e =>
-                                    {
-                                        if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
-                                        {
-                                            var base64Data = diseno.PlantillaFrenteBase64.Contains(",") ? diseno.PlantillaFrenteBase64.Split(',')[1] : diseno.PlantillaFrenteBase64;
-                                            e.Image(Convert.FromBase64String(base64Data)).FitArea();
-                                        }
-                                        else
-                                        {
-                                            e.Background(QuestPDF.Helpers.Colors.White);
-                                        }
-                                    });
+                            try
+                            {
+                                var base64Foto = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
+                                fotoBytes = Convert.FromBase64String(base64Foto);
+                            }
+                            catch { }
+                        }
 
-                                    // 2. Foto del alumno
-                                    if (!string.IsNullOrEmpty(student.PhotoBase64))
+                        // =====================================
+                        // ANVERSO (FRENTE) 86x54 mm
+                        // =====================================
+                        grid.Item().Width(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Layers(layers =>
+                            {
+                                layers.PrimaryLayer().Element(e =>
+                                {
+                                    if (!string.IsNullOrEmpty(diseno.PlantillaFrenteBase64))
                                     {
-                                        var photoData = student.PhotoBase64.Contains(",") ? student.PhotoBase64.Split(',')[1] : student.PhotoBase64;
-                                        layers.Layer()
-                                            .PaddingLeft(diseno.FotoX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                            .PaddingTop(diseno.FotoY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                            .Width(diseno.FotoW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                            .Height(diseno.FotoH, QuestPDF.Infrastructure.Unit.Millimetre)
-                                            .Image(Convert.FromBase64String(photoData)).FitArea();
+                                        var base64Data = diseno.PlantillaFrenteBase64.Contains(",") ? diseno.PlantillaFrenteBase64.Split(',')[1] : diseno.PlantillaFrenteBase64;
+                                        e.Image(Convert.FromBase64String(base64Data)).FitArea();
                                     }
-
-                                    // 3. Bloque de Nombre Completo
-                                    layers.Layer()
-                                        .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Column(c =>
-                                        {
-                                            c.Item().Text("ALUMNO(A):").FontSize(6).Bold().FontColor("#003366");
-                                            c.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}".Trim()).FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                        });
-
-                                    // 4. Bloque de Datos (Matrícula, Curso, Vigencia)
-                                    layers.Layer()
-                                        .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Column(c =>
-                                        {
-                                            c.Item().Text(t =>
-                                            {
-                                                t.Span("MATRÍCULA: ").FontSize(6).Bold().FontColor("#003366");
-                                                t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                            });
-                                            c.Item().Text(t =>
-                                            {
-                                                t.Span("CURSO: ").FontSize(6).Bold().FontColor("#003366");
-                                                t.Span(alumnoVM.CourseName).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                            });
-                                            c.Item().Text(t =>
-                                            {
-                                                t.Span("VIGENCIA: ").FontSize(6).Bold().FontColor("#003366");
-                                                t.Span(vigenciaInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                            });
-                                        });
+                                    else
+                                    {
+                                        e.Background(QuestPDF.Helpers.Colors.White);
+                                    }
                                 });
 
-                            // Espacio central (opcional) de 2 mm para separar o facilitar el recorte/doblado
-                            credencialCompleta.ConstantItem(2, QuestPDF.Infrastructure.Unit.Millimetre);
-
-                            // =====================================
-                            // REVERSO (ATRÁS) 86x54 mm
-                            // =====================================
-                            credencialCompleta.ConstantItem(86, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
-                                .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
-                                .Layers(layers =>
+                                if (fotoBytes != null)
                                 {
-                                    // 1. Fondo de Plantilla Reverso
-                                    layers.PrimaryLayer().Element(e =>
+                                    layers.Layer()
+                                        .PaddingLeft(diseno.FotoX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .PaddingTop(diseno.FotoY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Width(diseno.FotoW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Height(diseno.FotoH, QuestPDF.Infrastructure.Unit.Millimetre)
+                                        .Image(fotoBytes).FitArea();
+                                }
+
+                                layers.Layer()
+                                    .PaddingLeft(diseno.NombreX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .PaddingTop(diseno.NombreY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Column(c =>
                                     {
-                                        if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
-                                        {
-                                            var base64Data = diseno.PlantillaReversoBase64.Contains(",") ? diseno.PlantillaReversoBase64.Split(',')[1] : diseno.PlantillaReversoBase64;
-                                            e.Image(Convert.FromBase64String(base64Data)).FitArea();
-                                        }
-                                        else
-                                        {
-                                            e.Background(QuestPDF.Helpers.Colors.White);
-                                        }
+                                        c.Item().Text("ALUMNO(A):").FontSize(6).Bold().FontColor("#003366");
+                                        c.Item().Text($"{student.Name} {student.PaternalLastName} {student.MaternalLastName}".Trim()).FontSize(9).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
                                     });
 
-                                    // 2. Línea de Firma
-                                    layers.Layer()
-                                        .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.FirmaLineaY, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Height(0.5f, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Background(QuestPDF.Helpers.Colors.Black);
-
-                                    // 3. Textos de Firma (Nombre Director y Cargo)
-                                    layers.Layer()
-                                        .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .PaddingTop(diseno.FirmaLineaY + 1, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
-                                        .Column(c =>
+                                layers.Layer()
+                                    .PaddingLeft(diseno.MatriculaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .PaddingTop(diseno.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Column(c =>
+                                    {
+                                        c.Item().Text(t =>
                                         {
-                                            c.Item().AlignCenter().Text(directorInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
-                                            c.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Black);
+                                            t.Span("MATRÍCULA: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(student.Id != null && student.Id.Length > 6 ? student.Id.Substring(0, 6).ToUpper() : "000000").FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
                                         });
+                                        c.Item().Text(t =>
+                                        {
+                                            t.Span("CURSO: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(alumnoVM.CourseName).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                        c.Item().Text(t =>
+                                        {
+                                            t.Span("VIGENCIA: ").FontSize(6).Bold().FontColor("#003366");
+                                            t.Span(vigenciaInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        });
+                                    });
+                            });
+
+                        // =====================================
+                        // REVERSO (ATRÁS) 86x54 mm
+                        // =====================================
+                        grid.Item().Width(86, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Height(54, QuestPDF.Infrastructure.Unit.Millimetre)
+                            .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Layers(layers =>
+                            {
+                                layers.PrimaryLayer().Element(e =>
+                                {
+                                    if (!string.IsNullOrEmpty(diseno.PlantillaReversoBase64))
+                                    {
+                                        var base64Data = diseno.PlantillaReversoBase64.Contains(",") ? diseno.PlantillaReversoBase64.Split(',')[1] : diseno.PlantillaReversoBase64;
+                                        e.Image(Convert.FromBase64String(base64Data)).FitArea();
+                                    }
+                                    else
+                                    {
+                                        e.Background(QuestPDF.Helpers.Colors.White);
+                                    }
                                 });
-                        });
+
+                                layers.Layer()
+                                    .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .PaddingTop(diseno.FirmaLineaY, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Height(0.5f, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Background(QuestPDF.Helpers.Colors.Black);
+
+                                layers.Layer()
+                                    .PaddingLeft(diseno.FirmaLineaX, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .PaddingTop(diseno.FirmaLineaY + 1, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Width(diseno.FirmaLineaW, QuestPDF.Infrastructure.Unit.Millimetre)
+                                    .Column(c =>
+                                    {
+                                        c.Item().AlignCenter().Text(directorInput).FontSize(7).Bold().FontColor(QuestPDF.Helpers.Colors.Black);
+                                        c.Item().AlignCenter().Text("DIRECTOR DEL PLANTEL").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Black);
+                                    });
+                            });
                     }
                 });
             });
         }).GeneratePdf();
     }
 
-    // --- MÉTODOS PESTAÑA 3 (CALIBRACIÓN) ---
     private async Task SubirFrente(InputFileChangeEventArgs e) => diseno.PlantillaFrenteBase64 = await ConvertToBase64(e.File);
     private async Task SubirReverso(InputFileChangeEventArgs e) => diseno.PlantillaReversoBase64 = await ConvertToBase64(e.File);
 
