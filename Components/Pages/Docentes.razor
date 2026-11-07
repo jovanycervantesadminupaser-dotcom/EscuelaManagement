@@ -353,7 +353,6 @@
     private IEnumerable<Teacher> DocentesFiltradosLote => listaDocentes.Where(x => 
         (string.IsNullOrEmpty(searchStringLote) || $"{(x.NombreCompleto ?? "")}".Contains(searchStringLote, StringComparison.OrdinalIgnoreCase)));
 
-
     protected override async Task OnInitializedAsync()
     {
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -580,7 +579,9 @@
 
                         inlined.Item().Row(credencialCompleta => 
                         {
-                            // ANVERSO
+                            // =====================================
+                            // ANVERSO (FRENTE) VERTICAL 5.4 x 8.6 cm
+                            // =====================================
                             credencialCompleta.ConstantItem(5.4f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Height(8.6f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
@@ -611,18 +612,27 @@
                                         }
                                     });
 
+                                    // Textos: Nombre, Especialidad e ID integrados
                                     col.Item().PaddingTop(5).PaddingHorizontal(5).Column(c =>
                                     {
+                                        // Nombre
                                         c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
+                                        // Especialidad
                                         c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                                        
+                                        // Contenedor gris sutil para el ID (Justo debajo de la especialidad)
+                                        c.Item().PaddingTop(5).Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
+                                            .PaddingVertical(2).AlignCenter()
+                                            .Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}")
+                                            .FontSize(6).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                     });
-
-                                    col.Item().PaddingTop(10).Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text($"ID: {docente.Id.Substring(0, 8).ToUpperInvariant()}").FontSize(5).FontColor(QuestPDF.Helpers.Colors.Grey.Darken2);
                                 });
 
                             credencialCompleta.ConstantItem(2, QuestPDF.Infrastructure.Unit.Millimetre);
 
-                            // REVERSO
+                            // =====================================
+                            // REVERSO (ATRÁS) VERTICAL 5.4 x 8.6 cm
+                            // =====================================
                             credencialCompleta.ConstantItem(5.4f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Height(8.6f, QuestPDF.Infrastructure.Unit.Centimetre)
                                 .Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
@@ -648,11 +658,17 @@
                                             });
                                         });
 
-                                        col.Item().PaddingTop(3.5f, QuestPDF.Infrastructure.Unit.Centimetre).PaddingHorizontal(5).Column(c =>
+                                        col.Item().PaddingTop(5).AlignCenter().Text("VIGENCIA: 2026 - 2027").FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+
+                                        col.Item().ExtendVertical();
+
+                                        col.Item().PaddingHorizontal(5).PaddingBottom(5).Column(c =>
                                         {
                                             c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
                                             c.Item().PaddingTop(2).Text("DIRECCIÓN ACADÉMICA").Bold().FontSize(6).AlignCenter();
                                         });
+
+                                        col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4).Height(0.8f, QuestPDF.Infrastructure.Unit.Centimetre).AlignCenter().AlignMiddle().Text("Esta credencial es personal e intransferible y debe de ser portada obligatoriamente.").FontSize(3.5f).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3).AlignCenter();
                                     });
                                 });
                         });
