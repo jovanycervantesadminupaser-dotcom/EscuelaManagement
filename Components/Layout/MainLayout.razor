@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 @using MudBlazor
 @using EscuelaManagement.Data.Models
 @using EscuelaManagement.Data.Services
@@ -10,86 +11,104 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<!-- CORTINILLA DE CIERRE DE SESIÓN M3 -->
-<MudOverlay Visible="@cerrandoSesion" DarkBackground="true" Absolute="false" ZIndex="9999" Class="backdrop-blur-logout">
-    <MudPaper Elevation="0" Class="d-flex flex-column align-center justify-center text-center logout-loader-card">
-        <div class="logout-ring-container mb-5">
-            <MudProgressCircular Color="Color.Error" Indeterminate="true" Size="Size.Large" StrokeWidth="4" />
-        </div>
-        <MudText Typo="Typo.h5" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -0.5px;">
-            Cerrando sesión...
-        </MudText>
-        <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">
-            Por favor, espere.
-        </MudText>
-    </MudPaper>
-</MudOverlay>
+<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged">
 
-<MudLayout>
-    
-    <!-- BARRA SUPERIOR (Appbar Blanca/Oscura) -->
-    <MudAppBar Elevation="1" Color="Color.Surface" Fixed="true">
-        
-        <!-- Usamos Color="Color.Default" para que los iconos se adapten solos (Gris en modo claro, Blanco en oscuro) -->
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Default" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        
-        <!-- Título de la escuela -->
-        <MudText Typo="Typo.h6" Class="ml-3 font-weight-bold" Color="Color.Primary">@nombreEscuela</MudText>
-        
-        <MudSpacer />
-        
-        <!-- Botón de Modo Oscuro con Color="Color.Default" -->
-        <MudToggleIconButton @bind-Toggled="@_isDarkMode"
-                             Icon="@Icons.Material.Filled.DarkMode" Color="Color.Default" Title="Activar Modo Oscuro"
-                             ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" ToggledTitle="Activar Modo Claro" 
-                             Class="mr-4" />
-
-        <MudButton T="string" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" Size="Size.Small" OnClick="CerrarSesion" Disabled="@cerrandoSesion">
-            Salir
-        </MudButton>
-    </MudAppBar>
-
-    <!-- MENÚ LATERAL (Sidebar Azul) -->
-    <!-- Estilo forzado para bloquear el fondo azul sin importar el tema -->
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Docked" Class="modern-sidebar" Fixed="true" Style="background-color: #003366 !important; overflow-x: hidden !important;">
-        
-        <!-- Espacio en la parte superior del menú -->
-        <div class="mt-4 mb-2 px-4">
-             <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px;">MENÚ PRINCIPAL</MudText>
-        </div>
-        
-        <NavMenu />
-    </MudDrawer>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-6 pb-12">
-            <div @key="Navigation.Uri" class="@claseAnimacion">
-                @Body
+    <!-- CORTINILLA DE CIERRE DE SESIÓN M3 -->
+    <MudOverlay Visible="@cerrandoSesion" DarkBackground="true" Absolute="false" ZIndex="9999" Class="backdrop-blur-logout">
+        <MudPaper Elevation="0" Class="d-flex flex-column align-center justify-center text-center logout-loader-card">
+            <div class="logout-ring-container mb-5">
+                <MudProgressCircular Color="Color.Error" Indeterminate="true" Size="Size.Large" StrokeWidth="4" />
             </div>
-        </MudContainer>
-    </MudMainContent>
+            <MudText Typo="Typo.h5" Class="font-weight-bold mb-1" Style="color: var(--mud-palette-text-primary); letter-spacing: -0.5px;">
+                Cerrando sesión...
+            </MudText>
+            <MudText Typo="Typo.body1" Style="color: var(--mud-palette-text-secondary);">
+                Por favor, espere.
+            </MudText>
+        </MudPaper>
+    </MudOverlay>
 
-    <!-- BOTÓN FLOTANTE DE ACCIÓN RÁPIDA (FAB) -->
-    <div style="position: fixed; bottom: 30px; right: 30px; z-index: 9999;">
-        <MudMenu @bind-Open="_fabOpen" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
-            <ActivatorContent>
-                <MudFab Color="Color.Secondary" 
-                        StartIcon="@Icons.Material.Filled.Add" 
-                        Size="Size.Large" 
-                        Elevation="4" 
-                        OnClick="@(() => _fabOpen = !_fabOpen)" />
-            </ActivatorContent>
-            <ChildContent>
-                <MudMenuItem Href="/pagos" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" OnClick="@(() => _fabOpen = false)">Cobro Rápido</MudMenuItem>
-                <MudMenuItem Href="/inscripciones" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Info" OnClick="@(() => _fabOpen = false)">Inscribir Alumno</MudMenuItem>
-            </ChildContent>
-        </MudMenu>
-    </div>
-</MudLayout>
+    <MudLayout>
+        
+        <!-- BARRA SUPERIOR (Appbar Blanca/Oscura) -->
+        <MudAppBar Elevation="1" Color="Color.Surface" Fixed="true">
+            
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Default" Edge="Edge.Start" OnClick="@DrawerToggle" />
+            
+            <!-- Título completo en PC / Tablet -->
+            <MudText Typo="Typo.h6" Class="ml-3 font-weight-bold d-none d-md-flex text-truncate" Color="Color.Primary">
+                @nombreEscuela
+            </MudText>
+            <!-- Título compacto en Celular -->
+            <MudText Typo="Typo.h6" Class="ml-2 font-weight-bold d-flex d-md-none" Color="Color.Primary">
+                UPASER
+            </MudText>
+            
+            <MudSpacer />
+            
+            <!-- Botón de Modo Oscuro -->
+            <MudToggleIconButton @bind-Toggled="@_isDarkMode"
+                                 Icon="@Icons.Material.Filled.DarkMode" Color="Color.Default" Title="Activar Modo Oscuro"
+                                 ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" ToggledTitle="Activar Modo Claro" 
+                                 Class="mr-1 mr-sm-3" />
+
+            <!-- Botón Salir completo (PC / Tablet) -->
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" Size="Size.Small" OnClick="CerrarSesion" Disabled="@cerrandoSesion" Class="d-none d-sm-flex">
+                Salir
+            </MudButton>
+            <!-- Botón Salir compacto (Celular) -->
+            <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Error" Size="Size.Medium" OnClick="CerrarSesion" Disabled="@cerrandoSesion" Class="d-flex d-sm-none" />
+        </MudAppBar>
+
+        <!-- MENÚ LATERAL RESPONSIVO (Sidebar Azul) -->
+        <MudDrawer @bind-Open="_drawerOpen"
+                   Variant="DrawerVariant.Responsive"
+                   Breakpoint="Breakpoint.Md"
+                   Elevation="2"
+                   ClipMode="DrawerClipMode.Docked"
+                   Class="modern-sidebar"
+                   Fixed="true"
+                   Style="background-color: #003366 !important; overflow-x: hidden !important;">
+            
+            <div class="mt-4 mb-2 px-4">
+                <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px;">MENÚ PRINCIPAL</MudText>
+            </div>
+            
+            <NavMenu />
+        </MudDrawer>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-4 pt-md-6 pb-16 px-2 px-sm-4 px-md-6">
+                <div @key="Navigation.Uri" class="@claseAnimacion">
+                    @Body
+                </div>
+            </MudContainer>
+        </MudMainContent>
+
+        <!-- BOTÓN FLOTANTE DE ACCIÓN RÁPIDA (FAB) -->
+        <div class="fab-container">
+            <MudMenu @bind-Open="_fabOpen" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                <ActivatorContent>
+                    <MudFab Color="Color.Secondary" 
+                            StartIcon="@Icons.Material.Filled.Add" 
+                            Size="@(_isMobile ? Size.Medium : Size.Large)" 
+                            Elevation="4" 
+                            OnClick="@(() => _fabOpen = !_fabOpen)" />
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem Href="/pagos" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" OnClick="@(() => _fabOpen = false)">Cobro Rápido</MudMenuItem>
+                    <MudMenuItem Href="/inscripciones" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Info" OnClick="@(() => _fabOpen = false)">Inscribir Alumno</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </div>
+    </MudLayout>
+
+</MudBreakpointProvider>
 
 @code {
     private bool _drawerOpen = true;
+    private bool _isMobile = false;
     private string nombreEscuela = "Cargando...";
     private string claseAnimacion = "fade-in-up";
     private bool cerrandoSesion = false;
@@ -98,7 +117,6 @@
     private bool _fabOpen = false;
     private MudThemeProvider _mudThemeProvider = default!;
 
-    // Mantenemos tu tema personalizado (Aquí el Background controla el fondo de toda la app)
     private readonly MudTheme _themeCustom = new()
     {
         PaletteLight = new PaletteLight()
@@ -106,7 +124,7 @@
             Primary = "#003366",      
             Secondary = "#0099B8",    
             Success = "#76C043",      
-            Background = "#F3F4F6", /* Gris muy claro para el fondo en modo claro */
+            Background = "#F3F4F6",
             Surface = "#FFFFFF",      
             AppbarBackground = "#FFFFFF" 
         },
@@ -115,7 +133,7 @@
             Primary = "#0099B8",      
             Secondary = "#76C043",    
             Success = "#76C043",
-            Background = "#121824", /* Azul marino casi negro para modo oscuro */
+            Background = "#121824",
             Surface = "#1A2332",      
             AppbarBackground = "#1A2332",
             TextPrimary = "#ECEFF1",   
@@ -125,14 +143,33 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Navigation.LocationChanged += OnLocationChanged;
+
         try
         {
             var configuracion = await Firebase.GetConfiguracionAsync();
-            nombreEscuela = !string.IsNullOrEmpty(configuracion.NombreEscuela) ? configuracion.NombreEscuela : "EscuelaManager";
+            nombreEscuela = !string.IsNullOrEmpty(configuracion?.NombreEscuela) ? configuracion.NombreEscuela : "EscuelaManager";
         }
         catch
         {
             nombreEscuela = "EscuelaManager";
+        }
+    }
+
+    private void OnBreakpointChanged(Breakpoint breakpoint)
+    {
+        _isMobile = breakpoint <= Breakpoint.Sm;
+        _drawerOpen = !_isMobile;
+        StateHasChanged();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Cierra el menú automáticamente al navegar desde un celular
+        if (_isMobile && _drawerOpen)
+        {
+            _drawerOpen = false;
+            StateHasChanged();
         }
     }
 
@@ -152,10 +189,30 @@
         await Task.Delay(600);
         Navigation.NavigateTo("/");
     }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
 }
 
-<!-- ESTILOS PARA CORTINILLA Y AISLAMIENTO DEL MENÚ -->
+<!-- ESTILOS PARA CORTINILLA, FAB Y AISLAMIENTO DEL MENÚ -->
 <style>
+    /* Posición adaptable del botón flotante */
+    .fab-container {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 1200;
+    }
+
+    @@media (max-width: 600px) {
+        .fab-container {
+            bottom: 16px;
+            right: 16px;
+        }
+    }
+
     /* Efecto cristal esmerilado para la cortinilla de salida */
     .backdrop-blur-logout .mud-overlay-scrim {
         backdrop-filter: blur(8px) !important;
@@ -166,10 +223,10 @@
     .logout-loader-card {
         background-color: var(--mud-palette-surface) !important;
         border-radius: 32px !important;
-        padding: 2.5rem 3rem !important;
+        padding: 2.2rem 2rem !important;
         border: 1px solid var(--mud-palette-lines-default);
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
-        min-width: 320px;
+        width: min(90vw, 340px);
         animation: popInLogout 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
@@ -193,7 +250,7 @@
         background-color: #003366 !important;
     }
 
-    /* Forzamos el texto y los iconos a color blanco con ligera transparencia */
+    /* Texto e iconos en blanco con ligera transparencia */
     body .modern-sidebar .mud-nav-link .mud-nav-link-text,
     body .modern-sidebar .mud-nav-link .mud-icon-root,
     body .modern-sidebar .mud-nav-group > .mud-nav-link .mud-nav-link-text,
@@ -202,7 +259,7 @@
         opacity: 0.85 !important;
     }
 
-    /* Efecto Hover (Al pasar el ratón): Blanco puro y fondo iluminado */
+    /* Efecto Hover */
     body .modern-sidebar .mud-nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1) !important;
     }
@@ -212,7 +269,7 @@
         opacity: 1 !important;
     }
 
-    /* Enlace Activo (Donde está el usuario): Blanco puro, negritas y fondo más claro */
+    /* Enlace Activo */
     body .modern-sidebar .mud-nav-link.active {
         background-color: rgba(255, 255, 255, 0.2) !important;
     }
