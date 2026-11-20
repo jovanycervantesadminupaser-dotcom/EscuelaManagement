@@ -10,6 +10,9 @@ namespace EscuelaManagement.Data.Models
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [FirestoreProperty]
+        public string NumeroEmpleado { get; set; } = string.Empty;
+
+        [FirestoreProperty]
         public string NombreCompleto { get; set; } = string.Empty;
 
         // --- Nuevos campos de Domicilio ---

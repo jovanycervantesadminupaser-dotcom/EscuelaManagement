@@ -1,4 +1,5 @@
 @page "/control-escolar/docentes"
+@namespace EscuelaManagement.Components.Pages
 @rendermode RenderMode.InteractiveServer
 @using MudBlazor
 @using System.IO
@@ -53,8 +54,11 @@
                             <MudItem xs="12" md="6">
                                 <MudTextField @bind-Value="nuevoDocente.EspecialidadCarrera" Label="Especialidad o Carrera" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. Lic. en Matemáticas" Required="true" RequiredError="Requerido" />
                             </MudItem>
-                            <MudItem xs="12">
+                            <MudItem xs="12" md="6">
                                 <MudTextField @bind-Value="nuevoDocente.UniversidadEgreso" Label="Universidad de Egreso" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. UNAM, IPN" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="nuevoDocente.NumeroEmpleado" Label="Número de Empleado" Variant="Variant.Outlined" Class="modern-input" Placeholder="Ej. EMP-001" />
                             </MudItem>
 
                             <!-- Domicilio Detallado -->
@@ -193,7 +197,13 @@
                                     {
                                         <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">@docente.NombreCompleto.FirstOrDefault()</MudAvatar>
                                     }
-                                    <MudText Typo="Typo.body1" Class="font-weight-bold">@docente.NombreCompleto</MudText>
+                                    <div>
+                                        <MudText Typo="Typo.body1" Class="font-weight-bold">@docente.NombreCompleto</MudText>
+                                        @if (!string.IsNullOrWhiteSpace(docente.NumeroEmpleado))
+                                        {
+                                            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">No. Empleado: @docente.NumeroEmpleado</MudText>
+                                        }
+                                    </div>
                                 </div>
                             </MudTd>
                             <MudTd DataLabel="Especialidad">
@@ -338,8 +348,8 @@
                             <MudExpansionPanel Text="Textos Frente" Class="font-weight-bold m3-panel mb-3">
                                 <MudNumericField @bind-Value="disenoDocente.NombreX" Label="Nombre X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
                                 <MudNumericField @bind-Value="disenoDocente.NombreY" Label="Nombre Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField @bind-Value="disenoDocente.MatriculaX" Label="ID Docente X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
-                                <MudNumericField @bind-Value="disenoDocente.MatriculaY" Label="ID Docente Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
+                                <MudNumericField @bind-Value="disenoDocente.MatriculaX" Label="No. Empleado X" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input mb-3" />
+                                <MudNumericField @bind-Value="disenoDocente.MatriculaY" Label="No. Empleado Y" Format="0.0" Step="0.5f" Variant="Variant.Outlined" Margin="Margin.Dense" Class="modern-input" />
                             </MudExpansionPanel>
 
                             <MudExpansionPanel Text="Reverso (Firma)" Class="font-weight-bold m3-panel">
@@ -378,9 +388,9 @@
                                         <span style="font-size: 8px; color: #0284c7; font-weight: bold; line-height: 1.2;">ESPECIALIDAD / CARRERA</span>
                                     </div>
                                     
-                                    @* Bloque ID Docente *@
+                                    @* Bloque Número de Empleado *@
                                     <div style="position: absolute; left: @Px(disenoDocente.MatriculaX); top: @Px(disenoDocente.MatriculaY); right: 8px; z-index: 5; text-align: center;">
-                                        <span style="font-size: 8px; color: #333; font-weight: bold;">ID: 00000000</span>
+                                        <span style="font-size: 8px; color: #333; font-weight: bold;">NO. EMPLEADO: 000001</span>
                                     </div>
                                 </div>
                                 
@@ -388,7 +398,7 @@
                                     <MudButton HtmlTag="label" for="frenteDocenteFile" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload" Class="rounded-xl font-weight-bold px-5 py-2 hover-lift" Style="text-transform: none; border-width: 2px;">Cargar Anverso</MudButton>
                                     @if (!string.IsNullOrEmpty(disenoDocente.PlantillaFrenteBase64))
                                     {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => disenoDocente.PlantillaFrenteBase64 = string.Empty" Title="Quitar plantilla" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => disenoDocente.PlantillaFrenteBase64 = string.Empty" title="Quitar plantilla" />
                                     }
                                 </div>
                                 <InputFile id="frenteDocenteFile" OnChange="SubirFrenteDocente" style="display:none" accept=".jpg,.jpeg,.png"/>
@@ -560,6 +570,7 @@
         nuevoDocente = new Teacher
         {
             Id = docente.Id,
+            NumeroEmpleado = docente.NumeroEmpleado,
             NombreCompleto = docente.NombreCompleto,
             Calle = docente.Calle,
             NumeroExterior = docente.NumeroExterior,
@@ -767,9 +778,11 @@
                     foreach (var docente in docentesAImprimir)
                     {
                         byte[]? fotoBytes = ExtraerBytesBase64(docente.FotoBase64);
-                        var idCorto = !string.IsNullOrEmpty(docente.Id) && docente.Id.Length >= 8
-                            ? docente.Id.Substring(0, 8).ToUpperInvariant()
-                            : (docente.Id ?? "00000000").ToUpperInvariant();
+                        var numeroMostrar = !string.IsNullOrWhiteSpace(docente.NumeroEmpleado)
+                            ? docente.NumeroEmpleado.Trim().ToUpperInvariant()
+                            : (!string.IsNullOrEmpty(docente.Id) && docente.Id.Length >= 8
+                                ? docente.Id.Substring(0, 8).ToUpperInvariant()
+                                : (docente.Id ?? "S/N").ToUpperInvariant());
 
                         inlined.Item().Row(credencialCompleta => 
                         {
@@ -813,7 +826,7 @@
                                                 .PaddingRight(2, QuestPDF.Infrastructure.Unit.Millimetre)
                                                 .PaddingTop(disenoDocente.MatriculaY, QuestPDF.Infrastructure.Unit.Millimetre)
                                                 .AlignCenter()
-                                                .Text($"ID: {idCorto}")
+                                                .Text($"NO. EMPLEADO: {numeroMostrar}")
                                                 .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                         });
                                     }
@@ -857,12 +870,12 @@
                                                 });
                                             });
 
-                                            // Capa inferior: ID anclado estrictamente al borde inferior
+                                            // Capa inferior: Número de Empleado anclado estrictamente al borde inferior
                                             layers.Layer().AlignBottom()
                                                 .Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
                                                 .Height(7, QuestPDF.Infrastructure.Unit.Millimetre)
                                                 .AlignCenter().AlignMiddle()
-                                                .Text($"ID: {idCorto}")
+                                                .Text($"NO. EMPLEADO: {numeroMostrar}")
                                                 .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                         });
                                     }
