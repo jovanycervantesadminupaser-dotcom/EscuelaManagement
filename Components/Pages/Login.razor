@@ -16,105 +16,295 @@
         width: 100vw;
         margin: 0;
         padding: 0;
-        background-color: #f1f5f9;
+        background-color: #f8fafc;
+        overflow: hidden;
     }
-    
+
     /* ========================================================
-       LADO IZQUIERDO: FOTOGRAFÍA CON OVERLAY
+       LADO IZQUIERDO: FOTO ANIMADA + GLASSMORPHISM
        ======================================================== */
     .login-left-side {
         width: 50%;
         position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 3rem;
+        background: linear-gradient(135deg, #003366 0%, #0f172a 100%);
+    }
+
+    .bg-ken-burns {
+        position: absolute;
+        inset: -5%;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        animation: kenBurnsZoom 22s ease-in-out infinite alternate;
+        z-index: 0;
     }
-    
+
+    @@keyframes kenBurnsZoom {
+        0% { transform: scale(1) translate(0, 0); }
+        100% { transform: scale(1.09) translate(-1%, -1%); }
+    }
+
     .login-left-side .overlay {
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.70) 100%);
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0, 51, 102, 0.88) 0%, rgba(15, 23, 42, 0.78) 55%, rgba(6, 182, 212, 0.65) 100%);
         z-index: 1;
     }
 
-    .left-content {
+    .left-top-badge,
+    .left-content,
+    .left-bottom-pills {
+        position: relative;
         z-index: 2;
+        width: 100%;
+    }
+
+    .glass-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: #ffffff;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #34d399;
+        box-shadow: 0 0 10px #34d399;
+        animation: pulseDot 2s infinite;
+    }
+
+    @@keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.25); }
+    }
+
+    .left-content {
         text-align: center;
         color: white;
-        padding: 2rem;
+        max-width: 480px;
+        animation: fadeInUp 0.7s ease-out forwards;
     }
-    
+
+    .glass-logo-box {
+        width: 112px;
+        height: 112px;
+        margin: 0 auto 1.5rem auto;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .glass-logo-box:hover {
+        transform: translateY(-4px) scale(1.04);
+    }
+
+    .glass-logo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 6px;
+    }
+
+    .left-bottom-pills {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .feature-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(10px);
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.78rem;
+        font-weight: 500;
+    }
+
     /* ========================================================
-       LADO DERECHO: TARJETA M3 Y ANIMACIONES VÍVIDAS
+       LADO DERECHO: AMBIENTE CON HALOS + TARJETA M3
        ======================================================== */
     .login-right-side {
         width: 50%;
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 2rem;
         background-color: #f8fafc;
+        overflow: hidden;
     }
 
-    /* Tarjeta Flotante con sombra más profunda */
+    .ambient-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(85px);
+        opacity: 0.45;
+        pointer-events: none;
+        z-index: 0;
+        animation: floatBlob 12s ease-in-out infinite alternate;
+    }
+
+    .blob-1 {
+        width: 340px;
+        height: 340px;
+        background: #38bdf8;
+        top: -90px;
+        right: -90px;
+    }
+
+    .blob-2 {
+        width: 300px;
+        height: 300px;
+        background: #6366f1;
+        bottom: -90px;
+        left: -70px;
+        animation-delay: -5s;
+    }
+
+    @@keyframes floatBlob {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(20px, -20px) scale(1.08); }
+    }
+
     .m3-login-card {
+        position: relative;
+        z-index: 2;
         max-width: 460px;
         width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 32px !important;
         padding: 3rem 2.5rem;
-        box-shadow: 0 25px 50px -12px rgba(30, 27, 75, 0.15);
-        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    /* --- ANIMACIONES EN LOS INPUTS (EFECTO POP-OUT) --- */
+    .stagger-1 { animation: fadeInUp 0.55s ease-out 0.08s both; }
+    .stagger-2 { animation: fadeInUp 0.55s ease-out 0.16s both; }
+    .stagger-3 { animation: fadeInUp 0.55s ease-out 0.24s both; }
+    .stagger-4 { animation: fadeInUp 0.55s ease-out 0.32s both; }
+
+    @@keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(18px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Animación de sacudida cuando hay error de credenciales */
+    .animacion-error {
+        animation: shakeError 0.45s cubic-bezier(.36, .07, .19, .97) both !important;
+    }
+
+    @@keyframes shakeError {
+        10%, 90% { transform: translateX(-2px); }
+        20%, 80% { transform: translateX(4px); }
+        30%, 50%, 70% { transform: translateX(-6px); }
+        40%, 60% { transform: translateX(6px); }
+    }
+
+    /* --- ANIMACIONES EN LOS INPUTS --- */
     .modern-input .mud-input-outlined-border {
         border: 2px solid transparent !important;
         transition: all 0.3s ease-in-out;
     }
-    
+
     .modern-input .mud-input {
         background-color: #f1f5f9 !important;
         border-radius: 16px !important;
         color: #0f172a !important;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; 
-    }
-    
-    .modern-input .mud-input-slot {
-        padding: 16px 14px !important; 
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     }
 
-    /* Estado cuando el usuario hace clic (Focus) */
+    .modern-input .mud-input-slot {
+        padding: 15px 14px !important;
+    }
+
     .modern-input .mud-input.mud-input-focused {
         background-color: #ffffff !important;
-        transform: scale(1.03) translateY(-2px);
-        box-shadow: 0 14px 25px -8px rgba(59, 130, 246, 0.35) !important;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 14px 25px -8px rgba(14, 165, 233, 0.3) !important;
     }
-    
+
     .modern-input .mud-input.mud-input-focused .mud-input-outlined-border {
-        border-color: #3b82f6 !important;
+        border-color: #0ea5e9 !important;
         background-color: transparent !important;
     }
 
-    /* --- ANIMACIÓN EN EL BOTÓN PRINCIPAL (VIVID GRADIENT) --- */
+    /* --- BOTÓN PRINCIPAL CON SHIMMER Y FLECHA ANIMADA --- */
     .btn-vivid {
-        background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #003366 0%, #2563eb 50%, #06b6d4 100%) !important;
         background-size: 200% auto !important;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
         border: none !important;
     }
-    
+
+    .btn-vivid::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+        transition: left 0.65s ease;
+    }
+
+    .btn-vivid:hover::after {
+        left: 140%;
+    }
+
     .btn-vivid:hover {
         background-position: right center !important;
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 30px -8px rgba(6, 182, 212, 0.5) !important;
+        transform: translateY(-3px) scale(1.015);
+        box-shadow: 0 20px 30px -8px rgba(14, 165, 233, 0.45) !important;
+    }
+
+    .btn-vivid .btn-arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-vivid:hover .btn-arrow {
+        transform: translateX(5px);
     }
 
     /* ========================================================
-       CORTINILLA DE CARGA M3 EXPRESSIVE (OVERLAY)
+       CORTINILLA DE CARGA M3 EXPRESSIVE
        ======================================================== */
     .backdrop-blur .mud-overlay-scrim {
         backdrop-filter: blur(8px) !important;
@@ -135,7 +325,7 @@
     .loader-ring-container {
         padding: 18px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -149,27 +339,24 @@
     /* Diseño Responsivo */
     @@media (max-width: 960px) {
         .login-left-side {
-            display: none !important; 
+            display: none !important;
         }
         .login-right-side {
             width: 100%;
-            background-color: #ffffff;
         }
         .m3-login-card {
-            box-shadow: none;
-            border: none;
-            padding: 2rem 1.5rem;
+            padding: 2.2rem 1.5rem;
         }
     }
 
     /* Animación de salida */
     .animacion-salida {
-        animation: fadeOutUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        animation: fadeOutUp 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
     }
 
     @@keyframes fadeOutUp {
         0% { opacity: 1; transform: translateY(0) scale(1); }
-        100% { opacity: 0; transform: translateY(-40px) scale(0.98); filter: blur(4px); }
+        100% { opacity: 0; transform: translateY(-35px) scale(0.98); filter: blur(4px); }
     }
 </style>
 
@@ -180,87 +367,139 @@
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" StrokeWidth="4" />
         </div>
         <MudText Typo="Typo.h5" Class="font-weight-bold mb-1" Style="color: #0f172a; letter-spacing: -0.5px;">
-            Iniciando sesión...
+            Verificando credenciales...
         </MudText>
-        <MudText Typo="Typo.body1" Style="color: #64748b;">
-            Por favor, espere.
+        <MudText Typo="Typo.body2" Style="color: #64748b;">
+            Preparando tu espacio de trabajo.
         </MudText>
     </MudPaper>
 </MudOverlay>
 
 <div class="login-wrapper @claseAnimacionSalida">
-    
-    <!-- Lado Izquierdo (Foto y Logo) -->
-    <div class="login-left-side" style="@(string.IsNullOrEmpty(backgroundLoginBase64) ? "background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);" : $"background-image: url('{backgroundLoginBase64}');")">
+
+    <!-- LADO IZQUIERDO: FOTO ANIMADA Y BRANDING -->
+    <div class="login-left-side">
+        @if (!string.IsNullOrEmpty(backgroundLoginBase64))
+        {
+            <div class="bg-ken-burns" style="background-image: url('@backgroundLoginBase64');"></div>
+        }
         <div class="overlay"></div>
+
+        <!-- Indicador Superior -->
+        <div class="left-top-badge d-flex justify-start">
+            <div class="glass-pill">
+                <span class="status-dot"></span>
+                <span>Sistema en línea · Ciclo @DateTime.Now.Year - @(DateTime.Now.Year + 1)</span>
+            </div>
+        </div>
+
+        <!-- Contenido Central -->
         <div class="left-content">
-            <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 5rem; color: white; opacity: 0.9;" Class="mb-4" />
-            <MudText Typo="Typo.h2" Class="font-weight-bold mb-2" Style="letter-spacing: -1px;">UPASER</MudText>
-            <MudText Typo="Typo.h5" Style="opacity: 0.85; font-weight: 300;">@nombreEscuela</MudText>
+            <div class="glass-logo-box">
+                @if (!string.IsNullOrEmpty(logoBase64))
+                {
+                    <img src="@logoBase64" alt="Logo Institucional" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.School" Style="font-size: 3.8rem; color: white;" />
+                }
+            </div>
+            <MudText Typo="Typo.h2" Class="font-weight-bold mb-2" Style="letter-spacing: -1px; text-shadow: 0 6px 20px rgba(0,0,0,0.25);">UPASER</MudText>
+            <MudText Typo="Typo.h6" Style="opacity: 0.9; font-weight: 300; line-height: 1.4;">@nombreEscuela</MudText>
+        </div>
+
+        <!-- Etiquetas Inferiores -->
+        <div class="left-bottom-pills">
+            <div class="feature-chip">
+                <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                <span>Credenciales PVC</span>
+            </div>
+            <div class="feature-chip">
+                <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" />
+                <span>Control Escolar</span>
+            </div>
+            <div class="feature-chip">
+                <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" />
+                <span>Cobranza y Pagos</span>
+            </div>
         </div>
     </div>
 
-    <!-- Lado Derecho (Tarjeta M3) -->
+    <!-- LADO DERECHO: TARJETA INTERACTIVA M3 -->
     <div class="login-right-side">
-        <div class="m3-login-card">
-            
-            <div class="mb-8 text-center">
-                <MudText Typo="Typo.h4" Class="font-weight-bold mb-2" Style="color: #0f172a; letter-spacing: -0.5px;">¡Hola, Bienvenido!</MudText>
+        <div class="ambient-blob blob-1"></div>
+        <div class="ambient-blob blob-2"></div>
+
+        <div class="m3-login-card @claseErrorShake">
+
+            <div class="mb-7 text-center stagger-1">
+                <MudChip T="string" Color="Color.Info" Variant="Variant.Text" Size="Size.Small" Class="mb-3 font-weight-bold px-3" Style="background-color: rgba(14, 165, 233, 0.1); color: #0284c7;">
+                    PORTAL ADMINISTRATIVO
+                </MudChip>
+                <MudText Typo="Typo.h4" Class="font-weight-bold mb-2" Style="color: #0f172a; letter-spacing: -0.5px;">@SaludoDinamico</MudText>
                 <MudText Typo="Typo.body2" Style="color: #64748b;">Ingresa tus credenciales para acceder al sistema escolar.</MudText>
             </div>
 
             <MudForm @ref="form" @bind-IsValid="@success">
-                
+
                 <!-- Campo: Correo Electrónico -->
-                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Correo Electrónico</MudText>
-                
-                <MudTextField T="string" @bind-Value="email" 
-                              Placeholder="ejemplo@correo.com" 
-                              Variant="Variant.Outlined" 
-                              Required="true" 
-                              RequiredError="El correo es obligatorio" 
-                              InputType="InputType.Email" 
-                              Adornment="Adornment.Start" 
-                              AdornmentIcon="@Icons.Material.Filled.Email" 
-                              Class="mb-6 modern-input" />
+                <div class="stagger-2">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Correo Electrónico</MudText>
+                    <MudTextField T="string" @bind-Value="email"
+                                  Placeholder="ejemplo@correo.com"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="El correo es obligatorio"
+                                  InputType="InputType.Email"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Email"
+                                  OnKeyUp="HandleKeyUp"
+                                  Class="mb-5 modern-input" />
+                </div>
 
                 <!-- Campo: Contraseña -->
-                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Contraseña</MudText>
-                
-                <MudTextField T="string" @bind-Value="password" 
-                              Placeholder="••••••••" 
-                              Variant="Variant.Outlined" 
-                              Required="true" 
-                              RequiredError="La contraseña es obligatoria" 
-                              InputType="@passwordInput" 
-                              Adornment="Adornment.End" 
-                              AdornmentIcon="@passwordInputIcon" 
-                              OnAdornmentClick="TogglePasswordVisibility" 
-                              AdornmentAriaLabel="Mostrar contraseña"
-                              Class="mb-2 modern-input" />
+                <div class="stagger-3">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 ml-1" Style="color: #334155;">Contraseña</MudText>
+                    <MudTextField T="string" @bind-Value="password"
+                                  Placeholder="••••••••"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="La contraseña es obligatoria"
+                                  InputType="@passwordInput"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Lock"
+                                  OnKeyUp="HandleKeyUp"
+                                  Class="mb-1 modern-input" />
+                </div>
             </MudForm>
 
-            <!-- Enlace: Olvidaste tu contraseña -->
-            <div class="d-flex justify-end mb-8 mt-3">
-                <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #3b82f6; cursor: pointer; text-decoration: none; font-weight: bold; transition: color 0.2s;" Class="hover:text-cyan-500">
-                    ¿Olvidaste Tu Contraseña?
+            <!-- Opciones: Mostrar contraseña / Recordarme y Recuperación -->
+            <div class="d-flex align-center justify-space-between mb-7 mt-2 stagger-3">
+                <MudCheckBox T="bool" Value="@isShow" ValueChanged="OnMostrarPasswordChanged" Label="Mostrar clave" Color="Color.Primary" Dense="true" Size="Size.Small" Style="color: #475569;" />
+                <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #0284c7; cursor: pointer; text-decoration: none; font-weight: bold;">
+                    ¿Olvidaste tu contraseña?
                 </MudLink>
             </div>
 
             <!-- Botón Principal Vívido -->
-            <MudButton T="string"
-                       OnClick="Ingresar" 
-                       Disabled="@(cargando || iniciandoSesion)"
-                       Variant="Variant.Filled" 
-                       Size="Size.Large" 
-                       FullWidth="true" 
-                       Class="rounded-xl py-4 font-weight-bold text-white shadow-md btn-vivid" 
-                       Style="font-size: 15px; letter-spacing: 0.5px;">
-                <MudText Class="font-weight-bold" Style="color: white;">INGRESAR AL SISTEMA</MudText>
-            </MudButton>
+            <div class="stagger-4">
+                <MudButton OnClick="Ingresar"
+                           Disabled="@(cargando || iniciandoSesion)"
+                           Variant="Variant.Filled"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           Class="rounded-xl py-4 font-weight-bold text-white shadow-md btn-vivid"
+                           Style="font-size: 15px; letter-spacing: 0.5px; text-transform: none;">
+                    <div class="d-flex align-center justify-center gap-2">
+                        <MudText Class="font-weight-bold" Style="color: white;">INGRESAR AL SISTEMA</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Class="btn-arrow" Style="color: white;" />
+                    </div>
+                </MudButton>
 
-            <div class="text-center mt-8">
-                <MudText Typo="Typo.caption" Style="color: #94a3b8;">UPASER. Todos los derechos reservados.</MudText>
+                <div class="text-center mt-8">
+                    <MudText Typo="Typo.caption" Style="color: #94a3b8;">© @DateTime.Now.Year UPASER · Todos los derechos reservados.</MudText>
+                </div>
             </div>
 
         </div>
@@ -274,13 +513,25 @@
     private MudForm form = default!;
     private string email = "";
     private string password = "";
-    private string nombreEscuela = "Cargando...";
+    private string nombreEscuela = "Unidad Profesional de Asesorías y Regularización";
     private string backgroundLoginBase64 = "";
+    private string logoBase64 = "";
     private string claseAnimacionSalida = "";
+    private string claseErrorShake = "";
 
-    private bool isShow;
+    private bool isShow = false;
     private InputType passwordInput = InputType.Password;
-    private string passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private string SaludoDinamico
+    {
+        get
+        {
+            var hora = DateTime.Now.Hour;
+            if (hora < 12) return "¡Buenos días!";
+            if (hora < 19) return "¡Buenas tardes!";
+            return "¡Buenas noches!";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -289,95 +540,104 @@
             var configuracion = await Firebase.GetConfiguracionAsync();
             if (configuracion != null)
             {
-                nombreEscuela = !string.IsNullOrEmpty(configuracion.NombreEscuela) ? configuracion.NombreEscuela : "EscuelaManager";
+                nombreEscuela = !string.IsNullOrEmpty(configuracion.NombreEscuela) ? configuracion.NombreEscuela : nombreEscuela;
                 backgroundLoginBase64 = configuracion.BackgroundLoginBase64 ?? "";
+                logoBase64 = configuracion.LogoBase64 ?? "";
             }
         }
         catch
         {
-            nombreEscuela = "EscuelaManager";
+            // Mantiene el valor predeterminado
         }
     }
 
-    private void TogglePasswordVisibility()
+    private void OnMostrarPasswordChanged(bool mostrar)
     {
-        if (isShow)
+        isShow = mostrar;
+        passwordInput = isShow ? InputType.Text : InputType.Password;
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !cargando && !iniciandoSesion)
         {
-            isShow = false;
-            passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            passwordInput = InputType.Password;
+            await Ingresar();
         }
-        else
-        {
-            isShow = true;
-            passwordInputIcon = Icons.Material.Filled.Visibility;
-            passwordInput = InputType.Text;
-        }
+    }
+
+    private async Task DispararErrorVisual()
+    {
+        claseErrorShake = "animacion-error";
+        StateHasChanged();
+        await Task.Delay(500);
+        claseErrorShake = "";
+        StateHasChanged();
     }
 
     private async Task Ingresar()
     {
         await form.ValidateAsync();
-        if (form.IsValid)
+        if (!form.IsValid)
         {
-            iniciandoSesion = true;
-            StateHasChanged();
+            await DispararErrorVisual();
+            return;
+        }
 
-            try
+        iniciandoSesion = true;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(450);
+
+            var usuariosDB = await Firebase.GetUsuariosAsync();
+            var usuarioValido = usuariosDB.FirstOrDefault(u => u.Correo == email && u.Password == password);
+
+            if (usuarioValido != null)
             {
-                // Pausa breve para que la cortinilla se aprecie con fluidez
-                await Task.Delay(500);
-
-                var usuariosDB = await Firebase.GetUsuariosAsync();
-                var usuarioValido = usuariosDB.FirstOrDefault(u => u.Correo == email && u.Password == password);
-
-                if (usuarioValido != null)
+                if (!usuarioValido.Activo)
                 {
-                    if (!usuarioValido.Activo)
-                    {
-                        iniciandoSesion = false;
-                        StateHasChanged();
-                        Snackbar.Add("Tu cuenta está suspendida. Contacta a Dirección.", Severity.Warning);
-                    }
-                    else
-                    {
-                        await UserSession.IniciarSesionAsync(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
-                        Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
-                        
-                        claseAnimacionSalida = "animacion-salida";
-                        StateHasChanged();
-                        await Task.Delay(400); 
-                        
-                        Navigation.NavigateTo("/inicio", forceLoad: false);
-                    }
+                    iniciandoSesion = false;
+                    StateHasChanged();
+                    Snackbar.Add("Tu cuenta está suspendida. Contacta a Dirección.", Severity.Warning);
+                    await DispararErrorVisual();
                 }
                 else
                 {
-                    if (email == "admin@admin.com" && password == "123456")
-                    {
-                        await UserSession.IniciarSesionAsync("Llave Maestra", email, "Administrador");
-                        Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
-                        
-                        claseAnimacionSalida = "animacion-salida";
-                        StateHasChanged();
-                        await Task.Delay(400); 
-                        
-                        Navigation.NavigateTo("/inicio", forceLoad: false);
-                    }
-                    else
-                    {
-                        iniciandoSesion = false;
-                        StateHasChanged();
-                        Snackbar.Add("Credenciales incorrectas. Verifica tu correo y contraseña.", Severity.Error);
-                    }
+                    await UserSession.IniciarSesionAsync(usuarioValido.Nombre, usuarioValido.Correo, usuarioValido.Rol);
+                    Snackbar.Add($"¡Bienvenido, {usuarioValido.Nombre}!", Severity.Success);
+
+                    claseAnimacionSalida = "animacion-salida";
+                    StateHasChanged();
+                    await Task.Delay(400);
+
+                    Navigation.NavigateTo("/inicio", forceLoad: false);
                 }
             }
-            catch (Exception ex)
+            else if (email == "admin@admin.com" && password == "123456")
+            {
+                await UserSession.IniciarSesionAsync("Llave Maestra", email, "Administrador");
+                Snackbar.Add("Entrando con Llave Maestra.", Severity.Info);
+
+                claseAnimacionSalida = "animacion-salida";
+                StateHasChanged();
+                await Task.Delay(400);
+
+                Navigation.NavigateTo("/inicio", forceLoad: false);
+            }
+            else
             {
                 iniciandoSesion = false;
                 StateHasChanged();
-                Snackbar.Add($"Error de conexión: {ex.Message}", Severity.Error);
+                Snackbar.Add("Credenciales incorrectas. Verifica tu correo y contraseña.", Severity.Error);
+                await DispararErrorVisual();
             }
+        }
+        catch (Exception ex)
+        {
+            iniciandoSesion = false;
+            StateHasChanged();
+            Snackbar.Add($"Error de conexión: {ex.Message}", Severity.Error);
         }
     }
 
@@ -386,6 +646,7 @@
         if (string.IsNullOrWhiteSpace(email))
         {
             Snackbar.Add("Por favor, ingresa tu correo electrónico para buscar tu cuenta.", Severity.Warning);
+            await DispararErrorVisual();
             return;
         }
 
@@ -404,6 +665,7 @@
             else
             {
                 Snackbar.Add("No encontramos ninguna cuenta asociada a este correo.", Severity.Error);
+                await DispararErrorVisual();
             }
         }
         catch (Exception ex)
