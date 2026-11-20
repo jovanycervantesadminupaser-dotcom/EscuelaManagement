@@ -806,10 +806,11 @@
                                     }
                                     else
                                     {
-                                        // MODO PREDETERMINADO (SIN PLANTILLA SUBIDA)
-                                        anverso.Column(col =>
+                                        // MODO PREDETERMINADO CON DECORATION (ENCABEZADO / CENTRO / PIE)
+                                        anverso.Decoration(dec =>
                                         {
-                                            col.Item().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
+                                            // Encabezado Azul
+                                            dec.Before().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
                                             {
                                                 if (logoBytes != null)
                                                 {
@@ -822,24 +823,27 @@
                                                 });
                                             });
 
-                                            col.Item().PaddingTop(5).AlignCenter().Container().Width(25, QuestPDF.Infrastructure.Unit.Millimetre).Height(30, QuestPDF.Infrastructure.Unit.Millimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
+                                            // Contenido Central (Foto, Nombre, Especialidad)
+                                            dec.Content().Column(col =>
                                             {
-                                                if (fotoBytes != null) e.Image(fotoBytes).FitArea();
-                                                else e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                                                col.Item().PaddingTop(5).AlignCenter().Container().Width(25, QuestPDF.Infrastructure.Unit.Millimetre).Height(30, QuestPDF.Infrastructure.Unit.Millimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
+                                                {
+                                                    if (fotoBytes != null) e.Image(fotoBytes).FitArea();
+                                                    else e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                                                });
+
+                                                col.Item().PaddingTop(5).PaddingHorizontal(4).Column(c =>
+                                                {
+                                                    c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(7.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
+                                                    c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
+                                                });
                                             });
 
-                                            col.Item().PaddingTop(5).PaddingHorizontal(5).Column(c =>
-                                            {
-                                                c.Item().Text(docente.NombreCompleto.ToUpperInvariant()).Bold().FontSize(8).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Grey.Darken4);
-                                                c.Item().PaddingTop(2).Text(docente.EspecialidadCarrera).FontSize(6).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Blue.Darken2);
-                                            });
-
-                                            col.Item().ExtendVertical();
-
-                                            col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
+                                            // Pie de página anclado al fondo (ID)
+                                            dec.After().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
                                                 .Height(7, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().AlignMiddle()
                                                 .Text($"ID: {idCorto}")
-                                                .FontSize(6).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                                                .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                         });
                                     }
                                 });
@@ -883,17 +887,20 @@
                                     }
                                     else
                                     {
-                                        // MODO PREDETERMINADO (SIN PLANTILLA SUBIDA)
+                                        // MODO PREDETERMINADO CON DECORATION
                                         reverso.Layers(layers =>
                                         {
+                                            // Logo central de fondo
                                             if (logoBytes != null)
                                             {
-                                                layers.PrimaryLayer().AlignCenter().AlignMiddle().Width(30, QuestPDF.Infrastructure.Unit.Millimetre).Image(logoBytes);
+                                                layers.PrimaryLayer().PaddingBottom(15, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                    .AlignCenter().AlignMiddle().Width(26, QuestPDF.Infrastructure.Unit.Millimetre).Image(logoBytes);
                                             }
                                             
-                                            layers.Layer().Column(col =>
+                                            layers.Layer().Decoration(dec =>
                                             {
-                                                col.Item().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
+                                                // Encabezado Azul
+                                                dec.Before().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
                                                 {
                                                     if (logoBytes != null)
                                                     {
@@ -906,23 +913,28 @@
                                                     });
                                                 });
 
-                                                col.Item().ExtendVertical();
+                                                // Espacio central transparente para que se vea el logo
+                                                dec.Content().Element(e => { });
 
-                                                col.Item().PaddingHorizontal(5).PaddingBottom(4).Column(c =>
+                                                // Bloque inferior anclado al fondo (Firma + Leyenda + Vigencia)
+                                                dec.After().Column(col =>
                                                 {
-                                                    c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
-                                                    c.Item().PaddingTop(2).Text(directorInput).Bold().FontSize(5.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
-                                                    c.Item().Text("DIRECTOR DEL PLANTEL").FontSize(4.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
+                                                    col.Item().PaddingHorizontal(5).PaddingBottom(3).Column(c =>
+                                                    {
+                                                        c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
+                                                        c.Item().PaddingTop(2).Text(directorInput).Bold().FontSize(5.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
+                                                        c.Item().Text("DIRECTOR DEL PLANTEL").FontSize(4.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
+                                                    });
+
+                                                    col.Item().PaddingBottom(2).PaddingHorizontal(3)
+                                                        .Text("Esta credencial es personal e intransferible y debe ser portada obligatoriamente.")
+                                                        .FontSize(3.8f).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3).AlignCenter();
+
+                                                    col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
+                                                        .Height(7, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().AlignMiddle()
+                                                        .Text($"VIGENCIA: {vigenciaInput}")
+                                                        .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                                 });
-
-                                                col.Item().PaddingBottom(2).PaddingHorizontal(2)
-                                                    .Text("Esta credencial es personal e intransferible y debe de ser portada obligatoriamente.")
-                                                    .FontSize(3.5f).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3).AlignCenter();
-
-                                                col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
-                                                    .Height(7, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().AlignMiddle()
-                                                    .Text($"VIGENCIA: {vigenciaInput}")
-                                                    .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                             });
                                         });
                                     }
