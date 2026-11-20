@@ -1,4 +1,5 @@
 @page "/"
+@namespace EscuelaManagement.Components.Pages
 @layout EscuelaManagement.Components.Layout.LoginLayout
 @using MudBlazor
 @using EscuelaManagement.Data.Models
@@ -58,8 +59,7 @@
     }
 
     .left-top-badge,
-    .left-content,
-    .left-bottom-pills {
+    .left-content {
         position: relative;
         z-index: 2;
         width: 100%;
@@ -130,27 +130,6 @@
         border-radius: 16px;
         background: rgba(255, 255, 255, 0.92);
         padding: 6px;
-    }
-
-    .left-bottom-pills {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .feature-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
-        border-radius: 14px;
-        background: rgba(15, 23, 42, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        backdrop-filter: blur(10px);
-        color: rgba(255, 255, 255, 0.92);
-        font-size: 0.78rem;
-        font-weight: 500;
     }
 
     /* ========================================================
@@ -409,21 +388,8 @@
             <MudText Typo="Typo.h6" Style="opacity: 0.9; font-weight: 300; line-height: 1.4;">@nombreEscuela</MudText>
         </div>
 
-        <!-- Etiquetas Inferiores -->
-        <div class="left-bottom-pills">
-            <div class="feature-chip">
-                <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
-                <span>Credenciales PVC</span>
-            </div>
-            <div class="feature-chip">
-                <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" />
-                <span>Control Escolar</span>
-            </div>
-            <div class="feature-chip">
-                <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" />
-                <span>Cobranza y Pagos</span>
-            </div>
-        </div>
+        <!-- Espaciador para mantener el contenido central alineado -->
+        <div style="height: 36px;"></div>
     </div>
 
     <!-- LADO DERECHO: TARJETA INTERACTIVA M3 -->
@@ -474,9 +440,9 @@
                 </div>
             </MudForm>
 
-            <!-- Opciones: Mostrar contraseña / Recordarme y Recuperación -->
+            <!-- Opciones: Mostrar clave y Recuperación -->
             <div class="d-flex align-center justify-space-between mb-7 mt-2 stagger-3">
-                <MudCheckBox T="bool" Value="@isShow" ValueChanged="OnMostrarPasswordChanged" Label="Mostrar clave" Color="Color.Primary" Dense="true" Size="Size.Small" Style="color: #475569;" />
+                <MudCheckBox T="bool" Value="@isShow" ValueChanged="OnMostrarPasswordChanged" Label="Mostrar contraseña" Color="Color.Primary" Dense="true" Size="Size.Small" Style="color: #475569;" />
                 <MudLink OnClick="RecuperarContrasena" Typo="Typo.caption" Style="color: #0284c7; cursor: pointer; text-decoration: none; font-weight: bold;">
                     ¿Olvidaste tu contraseña?
                 </MudLink>
