@@ -647,8 +647,21 @@
     }
 
     // --- MÉTODOS PESTAÑA 3 (CONFIGURAR PLANTILLA DOCENTE) ---
-    private async Task SubirFrenteDocente(InputFileChangeEventArgs e) => disenoDocente.PlantillaFrenteBase64 = await ConvertToBase64(e.File);
-    private async Task SubirReversoDocente(InputFileChangeEventArgs e) => disenoDocente.PlantillaReversoBase64 = await ConvertToBase64(e.File);
+    private async Task SubirFrenteDocente(InputFileChangeEventArgs e)
+    {
+        if (e.File == null) return;
+        disenoDocente.PlantillaFrenteBase64 = await ConvertToBase64(e.File);
+        Snackbar.Add("Plantilla del anverso cargada. Presiona 'Guardar Diseño' para conservarla.", Severity.Info);
+        StateHasChanged();
+    }
+
+    private async Task SubirReversoDocente(InputFileChangeEventArgs e)
+    {
+        if (e.File == null) return;
+        disenoDocente.PlantillaReversoBase64 = await ConvertToBase64(e.File);
+        Snackbar.Add("Plantilla del reverso cargada. Presiona 'Guardar Diseño' para conservarla.", Severity.Info);
+        StateHasChanged();
+    }
 
     private async Task<string> ConvertToBase64(IBrowserFile file)
     {
@@ -806,31 +819,36 @@
                                     }
                                     else
                                     {
-                                        // MODO PREDETERMINADO CON DECORATION (ENCABEZADO / CENTRO / PIE)
-                                        anverso.Decoration(dec =>
+                                        // MODO PREDETERMINADO CON LAYERS (ALIGN TOP / ALIGN BOTTOM)
+                                        anverso.Layers(layers =>
                                         {
-                                            // Encabezado Azul
-                                            dec.Before().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
-                                            {
-                                                if (logoBytes != null)
-                                                {
-                                                    row.ConstantItem(12, QuestPDF.Infrastructure.Unit.Millimetre).Padding(2).Image(logoBytes);
-                                                }
-                                                row.RelativeItem().PaddingTop(5).Column(c =>
-                                                {
-                                                    c.Item().Text("UPASER").Bold().FontColor(QuestPDF.Helpers.Colors.White).FontSize(11).AlignCenter();
-                                                    c.Item().Text("DOCENTE").SemiBold().FontColor(QuestPDF.Helpers.Colors.Yellow.Lighten2).FontSize(7).AlignCenter();
-                                                });
-                                            });
+                                            layers.PrimaryLayer().Background(QuestPDF.Helpers.Colors.White);
 
-                                            // Contenido Central (Foto, Nombre, Especialidad)
-                                            dec.Content().Column(col =>
+                                            // Capa superior: Encabezado + Foto + Nombre y Especialidad
+                                            layers.Layer().AlignTop().Column(col =>
                                             {
-                                                col.Item().PaddingTop(5).AlignCenter().Container().Width(25, QuestPDF.Infrastructure.Unit.Millimetre).Height(30, QuestPDF.Infrastructure.Unit.Millimetre).Background(QuestPDF.Helpers.Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Element(e => 
+                                                col.Item().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
                                                 {
-                                                    if (fotoBytes != null) e.Image(fotoBytes).FitArea();
-                                                    else e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                                                    if (logoBytes != null)
+                                                    {
+                                                        row.ConstantItem(12, QuestPDF.Infrastructure.Unit.Millimetre).Padding(2).Image(logoBytes);
+                                                    }
+                                                    row.RelativeItem().PaddingTop(5).Column(c =>
+                                                    {
+                                                        c.Item().Text("UPASER").Bold().FontColor(QuestPDF.Helpers.Colors.White).FontSize(11).AlignCenter();
+                                                        c.Item().Text("DOCENTE").SemiBold().FontColor(QuestPDF.Helpers.Colors.Yellow.Lighten2).FontSize(7).AlignCenter();
+                                                    });
                                                 });
+
+                                                col.Item().PaddingTop(5).AlignCenter().Container()
+                                                    .Width(25, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                    .Height(30, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                    .Background(QuestPDF.Helpers.Colors.Grey.Lighten3)
+                                                    .AlignCenter().AlignMiddle().Element(e => 
+                                                    {
+                                                        if (fotoBytes != null) e.Image(fotoBytes).FitArea();
+                                                        else e.Text("Sin Foto").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Darken1);
+                                                    });
 
                                                 col.Item().PaddingTop(5).PaddingHorizontal(4).Column(c =>
                                                 {
@@ -839,9 +857,11 @@
                                                 });
                                             });
 
-                                            // Pie de página anclado al fondo (ID)
-                                            dec.After().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
-                                                .Height(7, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().AlignMiddle()
+                                            // Capa inferior: ID anclado estrictamente al borde inferior
+                                            layers.Layer().AlignBottom()
+                                                .Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
+                                                .Height(7, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                .AlignCenter().AlignMiddle()
                                                 .Text($"ID: {idCorto}")
                                                 .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                         });
@@ -887,54 +907,54 @@
                                     }
                                     else
                                     {
-                                        // MODO PREDETERMINADO CON DECORATION
+                                        // MODO PREDETERMINADO CON LAYERS (ALIGN TOP / ALIGN BOTTOM)
                                         reverso.Layers(layers =>
                                         {
-                                            // Logo central de fondo
-                                            if (logoBytes != null)
-                                            {
-                                                layers.PrimaryLayer().PaddingBottom(15, QuestPDF.Infrastructure.Unit.Millimetre)
-                                                    .AlignCenter().AlignMiddle().Width(26, QuestPDF.Infrastructure.Unit.Millimetre).Image(logoBytes);
-                                            }
-                                            
-                                            layers.Layer().Decoration(dec =>
-                                            {
-                                                // Encabezado Azul
-                                                dec.Before().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
+                                            // Capa base: Fondo blanco + Logo centrado en la zona libre
+                                            layers.PrimaryLayer().Background(QuestPDF.Helpers.Colors.White)
+                                                .PaddingTop(16, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                .PaddingBottom(24, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                .AlignCenter().AlignMiddle().Element(e =>
                                                 {
                                                     if (logoBytes != null)
                                                     {
-                                                        row.ConstantItem(12, QuestPDF.Infrastructure.Unit.Millimetre).Padding(2).Image(logoBytes);
+                                                        e.Width(24, QuestPDF.Infrastructure.Unit.Millimetre).Image(logoBytes);
                                                     }
-                                                    row.RelativeItem().PaddingTop(5).Column(c =>
-                                                    {
-                                                        c.Item().Text("UPASER").Bold().FontColor(QuestPDF.Helpers.Colors.White).FontSize(11).AlignCenter();
-                                                        c.Item().Text("DOCENTE").SemiBold().FontColor(QuestPDF.Helpers.Colors.Yellow.Lighten2).FontSize(7).AlignCenter();
-                                                    });
                                                 });
 
-                                                // Espacio central transparente para que se vea el logo
-                                                dec.Content().Element(e => { });
-
-                                                // Bloque inferior anclado al fondo (Firma + Leyenda + Vigencia)
-                                                dec.After().Column(col =>
+                                            // Capa superior: Encabezado Azul
+                                            layers.Layer().AlignTop().Background("#003366").Height(15, QuestPDF.Infrastructure.Unit.Millimetre).Row(row =>
+                                            {
+                                                if (logoBytes != null)
                                                 {
-                                                    col.Item().PaddingHorizontal(5).PaddingBottom(3).Column(c =>
-                                                    {
-                                                        c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
-                                                        c.Item().PaddingTop(2).Text(directorInput).Bold().FontSize(5.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
-                                                        c.Item().Text("DIRECTOR DEL PLANTEL").FontSize(4.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
-                                                    });
-
-                                                    col.Item().PaddingBottom(2).PaddingHorizontal(3)
-                                                        .Text("Esta credencial es personal e intransferible y debe ser portada obligatoriamente.")
-                                                        .FontSize(3.8f).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3).AlignCenter();
-
-                                                    col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
-                                                        .Height(7, QuestPDF.Infrastructure.Unit.Millimetre).AlignCenter().AlignMiddle()
-                                                        .Text($"VIGENCIA: {vigenciaInput}")
-                                                        .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                                                    row.ConstantItem(12, QuestPDF.Infrastructure.Unit.Millimetre).Padding(2).Image(logoBytes);
+                                                }
+                                                row.RelativeItem().PaddingTop(5).Column(c =>
+                                                {
+                                                    c.Item().Text("UPASER").Bold().FontColor(QuestPDF.Helpers.Colors.White).FontSize(11).AlignCenter();
+                                                    c.Item().Text("DOCENTE").SemiBold().FontColor(QuestPDF.Helpers.Colors.Yellow.Lighten2).FontSize(7).AlignCenter();
                                                 });
+                                            });
+
+                                            // Capa inferior: Firma + Leyenda + Vigencia anclados al borde inferior
+                                            layers.Layer().AlignBottom().Column(col =>
+                                            {
+                                                col.Item().PaddingHorizontal(5).PaddingBottom(3).Column(c =>
+                                                {
+                                                    c.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Black);
+                                                    c.Item().PaddingTop(2).Text(directorInput).Bold().FontSize(5.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
+                                                    c.Item().Text("DIRECTOR DEL PLANTEL").FontSize(4.5f).AlignCenter().FontColor(QuestPDF.Helpers.Colors.Black);
+                                                });
+
+                                                col.Item().PaddingBottom(2).PaddingHorizontal(3)
+                                                    .Text("Esta credencial es personal e intransferible y debe ser portada obligatoriamente.")
+                                                    .FontSize(3.8f).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3).AlignCenter();
+
+                                                col.Item().Background(QuestPDF.Helpers.Colors.Grey.Lighten4)
+                                                    .Height(7, QuestPDF.Infrastructure.Unit.Millimetre)
+                                                    .AlignCenter().AlignMiddle()
+                                                    .Text($"VIGENCIA: {vigenciaInput}")
+                                                    .FontSize(6).Bold().FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
                                             });
                                         });
                                     }
