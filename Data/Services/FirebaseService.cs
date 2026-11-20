@@ -314,6 +314,9 @@ public class FirebaseService
         await docRef.DeleteAsync();
     }
 
+    // ==========================================
+    // --- DISEÑO CREDENCIALES (ALUMNOS) ---
+    // ==========================================
     public async Task SaveDisenoCredencialAsync(CredencialDiseno diseno)
     {
         DocumentReference docRef = _db.Collection("configuraciones").Document(diseno.Id);
@@ -333,6 +336,38 @@ public class FirebaseService
 
         var diseno = snapshot.Exists ? snapshot.ConvertTo<CredencialDiseno>() : new CredencialDiseno();
         _cache.Set("Global_CredencialDiseno", diseno, _cacheDurationConfig);
+        
+        return diseno;
+    }
+
+    // ==========================================
+    // --- DISEÑO CREDENCIALES (DOCENTES) ---
+    // ==========================================
+    public async Task SaveDisenoCredencialDocenteAsync(CredencialDiseno diseno)
+    {
+        diseno.Id = "config_diseno_credencial_docente";
+        DocumentReference docRef = _db.Collection("configuraciones").Document(diseno.Id);
+        await docRef.SetAsync(diseno);
+        _cache.Remove("Global_CredencialDisenoDocente");
+    }
+
+    public async Task<CredencialDiseno?> GetDisenoCredencialDocenteAsync()
+    {
+        if (_cache.TryGetValue("Global_CredencialDisenoDocente", out CredencialDiseno? cachedDiseno))
+        {
+            return cachedDiseno;
+        }
+
+        DocumentReference docRef = _db.Collection("configuraciones").Document("config_diseno_credencial_docente");
+        DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+        if (!snapshot.Exists)
+        {
+            return null;
+        }
+
+        var diseno = snapshot.ConvertTo<CredencialDiseno>();
+        _cache.Set("Global_CredencialDisenoDocente", diseno, _cacheDurationConfig);
         
         return diseno;
     }
